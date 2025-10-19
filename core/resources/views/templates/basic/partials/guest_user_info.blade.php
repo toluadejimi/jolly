@@ -59,7 +59,7 @@
                             <input type="hidden" name="country_code">
 
                             <div class="form-group">
-                                <label for="guest-mobile">@lang('Mobile')</label>
+                                <label for="guest-mobile">@lang('Whatsapp Number')</label>
                                 <div class="input-group">
                                     <select name="country" class="input-group-text" required>
                                         @foreach ($countries as $key => $country)

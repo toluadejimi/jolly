@@ -36,21 +36,66 @@
                     </div>
                 </div>
 
+
+
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>@lang('Mobile')</label>
                         <div class="input-group">
-                            <span class="input-group-text mobile-code"></span>
-                            <input type="hidden" name="mobile_code">
-                            <input type="hidden" name="country_code">
+                            <!-- Country dropdown: set fixed width -->
+                            <select name="mobile_country" id="mobileCountrySelect" class="form-select w-auto" style="max-width: 150px;" required>
+                                @foreach ($countries as $code => $country)
+                                    <option value="{{ $country->country }}"
+                                            data-mobile_code="{{ $country->dial_code }}"
+                                            data-code="{{ $code }}"
+                                        {{ isset($shippingInformation) && @$shippingInformation->country_code == $code ? 'selected' : '' }}>
+                                        {{ $country->country }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <!-- Dial code -->
+                            <span class="input-group-text" id="dialCode" style="min-width: 70px;"></span>
+
+                            <!-- Hidden inputs -->
+                            <input type="hidden" name="mobile_code" id="mobile_code">
+                            <input type="hidden" name="country_code" id="country_code">
+
+                            <!-- Mobile number input -->
                             <input type="number" name="mobile" value="{{ @$shippingInformation->mobile }}"
-                                   class="form-control form--control  ps-0" required>
+                                   class="form-control form--control" placeholder="@lang('Enter mobile number')" required>
                         </div>
-                        <small class="text-muted"><i
-                                class="la la-info-circle"></i> @lang('Enter the mobile number without the country code.')
+
+                        <small class="text-muted">
+                            <i class="la la-info-circle"></i> @lang('Enter the mobile number without the country code.')
                         </small>
                     </div>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const countrySelect = document.getElementById('mobileCountrySelect');
+                            const dialCodeSpan = document.getElementById('dialCode');
+                            const mobileCodeInput = document.getElementById('mobile_code');
+                            const countryCodeInput = document.getElementById('country_code');
+
+                            function updateDialCode() {
+                                const selectedOption = countrySelect.options[countrySelect.selectedIndex];
+                                const dialCode = selectedOption.getAttribute('data-mobile_code');
+                                const code = selectedOption.getAttribute('data-code');
+
+                                dialCodeSpan.textContent = '+' + dialCode;
+                                mobileCodeInput.value = dialCode;
+                                countryCodeInput.value = code;
+                            }
+
+                            updateDialCode();
+                            countrySelect.addEventListener('change', updateDialCode);
+                        });
+                    </script>
                 </div>
+
+
+
 
                 <div class="col-md-6">
                     <div class="form-group">

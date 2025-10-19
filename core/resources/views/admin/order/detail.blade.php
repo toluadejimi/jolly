@@ -253,7 +253,7 @@
                                 <span class="title">@lang('Mobile')</span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    +{{ $order->user->mobile_number?? $order->guest?->mobile_number }}
+                                    +{{ $order->user->mobile_number ?? $order->guest?->mobile_number }}
                                 </span>
                             </li>
 
