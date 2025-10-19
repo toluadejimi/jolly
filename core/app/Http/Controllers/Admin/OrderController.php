@@ -94,7 +94,8 @@ class OrderController extends Controller
         $pageTitle = 'Order Details';
         $order     = Order::isValidOrder()->where('id', $id)->with('user', 'deposit', 'deposit.gateway', 'orderDetail.product', 'orderDetail.productVariant', 'appliedCoupon')->firstOrFail();
 
-        return view('admin.order.detail', compact('order', 'pageTitle'));
+        $pid = $id;
+        return view('admin.order.detail', compact('order', 'pageTitle', 'pid'));
     }
 
     public function changeStatus(Request $request, $id)

@@ -1,3 +1,4 @@
+@php use App\Models\OrderDetail; @endphp
 @extends('admin.layouts.app')
 
 @section('panel')
@@ -23,35 +24,35 @@
                 <div class="table-responsive--sm table-responsive">
                     <table class="table table--light style--two">
                         <thead>
-                            <tr>
-                                <th>@lang('Product')</th>
-                                <th>@lang('Price')</th>
-                                <th>@lang('Quantity')</th>
-                                <th>@lang('Total Price')</th>
-                            </tr>
+                        <tr>
+                            <th>@lang('Product')</th>
+                            <th>@lang('Price')</th>
+                            <th>@lang('Quantity')</th>
+                            <th>@lang('Total Price')</th>
+                        </tr>
                         </thead>
                         <tbody>
+                        @php
+                            $subtotal = $order->orderDetail->sum(function ($detail) {
+                                return $detail->price * $detail->quantity;
+                            });
+                        @endphp
+
+                        @foreach ($order->orderDetail as $data)
                             @php
-                                $subtotal = $order->orderDetail->sum(function ($detail) {
-                                    return $detail->price * $detail->quantity;
-                                });
+                                $mainImage = $data->productVariant && @$data->productVariant->main_image_id ? $data->productVariant->mainImage(true) : @$data->product->mainImage(true);
                             @endphp
 
-                            @foreach ($order->orderDetail as $data)
-                                @php
-                                    $mainImage = $data->productVariant && @$data->productVariant->main_image_id ? $data->productVariant->mainImage(true) : @$data->product->mainImage(true);
-                                @endphp
+                            <tr>
+                                <td>
+                                    <div class="single-product-item">
+                                        <div class="thumb">
+                                            <img class="lazyload" src="{{ $mainImage }}" alt="product-image">
+                                        </div>
 
-                                <tr>
-                                    <td>
-                                        <div class="single-product-item">
-                                            <div class="thumb">
-                                                <img class="lazyload" src="{{ $mainImage }}" alt="product-image">
-                                            </div>
-
-                                            <div class="content">
-                                                <div class="content-top">
-                                                    <div class="content-top-left">
+                                        <div class="content">
+                                            <div class="content-top">
+                                                <div class="content-top-left">
                                                         <span class="title d-block fw-normal">
                                                             {{ strLimit(@$data->product->name, 60) }}
 
@@ -59,20 +60,20 @@
                                                                 - {{ @$data->productVariant->name }}
                                                             @endif
                                                         </span>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </td>
+                                    </div>
+                                </td>
 
 
-                                    <td>
-                                        {{ showAmount($data->price) }}
-                                    </td>
-                                    <td>{{ $data->quantity }}</td>
-                                    <td class="text-end">{{ showAmount($data->price * $data->quantity) }}</td>
-                                </tr>
-                            @endforeach
+                                <td>
+                                    {{ showAmount($data->price) }}
+                                </td>
+                                <td>{{ $data->quantity }}</td>
+                                <td class="text-end">{{ showAmount($data->price * $data->quantity) }}</td>
+                            </tr>
+                        @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -201,6 +202,32 @@
                         </div>
                     @endif
 
+
+                    <div class="details-info-address my-3">
+
+                        <h6 class="mb-3">@lang('Shipping Note')</h6>
+                        <ul class="info-address-list">
+
+                            @php
+
+                            $note = OrderDetail::where('id', $pid)->first()->note ?? null;
+
+                            @endphp
+
+
+                            <li>
+                                <span class="title">@lang('Note to seller') </span>
+                                <span>
+                                        <span class="devide-colon">:</span>
+                                        {{ $note ?? " " }}
+                                    </span>
+                            </li>
+
+
+                        </ul>
+                    </div>
+
+
                     <div class="details-info-address mt-3">
                         <h6 class="mb-3">@lang('Customer Details')</h6>
                         <ul class="info-address-list">
@@ -243,7 +270,8 @@
                 </div>
             </div>
             <div class="text-end mt-3">
-                <a href="{{ route('admin.print.invoice', $order->id) }}" target=blank class="btn btn-dark m-1"> <i class="fa fa-print"></i>@lang('Print')</a>
+                <a href="{{ route('admin.print.invoice', $order->id) }}" target=blank class="btn btn-dark m-1"> <i
+                        class="fa fa-print"></i>@lang('Print')</a>
             </div>
         </div>
     </div>
@@ -353,7 +381,7 @@
             margin-right: 24px;
         }
 
-        .info-address-list li .title~span {
+        .info-address-list li .title ~ span {
             display: flex;
             align-items: flex-start;
         }

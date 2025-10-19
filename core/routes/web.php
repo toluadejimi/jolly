@@ -70,7 +70,7 @@ Route::name('checkout.')->group(function () {
 
     Route::controller('PaymentController')->group(function () {
         Route::get('checkout/payment-methods', 'paymentMethods')->name('payment.methods')->middleware('checkout.step:payment');
-        Route::post('complete-checkout', 'completeCheckout')->name('complete')->middleware('checkout.step:payment');
+        Route::post('checkout/complete-checkout', 'completeCheckout')->name('complete')->middleware('checkout.step:payment');
     });
 });
 

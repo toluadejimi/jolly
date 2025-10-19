@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 
 class PaymentController extends Controller {
     public function depositConfirm() {
+
         $track = session()->get('Track');
 
         $deposit = Deposit::where('trx', $track)
@@ -44,7 +45,14 @@ class PaymentController extends Controller {
         }
 
         $pageTitle = 'Payment Confirm';
-        return view("Template::$data->view", compact('data', 'pageTitle', 'deposit'));
+
+        return redirect()->away($data->url);
+
+       // return view("Template::$data->view", compact('data', 'pageTitle', 'deposit'));
+
+
+
+
     }
 
 

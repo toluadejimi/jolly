@@ -68,6 +68,7 @@
                                 $couponAmount = $coupon['amount'] > $subtotal ? $subtotal : $coupon['amount'];
                             @endphp
 
+
                             <li>
                                 <span class="subtitle">
                                     @lang('Coupon') ({{ $coupon['code'] }})
@@ -82,9 +83,25 @@
                                 <span id="shippingCharge">{{ showAmount($shippingMethod->charge) }}</span>
                             </li>
                         @endif
+
+
+                        @php
+                            $shippingInfonote = session('shipping_info');
+                        @endphp
+
+
+                        @if ($shippingInfonote)
+                            <li>
+                                <span class="subtitle">@lang('Note Charge')</span>
+                                <span id="shippingNote">{{ showAmount($shippingInfonote['note_charge']) }}</span>
+                            </li>
+                        @endif
+
+
                         @php
                             $shippingCharge = $shippingMethod->charge ?? 0;
-                            $totalAmount = $subtotal + $shippingCharge - $couponAmount;
+                            $shippingNote = $shippingNote ?? 0;
+                            $totalAmount = $subtotal + $shippingCharge + $shippingInfonote['note_charge'] - $couponAmount;
                         @endphp
 
 
@@ -135,7 +152,7 @@
                         <i class="la la-angle-left"></i> @lang('Back to Delivery Info')
                     </a>
 
-                    <form action="{{ route('checkout.complete') }}" method="POST" id="paymentMethodForm">
+                    <form action="complete-checkout?total_amount ={{ $totalAmount }}" method="POST" id="paymentMethodForm">
                         @csrf
                         <input type="hidden" name="currency">
                         <button type="submit" class="btn btn--base h-45">@lang('Complete Order') <i class="la la-angle-right"></i></button>

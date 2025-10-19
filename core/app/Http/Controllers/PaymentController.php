@@ -39,10 +39,14 @@ class PaymentController extends Controller {
         $subtotal       = $this->cartManager->subtotal();
         $coupon         = session('coupon');
 
+
+
         return view('Template::checkout_steps.payment_methods', compact('pageTitle', 'gatewayCurrencies', 'shippingMethod', 'subtotal', 'coupon', 'hasPhysicalProduct'));
     }
 
     public function completeCheckout(Request $request) {
+
+
         $this->validation($request);
 
         $gatewayCurrency = $this->getGatewayCurrency($request);
@@ -57,6 +61,7 @@ class PaymentController extends Controller {
 
         $cartData = $this->cartManager->getCart();
 
+
         if (blank($cartData)) {
             $notify[] = ['error', 'No product found to place order'];
             return to_route('cart.page')->withNotify($notify);
@@ -64,18 +69,29 @@ class PaymentController extends Controller {
 
         $checkStock = $this->checkStock($cartData);
 
+
         if ($checkStock instanceof RedirectResponse) {
             return $checkStock;
         }
 
         $checkPrice = $this->cartManager->checkProductsPrice($cartData);
 
+
         if (!$checkPrice['status']) {
             $notify[] = ['error', $checkPrice['message']];
             return to_route('cart.page')->withNotify($notify);
         }
 
-        $subtotal = $this->cartManager->subtotal();
+
+
+        if(session()->get('shipping_info')['note_charge'] > 0){
+            $note_charge = session()->get('shipping_info')['note_charge'];
+        }else{
+            $note_charge = 0;
+        }
+        $subtotal = $note_charge + $this->cartManager->subtotal();
+
+
         $coupon   = $this->appliedCoupon($cartData, $subtotal);
 
         if (isset($coupon['error'])) {
@@ -88,8 +104,13 @@ class PaymentController extends Controller {
 
         $order = null;
 
+
+
+
         if ($orderId) {
             $order = Order::find($orderId);
+
+
 
             if (!$order) {
                 $notify[] = ['error', 'Session expired'];
@@ -114,6 +135,7 @@ class PaymentController extends Controller {
         }
 
         if (!$order) {
+
             $order = $this->saveOrder($subtotal, $coupon, $gatewayCurrency, $cartData, $hasPhysicalProduct);
         }
 
@@ -254,10 +276,11 @@ class PaymentController extends Controller {
         $order->is_cod             = $gatewayCurrency->id ? 0 : 1;
         $order->payment_status     = Status::PAYMENT_INITIATE;
         $order->subtotal           = $subtotal;
-        $order->total_amount       = getAmount($subtotal + ($shippingMethod->charge ?? 0) - $couponAmount);
+        $order->total_amount       = getAmount($subtotal  + ($shippingMethod->charge ?? 0) - $couponAmount);
         $order->save();
 
-        $this->saveOrderDetails($cartData, $order->id);
+        $note =$checkoutData['note_to_seller'] ?? null;
+        $this->saveOrderDetails($cartData, $order->id, $note);
 
         return $order;
     }
@@ -295,11 +318,12 @@ class PaymentController extends Controller {
         ];
     }
 
-    private function saveOrderDetails($cartData, $orderId) {
+    private function saveOrderDetails($cartData, $orderId, $note = null) {
         foreach ($cartData as $cartItem) {
             $prices = $cartItem->product->prices($cartItem->productVariant);
             $orderDetail                     = new OrderDetail();
             $orderDetail->order_id           = $orderId;
+            $orderDetail->note               = $note;
             $orderDetail->product_id         = $cartItem->product_id;
             $orderDetail->product_variant_id = $cartItem->product_variant_id ?? 0;
             $orderDetail->quantity           = $cartItem->quantity;

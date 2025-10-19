@@ -48,6 +48,7 @@ class CheckoutController extends Controller {
 
     public function storeGuestShippingInfo(Request $request) {
 
+
         $request->validate([
             'firstname' => 'required|string',
             'lastname'  => 'required|string',
@@ -59,6 +60,12 @@ class CheckoutController extends Controller {
             'country'   => 'required|string',
             'address'   => 'required|string',
         ]);
+
+        if($request->note_to_seller != null){
+            $note_charge = 5000;
+        }else{
+            $note_charge = 0;
+        }
 
         $shippingData = [
             'firstname'    => $request->firstname,
@@ -72,6 +79,8 @@ class CheckoutController extends Controller {
             'dial_code'    => $request->mobile_code,
             'country'      => $request->country,
             'address'      => $request->address,
+            'note_to_seller'      => $request->note_to_seller,
+            'note_charge'      => $note_charge,
         ];
 
         Session::put('shipping_info', $shippingData);

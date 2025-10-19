@@ -24,13 +24,15 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>@lang('First Name')</label>
-                        <input type="text" value="{{ @$shippingInformation->firstname }}" class="form-control form--control" name="firstname" required>
+                        <input type="text" value="{{ @$shippingInformation->firstname }}"
+                               class="form-control form--control" name="firstname" required>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>@lang('Last Name')</label>
-                        <input type="text" value="{{ @$shippingInformation->lastname }}" class="form-control form--control" name="lastname" required>
+                        <input type="text" value="{{ @$shippingInformation->lastname }}"
+                               class="form-control form--control" name="lastname" required>
                     </div>
                 </div>
 
@@ -41,19 +43,66 @@
                             <span class="input-group-text mobile-code"></span>
                             <input type="hidden" name="mobile_code">
                             <input type="hidden" name="country_code">
-                            <input type="number" name="mobile" value="{{ @$shippingInformation->mobile }}" class="form-control form--control  ps-0" required>
+                            <input type="number" name="mobile" value="{{ @$shippingInformation->mobile }}"
+                                   class="form-control form--control  ps-0" required>
                         </div>
-                        <small class="text-muted"><i class="la la-info-circle"></i> @lang('Enter the mobile number without the country code.')</small>
+                        <small class="text-muted"><i
+                                class="la la-info-circle"></i> @lang('Enter the mobile number without the country code.')
+                        </small>
                     </div>
                 </div>
 
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>@lang('Email')</label>
-                        <input type="text" value="{{ @$shippingInformation->email }}" class="form-control form--control" name="email" required>
+                        <input type="text" value="{{ @$shippingInformation->email }}" class="form-control form--control"
+                               name="email" required>
                     </div>
                 </div>
             </div>
+
+            <hr>
+
+            <div class="row mt-4">
+
+                <h5 class="mb-1 "> Note to Seller</h5>
+
+
+                <p class="text-muted fst-italic">
+                    Note about your order. Ex Special note for delivery
+                </p>
+
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>@lang('Enter Note')</label>
+                        <textarea class="form-control form--control" name="note_to_seller" id="note_to_seller" rows="4" placeholder="Enter your note here..." maxlength="250"></textarea>
+                        <small id="charCount" class="text-muted d-block">0 / 250 characters</small>
+                        <small class="text-info d-block mt-1">
+                            Note: To include note with your order, a Additional fee of ₦5,000 will be added.
+                        </small>
+                    </div>
+                </div>
+
+                <script>
+                    const textarea = document.getElementById('note_to_seller');
+                    const charCount = document.getElementById('charCount');
+
+                    textarea.addEventListener('input', function() {
+                        const length = this.value.length;
+                        charCount.textContent = `${length} / 250 characters`;
+
+                        // Optional visual feedback
+                        if (length > 250) {
+                            charCount.classList.add('text-danger');
+                        } else {
+                            charCount.classList.remove('text-danger');
+                        }
+                    });
+                </script>
+
+            </div>
+
+            <hr>
 
             <div class="row mt-4">
 
@@ -72,7 +121,8 @@
                         <label class="form-label">@lang('Country')</label>
                         <select name="country" class="form-control form--control select2" required>
                             @foreach ($countries as $key => $country)
-                                <option data-mobile_code="{{ $country->dial_code }}" value="{{ $country->country }}" data-code="{{ $key }}">
+                                <option data-mobile_code="{{ $country->dial_code }}" value="{{ $country->country }}"
+                                        data-code="{{ $key }}">
                                     {{ __($country->country) }}
                                 </option>
                             @endforeach
@@ -83,28 +133,32 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>@lang('State')</label>
-                        <input type="text" value="{{ @$shippingInformation->state }}" class="form-control form--control" name="state" required>
+                        <input type="text" value="{{ @$shippingInformation->state }}" class="form-control form--control"
+                               name="state" required>
                     </div>
                 </div>
 
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>@lang('City')</label>
-                        <input type="text" value="{{ @$shippingInformation->city }}" class="form-control form--control" name="city" required>
+                        <input type="text" value="{{ @$shippingInformation->city }}" class="form-control form--control"
+                               name="city" required>
                     </div>
                 </div>
 
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>@lang('Zip')</label>
-                        <input type="text" value="{{ @$shippingInformation->zip }}" class="form-control form--control" name="zip" required>
+                        <input type="text" value="{{ @$shippingInformation->zip }}" class="form-control form--control"
+                               name="zip" required>
                     </div>
                 </div>
 
                 <div class="col-md-12">
                     <div class="form-group">
                         <label>@lang('Address')</label>
-                        <input type="text" value="{{ @$shippingInformation->address }}" class="form-control form--control" name="address" required>
+                        <input type="text" value="{{ @$shippingInformation->address }}"
+                               class="form-control form--control" name="address" required>
                     </div>
                 </div>
             </div>
@@ -115,7 +169,8 @@
                 <i class="las la-angle-left"></i> @lang('Back to Cart')
             </a>
 
-            <button type="submit" class="btn btn--base h-45">@lang('Continue to Next') <i class="las la-angle-right"></i></button>
+            <button type="submit" class="btn btn--base h-45">@lang('Continue to Next') <i
+                    class="las la-angle-right"></i></button>
         </div>
     </form>
 @endsection

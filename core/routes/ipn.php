@@ -13,6 +13,7 @@ Route::post('paytm', 'Paytm\ProcessController@ipn')->name('Paytm');
 Route::post('payeer', 'Payeer\ProcessController@ipn')->name('Payeer');
 Route::post('paystack', 'Paystack\ProcessController@ipn')->name('Paystack');
 Route::get('flutterwave/{trx}/{type}', 'Flutterwave\ProcessController@ipn')->name('Flutterwave');
+Route::any('enkpay', 'Enkpay\ProcessController@ipn')->name('enkpay');
 Route::post('razorpay', 'Razorpay\ProcessController@ipn')->name('Razorpay');
 Route::post('instamojo', 'Instamojo\ProcessController@ipn')->name('Instamojo');
 Route::get('blockchain', 'Blockchain\ProcessController@ipn')->name('Blockchain');
