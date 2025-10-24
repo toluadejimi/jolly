@@ -36,6 +36,9 @@ class ProductCollectionController extends Controller
 
     public function save(Request $request, $id = 0)
     {
+
+
+
         $request->validate([
             'title' => 'required',
             'products' => 'nullable|array|min:1',

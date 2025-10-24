@@ -16,6 +16,24 @@
     <link rel="stylesheet" href="{{ asset($activeTemplateTrue . 'css/color.php?color=' . gs('base_color')) }}">
     @stack('style')
     <link href="{{ asset($activeTemplateTrue . 'css/custom.css') }}" rel="stylesheet">
+
+
+    <style>
+        .product-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: linear-gradient(90deg, #007c2e, #00b82e);
+            color: white;
+            font-weight: 600;
+            padding: 4px 10px;
+            font-size: 13px;
+            border-radius: 3px;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+    </style>
 </head>
 
 @php echo loadExtension('google-analytics') @endphp

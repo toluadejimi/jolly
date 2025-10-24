@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Lib\CartManager;
 use App\Models\Guest;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\ShippingAddress;
 use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
@@ -19,7 +20,16 @@ class CheckoutController extends Controller {
         $this->cartManager = $cartManager;
     }
 
+
     public function storeGuestUser(Request $request) {
+
+
+        $cartItems = $this->cartManager->getCart();
+
+        $note = Product::where('id', $cartItems[0]['product_id'])->first()->note;
+
+
+
         $countryData  = (array)json_decode(file_get_contents(resource_path('views/partials/country.json')));
         $countryCodes = implode(',', array_keys($countryData));
         $mobileCodes  = implode(',', array_column($countryData, 'dial_code'));
@@ -33,6 +43,8 @@ class CheckoutController extends Controller {
             'mobile_code'  => 'required|in:' . $mobileCodes,
         ]);
 
+
+        $note = Product::where('id', $cartItems[0]['product_id'])->first()->note;
         $guest = Guest::where('email', $request->email)->where('mobile', $request->mobile)->where('dial_code', $request->mobile_code)->firstOrNew();
         $guest->email        = $request->email;
         $guest->dial_code    = $request->mobile_code;
@@ -43,6 +55,8 @@ class CheckoutController extends Controller {
         $guest->save();
 
         session()->put('guest_user_data', $guest);
+        session()->put('note', $note);
+
         return redirect()->route('checkout.shipping.info');
     }
 

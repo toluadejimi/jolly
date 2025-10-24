@@ -22,5 +22,27 @@
                 <x-toggle-switch name="show_in_products_page" value="1" :checked="@$product->show_in_products_page" />
             </div>
         </div>
+
+        <div class="form-group row">
+            <div class="col-xl-12">
+                <label>
+                    @lang('Today Delivery')
+                </label>
+            </div>
+            <div class="col-xl-12">
+                <x-toggle-switch name="today_delivery" value="1" :checked="@$product->today_delivery" />
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-12">
+                <label>
+                    @lang('Add Note')
+                </label>
+            </div>
+            <div class="col-xl-12">
+                <x-toggle-switch name="note" value="1" :checked="@$product->note" />
+            </div>
+        </div>
     </div>
 </div>

@@ -97,6 +97,8 @@
 
 
 
+
+
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>@lang('Email')</label>
@@ -106,7 +108,12 @@
                 </div>
             </div>
 
-            <hr>
+
+
+
+            @if(session('note') === 1)
+
+                <hr>
 
             <div class="row mt-4">
 
@@ -120,7 +127,7 @@
                 <div class="col-md-12">
                     <div class="form-group">
                         <label>@lang('Enter Note')</label>
-                        <textarea class="form-control form--control" name="note_to_seller" id="note_to_seller" rows="4" placeholder="Enter your note here..." maxlength="250"></textarea>
+                        <textarea class="form-control form--control" name="note_to_seller" id="note_to_seller" rows="4" required placeholder="Enter your note here..." maxlength="250"></textarea>
                         <small id="charCount" class="text-muted d-block">0 / 250 characters</small>
                         <small class="text-info d-block mt-1">
                             Note: To include note with your order, a Additional fee of ₦5,000 will be added.
@@ -146,6 +153,9 @@
                 </script>
 
             </div>
+
+            @endif
+
 
             <hr>
 
