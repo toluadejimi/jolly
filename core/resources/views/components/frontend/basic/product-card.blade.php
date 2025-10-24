@@ -44,7 +44,6 @@
             @endif
         </ul>
 
-
         <a href="{{ $product->link() }}">
             @if ($product->today_delivery)
                 <div class="product-badge">Today Delivery</div>
