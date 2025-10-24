@@ -114,28 +114,43 @@ class ProductPriceManager {
      *
      * @return string Formatted price content as a string.
      */
-    public function getFormattedPrice($regularPrice, $salePrice, $priceRange = null) {
-        // Check if a price range is provided and construct the formatted price accordingly
+
+    public function getFormattedPrice($regularPrice, $salePrice, $priceRange = null)
+    {
+        // Helper for consistent number formatting
+        $formatPrice = function ($price) {
+            return number_format((float)$price, 2); // e.g. 1,200.00
+        };
+
+        // Handle price range display (min - max)
         if ($priceRange && isset($priceRange->min_price) && isset($priceRange->max_price)) {
-            return gs('cur_sym') . getAmount($priceRange->min_price) . (($priceRange->min_price != $priceRange->max_price) ? ' - ' . gs('cur_sym') . getAmount($priceRange->max_price) : '');
+            $min = $formatPrice($priceRange->min_price);
+            $max = $formatPrice($priceRange->max_price);
+
+            return gs('cur_sym') . $min .
+                (($priceRange->min_price != $priceRange->max_price)
+                    ? ' - ' . gs('cur_sym') . $max
+                    : '');
         }
 
-        // If a variant product with only one variant then show the price like a simple product
-        // Check if a price range with regular and sale prices is provided and update the values
+        // Handle variant price range with regular/sale prices
         if ($priceRange && isset($priceRange->regular_price) && isset($priceRange->sale_price)) {
             $regularPrice = $priceRange->regular_price;
             $salePrice = $priceRange->sale_price;
         }
 
+        // Format sale price
+        $priceContent = $salePrice
+            ? gs('cur_sym') . $formatPrice($salePrice)
+            : '';
 
-        $priceContent = $salePrice ? gs('cur_sym') . $salePrice : '';
-
-        // Include the original price with a strikethrough if it's different from the sale price
+        // Add regular price with strikethrough if different
         if ($salePrice != $regularPrice && $regularPrice) {
-            $priceContent .= " <del>" . gs('cur_sym') . getAmount($regularPrice) . "</del>";
+            $priceContent .= " <del>" . gs('cur_sym') . $formatPrice($regularPrice) . "</del>";
         }
 
-        // If no price content is set, display a placeholder
+        // Return formatted price or TBA placeholder
         return $priceContent ?: '<span class="tba-price">' . trans('TBA') . '</span>';
     }
+
 }
