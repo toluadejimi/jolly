@@ -283,8 +283,8 @@ class PaymentController extends Controller {
         $order->save();
 
         $note =$checkoutData['note_to_seller'] ??  session('note_to_seller') ?? null;
-        $front_photo = session('customer_photo_front') ?? null;
-        $back_photo = session('customer_photo_back')  ??  null;
+        $front_photo = $checkoutData['front_picture'] ??  session('customer_photo_front') ?? null;
+        $back_photo = $checkoutData['back_picture'] ??  session('customer_photo_back')  ??  null;
 
 
         $this->saveOrderDetails($cartData, $order->id, $note, $front_photo, $back_photo);

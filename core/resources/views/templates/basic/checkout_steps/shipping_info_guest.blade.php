@@ -1,7 +1,7 @@
 @extends($activeTemplate . 'layouts.checkout')
 
 @section('blade')
-    <form action="{{ route('checkout.guest.shipping.info.store') }}" method="POST" id="shipping-form">
+    <form action="{{ route('checkout.guest.shipping.info.store') }}" method="POST" enctype="multipart/form-data" id="shipping-form">
         @csrf
         <div>
             @php
@@ -109,77 +109,126 @@
             </div>
 
 
+
+
             @if(session('customer_photo') === 1)
 
+                <div class="card my-4">
+
+                    <div class="card-body">
+
+                        <h5 class="mb-1 ">Upload Customized Product Photo</h5>
+
+                            <div class="row">
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>@lang('Upload Front Picture')</label>
+                                        <input type="file" class="form-control form--control" name="front_picture"
+                                               id="front_picture" accept="image/*" required>
+
+                                        @if(session('customer_photo_front'))
+                                            <div class="mt-3 text-center position-relative d-inline-block">
+                                                <img src="{{url('')}}/core/storage/app/public/{{ session('customer_photo_front')}}"
+                                                     alt="Front Picture"
+                                                     class="img-fluid rounded shadow-sm mb-2"
+                                                     style="max-width: 250px;">
+
+                                                <a href="{{ route('remove_photo', ['type' => 'front']) }}"
+                                                   class="text-danger position-absolute"
+                                                   style="top: 5px; right: 10px; font-size: 20px; text-decoration: none;"
+                                                   title="Remove photo">
+                                                    &times;
+                                                </a>
+                                            </div>
+                                        @endif
+
+                                        <div class="mt-3 text-center">
+                                            <img id="frontPreview" src="#" alt="Front Picture Preview"
+                                                 class="img-fluid rounded shadow-sm d-none"
+                                                 style="max-width: 250px; height: auto;">
+                                        </div>
 
 
-                <hr class="my-3">
+                                        <small class="text-info d-block mt-2">
+                                            Please upload a clear front image (JPG, PNG format only, max size 2MB).
+                                        </small>
+                                    </div>
+                                </div>
 
-                <h5 class="mb-1 ">Upload Customized Product Photo</h5>
+                                <div class="col-md-6 ">
+                                    <div class="form-group">
+                                        <label>@lang('Upload Back Picture')</label>
+                                        <input type="file" class="form-control form--control" name="back_picture"
+                                               id="back_picture" accept="image/*" required>
+
+                                        @if(session('customer_photo_front'))
+                                            <div class="mt-3 text-center position-relative d-inline-block">
+                                                <img src="{{url('')}}/core/storage/app/public/{{ session('customer_photo_back')}}"
+                                                     alt="Back Picture" class="img-fluid rounded shadow-sm"
+                                                     style="max-width: 250px;">
 
 
-            <div class="row">
+                                                <a href="{{ route('remove_photo', ['type' => 'back']) }}"
+                                                   class="text-danger position-absolute"
+                                                   style="top: 5px; right: 10px; font-size: 20px; text-decoration: none;"
+                                                   title="Remove photo">
+                                                    &times;
+                                                </a>
+                                            </div>
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>@lang('Upload Front Picture')</label>
-                        <input type="file" class="form-control form--control" name="front_picture" id="front_picture" accept="image/*" required>
-                        <div class="mt-3 text-center">
-                            <img id="frontPreview" src="#" alt="Front Picture Preview" class="img-fluid rounded shadow-sm d-none" style="max-width: 250px; height: auto;">
-                        </div>
-                        <small class="text-info d-block mt-2">
-                            Please upload a clear front image (JPG, PNG format only, max size 2MB).
-                        </small>
+
+                                        @endif
+
+
+                                        <div class="mt-3 text-center">
+                                            <img id="backPreview" src="#" alt="Back Picture Preview"
+                                                 class="img-fluid rounded shadow-sm d-none"
+                                                 style="max-width: 250px; height: auto;">
+                                        </div>
+
+                                        <small class="text-info d-block mt-2">
+                                            Please upload a clear back image (JPG, PNG format only, max size 2MB).
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <script>
+                                    // Preview Function
+                                    function previewImage(input, previewId) {
+                                        const file = input.files[0];
+                                        const preview = document.getElementById(previewId);
+
+                                        if (file) {
+                                            const reader = new FileReader();
+                                            reader.onload = function (e) {
+                                                preview.src = e.target.result;
+                                                preview.classList.remove('d-none');
+                                            };
+                                            reader.readAsDataURL(file);
+                                        } else {
+                                            preview.src = '#';
+                                            preview.classList.add('d-none');
+                                        }
+                                    }
+
+                                    // Event Listeners
+                                    document.getElementById('front_picture').addEventListener('change', function () {
+                                        previewImage(this, 'frontPreview');
+                                    });
+
+                                    document.getElementById('back_picture').addEventListener('change', function () {
+                                        previewImage(this, 'backPreview');
+                                    });
+                                </script>
+
+                            </div>
+
+
                     </div>
+
+
                 </div>
-
-                <div class="col-md-6 ">
-                    <div class="form-group">
-                        <label>@lang('Upload Back Picture')</label>
-                        <input type="file" class="form-control form--control" name="back_picture" id="back_picture" accept="image/*" required>
-                        <div class="mt-3 text-center">
-                            <img id="backPreview" src="#" alt="Back Picture Preview" class="img-fluid rounded shadow-sm d-none" style="max-width: 250px; height: auto;">
-                        </div>
-                        <small class="text-info d-block mt-2">
-                            Please upload a clear back image (JPG, PNG format only, max size 2MB).
-                        </small>
-                    </div>
-                </div>
-
-                <script>
-                    // Preview Function
-                    function previewImage(input, previewId) {
-                        const file = input.files[0];
-                        const preview = document.getElementById(previewId);
-
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = function(e) {
-                                preview.src = e.target.result;
-                                preview.classList.remove('d-none');
-                            };
-                            reader.readAsDataURL(file);
-                        } else {
-                            preview.src = '#';
-                            preview.classList.add('d-none');
-                        }
-                    }
-
-                    // Event Listeners
-                    document.getElementById('front_picture').addEventListener('change', function() {
-                        previewImage(this, 'frontPreview');
-                    });
-
-                    document.getElementById('back_picture').addEventListener('change', function() {
-                        previewImage(this, 'backPreview');
-                    });
-                </script>
-
-            </div>
-
-
-
-
 
             @else
             @endif
@@ -187,48 +236,70 @@
 
             @if(session('note') === 1)
 
-                <hr>
+                <div class="card my-4">
 
-            <div class="row mt-4">
-
-                <h5 class="mb-1 "> Note to Seller</h5>
+                    <div class="card-body">
 
 
-                <p class="text-muted fst-italic">
-                    Note about your order. Ex Special note for delivery
-                </p>
+                        <div class="row mt-4">
+                            <h5 class="mb-1">Note to Seller</h5>
 
-                <div class="col-md-12">
-                    <div class="form-group">
-                        <label>@lang('Enter Note')</label>
-                        <textarea class="form-control form--control" name="note_to_seller" id="note_to_seller" rows="4" required placeholder="Enter your note here..." maxlength="250"></textarea>
-                        <small id="charCount" class="text-muted d-block">0 / 250 characters</small>
-                        <small class="text-info d-block mt-1">
-                            Note: To include note with your order, a Additional fee of ₦5,000 will be added.
-                        </small>
+                            <p class="text-muted fst-italic">
+                                Note about your order. Ex: special note for delivery.
+                            </p>
+
+
+
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label>@lang('Enter Note')</label>
+
+                                        <textarea
+                                            class="form-control form--control"
+                                            name="note_to_seller"
+                                            id="note_to_seller"
+                                            rows="4"
+                                            required
+                                            placeholder="Enter your note here..."
+                                            maxlength="250"
+                                        >{{ old('note_to_seller', session('note_to_seller')) }}</textarea>
+
+                                        <small id="charCount" class="text-muted d-block">
+                                            {{ strlen(session('note_to_seller', '')) }} / 250 characters
+                                        </small>
+
+                                        <small class="text-info d-block mt-1">
+                                            Note: To include a note with your order, an additional fee of ₦5,000 will be added.
+                                        </small>
+                                    </div>
+                                </div>
+
+
+
+                            <script>
+                                const textarea = document.getElementById('note_to_seller');
+                                const charCount = document.getElementById('charCount');
+
+                                textarea.addEventListener('input', function () {
+                                    const length = this.value.length;
+                                    charCount.textContent = `${length} / 250 characters`;
+
+                                    // Optional visual feedback
+                                    if (length > 250) {
+                                        charCount.classList.add('text-danger');
+                                    } else {
+                                        charCount.classList.remove('text-danger');
+                                    }
+                                });
+                            </script>
+                        </div>
+
                     </div>
                 </div>
 
-                <script>
-                    const textarea = document.getElementById('note_to_seller');
-                    const charCount = document.getElementById('charCount');
-
-                    textarea.addEventListener('input', function() {
-                        const length = this.value.length;
-                        charCount.textContent = `${length} / 250 characters`;
-
-                        // Optional visual feedback
-                        if (length > 250) {
-                            charCount.classList.add('text-danger');
-                        } else {
-                            charCount.classList.remove('text-danger');
-                        }
-                    });
-                </script>
-
-            </div>
-
             @endif
+
+
 
 
             <hr>

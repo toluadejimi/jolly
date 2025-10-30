@@ -84,6 +84,26 @@ class CheckoutController extends Controller {
             $note_charge = 0;
         }
 
+
+        if($request->front_picture != null){
+
+
+            $request->validate([
+                'front_picture' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+                'back_picture'  => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            ]);
+
+            $frontPath = $request->file('front_picture')->store('temp_photos', 'public');
+            $backPath  = $request->file('back_picture')->store('temp_photos', 'public');
+
+
+            session([
+                'customer_photo_front' => $frontPath,
+                'customer_photo_back'  => $backPath,
+            ]);
+        }
+
+
         $shippingData = [
             'firstname'    => $request->firstname,
             'lastname'     => $request->lastname,
@@ -97,6 +117,8 @@ class CheckoutController extends Controller {
             'country'      => $request->country,
             'address'      => $request->address,
             'note_to_seller'      => $request->note_to_seller,
+            'back_picture'      => $backPath,
+            'front_picture'      => $frontPath,
             'note_charge'      => $note_charge,
         ];
 
