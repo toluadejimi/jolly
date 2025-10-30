@@ -6,6 +6,8 @@ Route::get('/clear', function () {
     \Illuminate\Support\Facades\Artisan::call('optimize:clear');
 });
 
+Route::get('/remove-photo/{type}', [\App\Http\Controllers\CheckoutController::class, 'removePhoto'])->name('remove_photo');
+
 // User Support Ticket
 Route::controller('TicketController')->prefix('ticket')->name('ticket.')->group(function () {
     Route::get('/', 'supportTicket')->name('index');
@@ -66,6 +68,8 @@ Route::name('checkout.')->group(function () {
         Route::get('checkout/delivery-methods', 'deliveryMethods')->name('delivery.methods')->middleware('checkout.step:delivery_method');
         Route::post('add-delivery-method', 'addDeliveryMethod')->name('delivery.method.add')->middleware('checkout.step:delivery_method');
         Route::get('order-confirmation/{order}', 'confirmation')->name('confirmation');
+        Route::post('checkout/upload-customer-picture', 'uploadPhoto');
+        Route::post('checkout/upload-note', 'uploadNote');
     });
 
     Route::controller('PaymentController')->group(function () {

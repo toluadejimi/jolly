@@ -109,6 +109,80 @@
             </div>
 
 
+            @if(session('customer_photo') === 1)
+
+
+
+                <hr class="my-3">
+
+                <h5 class="mb-1 ">Upload Customized Product Photo</h5>
+
+
+            <div class="row">
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>@lang('Upload Front Picture')</label>
+                        <input type="file" class="form-control form--control" name="front_picture" id="front_picture" accept="image/*" required>
+                        <div class="mt-3 text-center">
+                            <img id="frontPreview" src="#" alt="Front Picture Preview" class="img-fluid rounded shadow-sm d-none" style="max-width: 250px; height: auto;">
+                        </div>
+                        <small class="text-info d-block mt-2">
+                            Please upload a clear front image (JPG, PNG format only, max size 2MB).
+                        </small>
+                    </div>
+                </div>
+
+                <div class="col-md-6 ">
+                    <div class="form-group">
+                        <label>@lang('Upload Back Picture')</label>
+                        <input type="file" class="form-control form--control" name="back_picture" id="back_picture" accept="image/*" required>
+                        <div class="mt-3 text-center">
+                            <img id="backPreview" src="#" alt="Back Picture Preview" class="img-fluid rounded shadow-sm d-none" style="max-width: 250px; height: auto;">
+                        </div>
+                        <small class="text-info d-block mt-2">
+                            Please upload a clear back image (JPG, PNG format only, max size 2MB).
+                        </small>
+                    </div>
+                </div>
+
+                <script>
+                    // Preview Function
+                    function previewImage(input, previewId) {
+                        const file = input.files[0];
+                        const preview = document.getElementById(previewId);
+
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                preview.src = e.target.result;
+                                preview.classList.remove('d-none');
+                            };
+                            reader.readAsDataURL(file);
+                        } else {
+                            preview.src = '#';
+                            preview.classList.add('d-none');
+                        }
+                    }
+
+                    // Event Listeners
+                    document.getElementById('front_picture').addEventListener('change', function() {
+                        previewImage(this, 'frontPreview');
+                    });
+
+                    document.getElementById('back_picture').addEventListener('change', function() {
+                        previewImage(this, 'backPreview');
+                    });
+                </script>
+
+            </div>
+
+
+
+
+
+            @else
+            @endif
 
 
             @if(session('note') === 1)

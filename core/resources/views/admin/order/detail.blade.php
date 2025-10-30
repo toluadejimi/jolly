@@ -203,29 +203,67 @@
                     @endif
 
 
-                    <div class="details-info-address my-3">
 
-                        <h6 class="mb-3">@lang('Shipping Note')</h6>
-                        <ul class="info-address-list">
+                    @php
 
-                            @php
+                        $ord = OrderDetail::where('id', $pid)->first() ?? null;
 
-                            $note = OrderDetail::where('id', $pid)->first()->note ?? null;
+                    @endphp
 
-                            @endphp
+                    @if($ord->note != null)
+
+                        <div class="details-info-address my-3">
+
+                            <h6 class="mb-3">@lang('Shipping Note')</h6>
+                            <ul class="info-address-list">
+
+                                @php
+
+                                    $note = OrderDetail::where('id', $pid)->first()->note ?? null;
+
+                                @endphp
 
 
-                            <li>
-                                <span class="title">@lang('Note to seller') </span>
-                                <span>
+                                <li>
+                                    <span class="title">@lang('Note to seller') </span>
+                                    <span>
                                         <span class="devide-colon">:</span>
                                         {{ $note ?? " " }}
                                     </span>
-                            </li>
+                                </li>
 
 
-                        </ul>
-                    </div>
+                            </ul>
+                        </div>
+
+                    @endif
+
+
+                    @if($ord->front_photo != null)
+
+                        <div class="details-info-address my-3">
+
+                            <h6 class="mb-3">@lang('Customize Photo')</h6>
+
+                            <div class="row">
+
+                                <div class="col-md-6">
+                                    <h6>Front Photo</h6>
+                                    <img src="{{url('')}}/core/storage/app/public/{{ $ord->front_photo }}"
+                                         alt="Front Picture" class="img-fluid rounded shadow-sm"
+                                         style="max-width: 250px;">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <h6>Back Photo</h6>
+                                    <img src="{{url('')}}/core/storage/app/public/{{ $ord->back_photo }}"
+                                         alt="Back Picture" class="img-fluid rounded shadow-sm"
+                                         style="max-width: 250px;">
+                                </div>
+                            </div>
+                        </div>
+
+                    @endif
 
 
                     <div class="details-info-address mt-3">

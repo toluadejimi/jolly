@@ -109,7 +109,7 @@ class Order extends Model {
         }
     }
 
-    public function initiatePayment($gate) {
+    public function initiatePayment($gate, $amount) {
         $charge   = $gate->fixed_charge + ($this->total_amount * $gate->percent_charge / 100);
         $payable  = $this->total_amount + $charge;
 
@@ -120,7 +120,7 @@ class Order extends Model {
         $deposit->order_id           = $this->id;
         $deposit->method_code        = $gate->method_code;
         $deposit->method_currency    = strtoupper($gate->currency);
-        $deposit->amount             = $this->total_amount;
+        $deposit->amount             = $amount;
         $deposit->charge             = $charge;
         $deposit->rate               = $gate->rate;
         $deposit->final_amount       = $finalAmount;

@@ -47,6 +47,7 @@ class PaymentController extends Controller {
     public function completeCheckout(Request $request) {
 
 
+
         $this->validation($request);
 
         $gatewayCurrency = $this->getGatewayCurrency($request);
@@ -83,13 +84,15 @@ class PaymentController extends Controller {
         }
 
 
+        $n_charge = session()->get('shipping_info')['note_charge'] ?? 0;
 
-        if(session()->get('shipping_info')['note_charge'] > 0){
-            $note_charge = session()->get('shipping_info')['note_charge'];
+
+        if($n_charge > 0){
+            $note_charge = $n_charge;
         }else{
             $note_charge = 0;
         }
-        $subtotal = $note_charge + $this->cartManager->subtotal();
+        $subtotal = $request->total_amount_;
 
 
         $coupon   = $this->appliedCoupon($cartData, $subtotal);
@@ -145,7 +148,7 @@ class PaymentController extends Controller {
 
         $this->sendAdminNotification($order);
 
-        $trx = $order->initiatePayment($gatewayCurrency);
+        $trx = $order->initiatePayment($gatewayCurrency, $subtotal);
 
         if (!$order->is_cod) {
             session()->put('Track', $trx);
@@ -263,7 +266,7 @@ class PaymentController extends Controller {
         $order               = new Order();
         $order->order_number = $this->getOrderNumber();
         $order->user_id      = auth()->id() ?? 0;
-        $order->guest_id     = $guestUser->id;
+        $order->guest_id     = $guestUser->id ?? null;
 
         if (auth()->check()) {
             $order->shipping_address   = $shippingAddress ? $this->setShippingAddress($shippingAddress) : null;
@@ -279,8 +282,12 @@ class PaymentController extends Controller {
         $order->total_amount       = getAmount($subtotal  + ($shippingMethod->charge ?? 0) - $couponAmount);
         $order->save();
 
-        $note =$checkoutData['note_to_seller'] ?? null;
-        $this->saveOrderDetails($cartData, $order->id, $note);
+        $note =$checkoutData['note_to_seller'] ??  session('note_to_seller') ?? null;
+        $front_photo = session('customer_photo_front') ?? null;
+        $back_photo = session('customer_photo_back')  ??  null;
+
+
+        $this->saveOrderDetails($cartData, $order->id, $note, $front_photo, $back_photo);
 
         return $order;
     }
@@ -318,12 +325,14 @@ class PaymentController extends Controller {
         ];
     }
 
-    private function saveOrderDetails($cartData, $orderId, $note = null) {
+    private function saveOrderDetails($cartData, $orderId, $note = null , $front_photo = null, $back_photo = null) {
         foreach ($cartData as $cartItem) {
             $prices = $cartItem->product->prices($cartItem->productVariant);
             $orderDetail                     = new OrderDetail();
             $orderDetail->order_id           = $orderId;
             $orderDetail->note               = $note;
+            $orderDetail->front_photo               = $front_photo;
+            $orderDetail->back_photo               = $back_photo;
             $orderDetail->product_id         = $cartItem->product_id;
             $orderDetail->product_variant_id = $cartItem->product_variant_id ?? 0;
             $orderDetail->quantity           = $cartItem->quantity;

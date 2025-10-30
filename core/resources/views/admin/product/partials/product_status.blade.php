@@ -44,5 +44,16 @@
                 <x-toggle-switch name="note" value="1" :checked="@$product->note" />
             </div>
         </div>
+
+        <div class="form-group row">
+            <div class="col-xl-12">
+                <label>
+                    @lang('Front and Back Photo')
+                </label>
+            </div>
+            <div class="col-xl-12">
+                <x-toggle-switch name="customer_photo" value="1" :checked="@$product->customer_photo" />
+            </div>
+        </div>
     </div>
 </div>

@@ -11,6 +11,7 @@ use App\Models\ShippingAddress;
 use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 
 class CheckoutController extends Controller {
     private $cartManager;
@@ -27,6 +28,7 @@ class CheckoutController extends Controller {
         $cartItems = $this->cartManager->getCart();
 
         $note = Product::where('id', $cartItems[0]['product_id'])->first()->note;
+        $customer_photo = Product::where('id', $cartItems[0]['product_id'])->first()->customer_photo;
 
 
 
@@ -56,6 +58,7 @@ class CheckoutController extends Controller {
 
         session()->put('guest_user_data', $guest);
         session()->put('note', $note);
+        session()->put('customer_photo', $customer_photo);
 
         return redirect()->route('checkout.shipping.info');
     }
@@ -110,6 +113,16 @@ class CheckoutController extends Controller {
 
 
         if (auth()->user()) {
+
+            $cartItems = $this->cartManager->getCart();
+
+            $note = Product::where('id', $cartItems[0]['product_id'])->first()->note;
+            $customer_photo = Product::where('id', $cartItems[0]['product_id'])->first()->customer_photo;
+
+            session()->put('note', $note);
+            session()->put('customer_photo', $customer_photo);
+
+
             $view = 'Template::checkout_steps.shipping_info';
         } else {
             if (!gs('guest_checkout')) {
@@ -163,6 +176,7 @@ class CheckoutController extends Controller {
         $checkoutData = session('shipping_info');
         $checkoutData['shipping_method_id'] = $request->shipping_method_id;
 
+
         session()->put('shipping_info', $checkoutData);
         return to_route('checkout.payment.methods');
     }
@@ -174,6 +188,66 @@ class CheckoutController extends Controller {
 
         return view('Template::checkout_steps.confirmation', compact('pageTitle', 'order'));
     }
+
+    public function uploadPhoto(request $request)
+    {
+
+        $request->validate([
+            'front_picture' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'back_picture'  => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $frontPath = $request->file('front_picture')->store('temp_photos', 'public');
+        $backPath  = $request->file('back_picture')->store('temp_photos', 'public');
+
+
+        session([
+            'customer_photo_front' => $frontPath,
+            'customer_photo_back'  => $backPath,
+        ]);
+
+        $notify[] = ['success', 'Photos uploaded successfully'];
+        return back()->withNotify($notify);
+
+
+    }
+
+    public function uploadNote(request $request)
+    {
+
+        $request->validate([
+            'note_to_seller' => 'required|string|max:250',
+        ]);
+
+        session(['note_to_seller' => $request->note_to_seller]);
+
+        $notify[] = ['success', 'Noted successfully added'];
+        return back()->withNotify($notify);
+
+    }
+
+    public function removePhoto($type)
+    {
+        if ($type === 'front' && session()->has('customer_photo_front')) {
+            $path = 'public/' . session('customer_photo_front');
+            if (Storage::exists($path)) {
+                Storage::delete($path);
+            }
+            session()->forget('customer_photo_front');
+        }
+
+        if ($type === 'back' && session()->has('customer_photo_back')) {
+            $path = 'public/' . session('customer_photo_back');
+            if (Storage::exists($path)) {
+                Storage::delete($path);
+            }
+
+            session()->forget('customer_photo_back');
+        }
+
+        return back()->with('success', 'Photo removed successfully.');
+    }
+
 
     private function appliedCoupon($cartData, $subtotal) {
         $coupon = session('coupon');

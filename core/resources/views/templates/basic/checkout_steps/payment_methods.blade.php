@@ -10,12 +10,15 @@
                         @if (gs('cod') && $hasPhysicalProduct)
                             <label class="payment-option-item">
                                 <div class="form--check">
-                                    <input value="0" class="online_payment form-check-input mt-0" type="radio" name="gateway" data-gateway="cod" form="paymentMethodForm" data-currency="{{ gs('cur_text') }}" required>
+                                    <input value="0" class="online_payment form-check-input mt-0" type="radio"
+                                           name="gateway" data-gateway="cod" form="paymentMethodForm"
+                                           data-currency="{{ gs('cur_text') }}" required>
                                 </div>
 
                                 <span class="payment-option-item-content">
                                     <span class="thumb">
-                                        <img src="{{ asset($activeTemplateTrue . 'images/cod.png') }}" class="w-100" alt="image">
+                                        <img src="{{ asset($activeTemplateTrue . 'images/cod.png') }}" class="w-100"
+                                             alt="image">
                                     </span>
                                     <span class="payment-name">
                                         @lang('Cash On Delivery')
@@ -31,12 +34,16 @@
                             @foreach ($gatewayCurrencies as $item)
                                 <label for="data-{{ $loop->index }}" class="payment-option-item">
                                     <div class="form--check">
-                                        <input value="{{ $item->method_code }}" id="data-{{ $loop->index }}" data-gateway="{{ $item }}" class="online_payment form-check-input mt-0" type="radio" name="gateway" form="paymentMethodForm" required>
+                                        <input value="{{ $item->method_code }}" id="data-{{ $loop->index }}"
+                                               data-gateway="{{ $item }}" class="online_payment form-check-input mt-0"
+                                               type="radio" name="gateway" form="paymentMethodForm" required>
                                     </div>
 
                                     <span class="payment-option-item-content">
                                         <span class="thumb">
-                                            <img src="{{ getImage(getFilePath('gateway') . '/' . @$item->method->image, getFileSize('gateway')) }}" data-src="{{ getImage(getFilePath('gateway') . '/' . @$item->method->image, getFileSize('gateway')) }}" class="w-100 lazyload" alt="image">
+                                            <img src="{{ getImage(getFilePath('gateway') . '/' . @$item->method->image, getFileSize('gateway')) }}"
+                                                 data-src="{{ getImage(getFilePath('gateway') . '/' . @$item->method->image, getFileSize('gateway')) }}"
+                                                 class="w-100 lazyload" alt="image">
                                         </span>
                                         <span class="payment-name">
                                             {{ __($item->name) }}
@@ -49,6 +56,8 @@
                 </div>
 
             </div>
+
+
             <div class="col-lg-4">
                 <div class="payment-details w-100">
                     <h6 class="title">@lang('Payment Details')</h6>
@@ -86,28 +95,36 @@
 
 
                         @php
-                            $shippingInfonote = session('shipping_info');
+                            $shippingInfo = session('shipping_info') ?? [];
+                            $authNote = session('note_to_seller') ?? null;
+
+                            if (!empty($authNote)) {
+                                $chargeNote = 5000;
+                            } elseif (!empty($shippingInfo['note_charge'])) {
+                                $chargeNote = $shippingInfo['note_charge'];
+                            } else {
+                                $chargeNote = 0;
+                            }
                         @endphp
 
-
-                        @if ($shippingInfonote)
+                        @if ($chargeNote > 0)
                             <li>
                                 <span class="subtitle">@lang('Note Charge')</span>
-                                <span id="shippingNote">{{ showAmount($shippingInfonote['note_charge']) }}</span>
+                                <span id="shippingNote">{{ showAmount($chargeNote) }}</span>
                             </li>
                         @endif
-
 
                         @php
                             $shippingCharge = $shippingMethod->charge ?? 0;
                             $shippingNote = $shippingNote ?? 0;
-                            $totalAmount = $subtotal + $shippingCharge + $shippingInfonote['note_charge'] - $couponAmount;
+                            $totalAmount = $subtotal + $shippingCharge + $chargeNote - $couponAmount;
                         @endphp
 
 
                         <li class="deposit-info">
                             <span>@lang('Processing Charge')
-                                <span data-bs-toggle="tooltip" title="@lang('Payment Gateway Processing Charge')" class="processing-fee-info"><i class="las la-info-circle"></i> </span>
+                                <span data-bs-toggle="tooltip" title="@lang('Payment Gateway Processing Charge')"
+                                      class="processing-fee-info"><i class="las la-info-circle"></i> </span>
                             </span>
                             <span>
                                 <span class="processing-fee">@lang('0.00')</span>
@@ -134,7 +151,8 @@
                     <p class="conversion-currency fs-16 bg-light p-3 mt-3 mb-0 rounded-1 d-none">
                         <span>@lang('The final payable amount is')</span>
                         <span class="whitespace-nowrap">
-                            <strong class="in-currency fw-semibold"></strong> <strong class="gateway-currency fw-semibold"></strong>
+                            <strong class="in-currency fw-semibold"></strong> <strong
+                                    class="gateway-currency fw-semibold"></strong>
                         </span>
                     </p>
 
@@ -152,10 +170,12 @@
                         <i class="la la-angle-left"></i> @lang('Back to Delivery Info')
                     </a>
 
-                    <form action="complete-checkout?total_amount ={{ $totalAmount }}" method="POST" id="paymentMethodForm">
+                    <form action="complete-checkout?total_amount ={{ $totalAmount }}" method="POST"
+                          id="paymentMethodForm">
                         @csrf
                         <input type="hidden" name="currency">
-                        <button type="submit" class="btn btn--base h-45">@lang('Complete Order') <i class="la la-angle-right"></i></button>
+                        <button type="submit" class="btn btn--base h-45">@lang('Complete Order') <i
+                                    class="la la-angle-right"></i></button>
                     </form>
 
                 </div>
@@ -166,9 +186,9 @@
 
 @push('script')
     <script>
-        (function() {
+        (function () {
             "use strict";
-            $('[name=gateway]').on('change', function() {
+            $('[name=gateway]').on('change', function () {
                 let gateway = $(this).data('gateway');
                 $('[name=currency]').val(gateway == 'cod' ? "{{ gs('cur_text') }}" : gateway.currency);
 
@@ -249,7 +269,7 @@
             }
 
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl)
             });
         })(jQuery);

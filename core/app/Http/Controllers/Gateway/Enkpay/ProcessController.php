@@ -70,6 +70,9 @@ class ProcessController extends Controller
                 PaymentController::userDataUpdate($deposit);
 
                 session()->forget('shipping_info');
+                session()->forget('note_to_seller');
+                session()->forget('customer_photo_back');
+                session()->forget('customer_photo_front');
 
 
                 $message = 'Transaction was successful, Ref: ' . $track;
