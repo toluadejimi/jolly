@@ -223,18 +223,17 @@
 
                                 <textarea
                                     class="form-control form--control"
-                                    name="customised_test"
-                                    rows="4"
+                                    name="customized_text"
                                     required
                                     placeholder="Enter your customized text here..."
                                     maxlength="5000"
-                                >{{ old('customised_test', session('customised_test')) }}</textarea>
+                                >{{ old('customized_text', session('customized_text')) }}</textarea>
 
 
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-success btn-lg">Send Customized Text</button>
+                        <button type="submit" class="btn btn-success btn-lg">Update Customized Text</button>
                     </form>
 
                 </div>

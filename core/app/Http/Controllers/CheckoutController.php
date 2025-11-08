@@ -144,9 +144,12 @@ class CheckoutController extends Controller {
 
             $note = Product::where('id', $cartItems[0]['product_id'])->first()->note;
             $customer_photo = Product::where('id', $cartItems[0]['product_id'])->first()->customer_photo;
+            $customised_test = Product::where('id', $cartItems[0]['product_id'])->first()->customised_test;
+
 
             session()->put('note', $note);
             session()->put('customer_photo', $customer_photo);
+            session()->put('customised_test', $customised_test);
 
 
             $view = 'Template::checkout_steps.shipping_info';
@@ -256,10 +259,11 @@ class CheckoutController extends Controller {
     {
 
         $request->validate([
-            'customised_test' => 'required|string|max:5000',
+            'customized_text' => 'required|string|max:5000',
         ]);
 
-        session(['customised_test' => $request->customised_test]);
+
+        session(['customized_text' => $request->customized_text]);
 
         $notify[] = ['success', 'Customized Text successfully added'];
         return back()->withNotify($notify);
