@@ -239,6 +239,35 @@
                     @endif
 
 
+                    @if($ord->customised_test != null)
+
+                        <div class="details-info-address my-3">
+
+                            <h6 class="mb-3">@lang('Customized Text')</h6>
+                            <ul class="info-address-list">
+
+                                @php
+
+                                    $customised_test = OrderDetail::where('id', $pid)->first()->customised_test ?? null;
+
+                                @endphp
+
+
+                                <li>
+                                    <span class="title">@lang('Customized Text') </span>
+                                    <span>
+                                        <span class="devide-colon">:</span>
+                                        {{ $customised_test ?? " " }}
+                                    </span>
+                                </li>
+
+
+                            </ul>
+                        </div>
+
+                    @endif
+
+
                     @if($ord->front_photo != null)
 
                         <div class="details-info-address my-3">

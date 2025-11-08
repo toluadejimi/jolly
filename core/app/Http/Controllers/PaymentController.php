@@ -284,10 +284,11 @@ class PaymentController extends Controller {
 
         $note =$checkoutData['note_to_seller'] ??  session('note_to_seller') ?? null;
         $front_photo = $checkoutData['front_picture'] ??  session('customer_photo_front') ?? null;
+        $customised_test = $checkoutData['customised_test'] ??  session('customised_test') ?? null;
         $back_photo = $checkoutData['back_picture'] ??  session('customer_photo_back')  ??  null;
 
 
-        $this->saveOrderDetails($cartData, $order->id, $note, $front_photo, $back_photo);
+        $this->saveOrderDetails($cartData, $order->id, $note, $front_photo, $back_photo, $customised_test);
 
         return $order;
     }
@@ -325,13 +326,14 @@ class PaymentController extends Controller {
         ];
     }
 
-    private function saveOrderDetails($cartData, $orderId, $note = null , $front_photo = null, $back_photo = null) {
+    private function saveOrderDetails($cartData, $orderId, $note = null , $front_photo = null, $back_photo = null, $customised_test = null) {
         foreach ($cartData as $cartItem) {
             $prices = $cartItem->product->prices($cartItem->productVariant);
             $orderDetail                     = new OrderDetail();
             $orderDetail->order_id           = $orderId;
             $orderDetail->note               = $note;
             $orderDetail->front_photo               = $front_photo;
+            $orderDetail->customised_test               = $customised_test;
             $orderDetail->back_photo               = $back_photo;
             $orderDetail->product_id         = $cartItem->product_id;
             $orderDetail->product_variant_id = $cartItem->product_variant_id ?? 0;

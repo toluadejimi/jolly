@@ -28,6 +28,7 @@ class CheckoutController extends Controller {
         $cartItems = $this->cartManager->getCart();
 
         $note = Product::where('id', $cartItems[0]['product_id'])->first()->note;
+        $customised_test = Product::where('id', $cartItems[0]['product_id'])->first()->customised_test;
         $customer_photo = Product::where('id', $cartItems[0]['product_id'])->first()->customer_photo;
 
 
@@ -58,7 +59,9 @@ class CheckoutController extends Controller {
 
         session()->put('guest_user_data', $guest);
         session()->put('note', $note);
+        session()->put('customised_test', $customised_test);
         session()->put('customer_photo', $customer_photo);
+
 
         return redirect()->route('checkout.shipping.info');
     }
@@ -117,9 +120,10 @@ class CheckoutController extends Controller {
             'country'      => $request->country,
             'address'      => $request->address,
             'note_to_seller'      => $request->note_to_seller,
-            'back_picture'      => $backPath,
-            'front_picture'      => $frontPath,
-            'note_charge'      => $note_charge,
+            'customised_test'      => $request->customised_test,
+            'back_picture'      => $backPath ?? null,
+            'front_picture'      => $frontPath ?? null,
+            'note_charge'      => $note_charge ?? 0,
         ];
 
         Session::put('shipping_info', $shippingData);
@@ -244,6 +248,20 @@ class CheckoutController extends Controller {
         session(['note_to_seller' => $request->note_to_seller]);
 
         $notify[] = ['success', 'Noted successfully added'];
+        return back()->withNotify($notify);
+
+    }
+
+    public function uploadCustomisedTest(request $request)
+    {
+
+        $request->validate([
+            'customised_test' => 'required|string|max:5000',
+        ]);
+
+        session(['customised_test' => $request->customised_test]);
+
+        $notify[] = ['success', 'Customized Text successfully added'];
         return back()->withNotify($notify);
 
     }

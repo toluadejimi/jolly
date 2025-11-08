@@ -119,6 +119,7 @@ class ProductManager
         $product->is_published              = $request->is_published ? Status::YES : Status::NO;
         $product->today_delivery              = $request->today_delivery ? Status::YES : Status::NO;
         $product->customer_photo              = $request->customer_photo ? Status::YES : Status::NO;
+        $product->customised_test              = $request->customised_test ? Status::YES : Status::NO;
         $product->note                          = $request->note ? Status::YES : Status::NO;
         $product->show_in_products_page               = $request->show_in_products_page ? Status::YES : Status::NO;
 

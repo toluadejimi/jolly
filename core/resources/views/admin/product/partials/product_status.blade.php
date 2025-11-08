@@ -55,5 +55,16 @@
                 <x-toggle-switch name="customer_photo" value="1" :checked="@$product->customer_photo" />
             </div>
         </div>
+
+        <div class="form-group row">
+            <div class="col-xl-12">
+                <label>
+                    @lang('Customised Text')
+                </label>
+            </div>
+            <div class="col-xl-12">
+                <x-toggle-switch name="customised_test" value="1" :checked="@$product->customised_test" />
+            </div>
+        </div>
     </div>
 </div>

@@ -234,6 +234,39 @@
             @endif
 
 
+            @if(session('customised_test') === 1)
+
+                <div class="card my-4">
+
+                    <div class="card-body">
+
+
+                        <div class="row mt-4">
+                            <h5 class="mb-1">Customized Text</h5>
+
+                            <p class="text-muted fst-italic">
+                                Note about your Customized Product. Ex: special note for delivery.
+                            </p>
+
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label>@lang('Enter Customized Text')</label>
+
+                                        <textarea class="form-control form--control" name="customised_test" required placeholder="Enter your note here..." maxlength="5000"></textarea>
+
+                                    </div>
+                                </div>
+
+
+                        </div>
+
+                    </div>
+                </div>
+
+            @endif
+
+
+
             @if(session('note') === 1)
 
                 <div class="card my-4">
@@ -250,29 +283,29 @@
 
 
 
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label>@lang('Enter Note')</label>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>@lang('Enter Note')</label>
 
-                                        <textarea
-                                            class="form-control form--control"
-                                            name="note_to_seller"
-                                            id="note_to_seller"
-                                            rows="4"
-                                            required
-                                            placeholder="Enter your note here..."
-                                            maxlength="250"
-                                        >{{ old('note_to_seller', session('note_to_seller')) }}</textarea>
+                                    <textarea
+                                        class="form-control form--control"
+                                        name="note_to_seller"
+                                        id="note_to_seller"
+                                        rows="4"
+                                        required
+                                        placeholder="Enter your note here..."
+                                        maxlength="250"
+                                    >{{ old('note_to_seller', session('note_to_seller')) }}</textarea>
 
-                                        <small id="charCount" class="text-muted d-block">
-                                            {{ strlen(session('note_to_seller', '')) }} / 250 characters
-                                        </small>
+                                    <small id="charCount" class="text-muted d-block">
+                                        {{ strlen(session('note_to_seller', '')) }} / 250 characters
+                                    </small>
 
-                                        <small class="text-info d-block mt-1">
-                                            Note: To include a note with your order, an additional fee of ₦5,000 will be added.
-                                        </small>
-                                    </div>
+                                    <small class="text-info d-block mt-1">
+                                        Note: To include a note with your order, an additional fee of ₦5,000 will be added.
+                                    </small>
                                 </div>
+                            </div>
 
 
 
@@ -298,8 +331,6 @@
                 </div>
 
             @endif
-
-
 
 
             <hr>

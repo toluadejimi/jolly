@@ -200,6 +200,49 @@
 
     @endif
 
+    @if(session('customised_test') === 1)
+
+        <div class="card my-4">
+
+            <div class="card-body">
+
+
+                <div class="row mt-4">
+                    <h5 class="mb-1">Customized Text</h5>
+
+                    <p class="text-muted fst-italic">
+                        Note about your order. Ex: special note for delivery.
+                    </p>
+
+                    <form action="{{ url('checkout/upload-customised-test') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>@lang('Enter Customized Text')</label>
+
+                                <textarea
+                                    class="form-control form--control"
+                                    name="customised_test"
+                                    rows="4"
+                                    required
+                                    placeholder="Enter your customized text here..."
+                                    maxlength="5000"
+                                >{{ old('customised_test', session('customised_test')) }}</textarea>
+
+
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg">Send Customized Text</button>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+
+    @endif
 
 
 

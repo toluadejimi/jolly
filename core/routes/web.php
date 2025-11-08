@@ -70,6 +70,7 @@ Route::name('checkout.')->group(function () {
         Route::get('order-confirmation/{order}', 'confirmation')->name('confirmation');
         Route::post('checkout/upload-customer-picture', 'uploadPhoto');
         Route::post('checkout/upload-note', 'uploadNote');
+        Route::post('checkout/upload-customised-test', 'uploadCustomisedTest');
     });
 
     Route::controller('PaymentController')->group(function () {
