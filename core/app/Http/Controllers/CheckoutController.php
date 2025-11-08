@@ -29,6 +29,7 @@ class CheckoutController extends Controller {
 
         $note = Product::where('id', $cartItems[0]['product_id'])->first()->note;
         $customised_test = Product::where('id', $cartItems[0]['product_id'])->first()->customised_test;
+        $customised_short_test = Product::where('id', $cartItems[0]['product_id'])->first()->customised_short_test;
         $customer_photo = Product::where('id', $cartItems[0]['product_id'])->first()->customer_photo;
 
 
@@ -60,6 +61,7 @@ class CheckoutController extends Controller {
         session()->put('guest_user_data', $guest);
         session()->put('note', $note);
         session()->put('customised_test', $customised_test);
+        session()->put('customised_short_test', $customised_short_test);
         session()->put('customer_photo', $customer_photo);
 
 
@@ -121,6 +123,7 @@ class CheckoutController extends Controller {
             'address'      => $request->address,
             'note_to_seller'      => $request->note_to_seller,
             'customised_test'      => $request->customised_test,
+            'customised_short_test'      => $request->customised_short_test,
             'back_picture'      => $backPath ?? null,
             'front_picture'      => $frontPath ?? null,
             'note_charge'      => $note_charge ?? 0,
@@ -145,11 +148,13 @@ class CheckoutController extends Controller {
             $note = Product::where('id', $cartItems[0]['product_id'])->first()->note;
             $customer_photo = Product::where('id', $cartItems[0]['product_id'])->first()->customer_photo;
             $customised_test = Product::where('id', $cartItems[0]['product_id'])->first()->customised_test;
+            $customised_short_test = Product::where('id', $cartItems[0]['product_id'])->first()->customised_short_test;
 
 
             session()->put('note', $note);
             session()->put('customer_photo', $customer_photo);
             session()->put('customised_test', $customised_test);
+            session()->put('customised_short_test', $customised_short_test);
 
 
             $view = 'Template::checkout_steps.shipping_info';
@@ -266,6 +271,22 @@ class CheckoutController extends Controller {
         session(['customized_text' => $request->customized_text]);
 
         $notify[] = ['success', 'Customized Text successfully added'];
+        return back()->withNotify($notify);
+
+    }
+
+
+    public function uploadCustomisedShortTest(request $request)
+    {
+
+        $request->validate([
+            'customized_short_text' => 'required|string|max:5000',
+        ]);
+
+
+        session(['customized_short_text' => $request->customized_short_text]);
+
+        $notify[] = ['success', 'Short Customized Text successfully added'];
         return back()->withNotify($notify);
 
     }

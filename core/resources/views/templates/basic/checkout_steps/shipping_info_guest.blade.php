@@ -265,6 +265,37 @@
 
             @endif
 
+            @if(session('customised_short_test') === 1)
+
+                <div class="card my-4">
+
+                    <div class="card-body">
+
+
+                        <div class="row mt-4">
+                            <h5 class="mb-1">Customized Short Text (40)</h5>
+
+                            <p class="text-muted fst-italic">
+                                Short Note about your Customized Product. Ex: special note for delivery.
+                            </p>
+
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label>@lang('Enter Short Customized Text (40)')</label>
+
+                                        <textarea class="form-control form--control" name="customised_short_test" required placeholder="Enter your short note here..." maxlength="40"></textarea>
+
+                                    </div>
+                                </div>
+
+
+                        </div>
+
+                    </div>
+                </div>
+
+            @endif
+
 
 
             @if(session('note') === 1)

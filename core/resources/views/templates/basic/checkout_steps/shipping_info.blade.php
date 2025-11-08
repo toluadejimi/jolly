@@ -244,6 +244,50 @@
     @endif
 
 
+    @if(session('customised_short_test') === 1)
+
+        <div class="card my-4">
+
+            <div class="card-body">
+
+
+                <div class="row mt-4">
+                    <h5 class="mb-1">Customized Short Text (40)</h5>
+
+                    <p class="text-muted fst-italic">
+                        Short Note about your customized order. Ex: special note for delivery.
+                    </p>
+
+                    <form action="{{ url('checkout/upload-customised-short-test') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>@lang('Enter Short Customized Text')</label>
+
+                                <textarea
+                                    class="form-control form--control"
+                                    name="customized_short_text"
+                                    required
+                                    placeholder="Enter your Short customized text here..."
+                                    maxlength="40"
+                                >{{ old('customized_short_text', session('customized_short_text')) }}</textarea>
+
+
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg">Update Customized Short Text</button>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+
+    @endif
+
+
 
     <div class="address-wrapper">
 

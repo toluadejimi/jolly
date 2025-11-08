@@ -71,6 +71,7 @@ Route::name('checkout.')->group(function () {
         Route::post('checkout/upload-customer-picture', 'uploadPhoto');
         Route::post('checkout/upload-note', 'uploadNote');
         Route::post('checkout/upload-customised-test', 'uploadCustomisedTest');
+        Route::post('checkout/upload-customised-short-test', 'uploadCustomisedShortTest');
     });
 
     Route::controller('PaymentController')->group(function () {

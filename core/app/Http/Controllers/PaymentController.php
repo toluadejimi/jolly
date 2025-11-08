@@ -285,11 +285,12 @@ class PaymentController extends Controller {
         $note =$checkoutData['note_to_seller'] ??  session('note_to_seller') ?? null;
         $front_photo = $checkoutData['front_picture'] ??  session('customer_photo_front') ?? null;
         $customised_test = $checkoutData['customized_text'] ??  session('customized_text') ?? null;
+        $customised_short_test = $checkoutData['customized_short_text'] ??  session('customized_short_text') ?? null;
         $back_photo = $checkoutData['back_picture'] ??  session('customer_photo_back')  ??  null;
 
         //dd($customised_test);
 
-        $this->saveOrderDetails($cartData, $order->id, $note, $front_photo, $back_photo, $customised_test);
+        $this->saveOrderDetails($cartData, $order->id, $note, $front_photo, $back_photo, $customised_test, $customised_short_test);
 
         return $order;
     }
@@ -327,7 +328,7 @@ class PaymentController extends Controller {
         ];
     }
 
-    private function saveOrderDetails($cartData, $orderId, $note = null , $front_photo = null, $back_photo = null, $customised_test = null) {
+    private function saveOrderDetails($cartData, $orderId, $note = null , $front_photo = null, $back_photo = null, $customised_test = null, $customised_short_test = null) {
         foreach ($cartData as $cartItem) {
             $prices = $cartItem->product->prices($cartItem->productVariant);
             $orderDetail                     = new OrderDetail();
@@ -335,6 +336,7 @@ class PaymentController extends Controller {
             $orderDetail->note               = $note;
             $orderDetail->front_photo               = $front_photo;
             $orderDetail->customised_test               = $customised_test;
+            $orderDetail->customised_short_test               = $customised_short_test;
             $orderDetail->back_photo               = $back_photo;
             $orderDetail->product_id         = $cartItem->product_id;
             $orderDetail->product_variant_id = $cartItem->product_variant_id ?? 0;

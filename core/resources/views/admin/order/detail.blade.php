@@ -268,6 +268,35 @@
                     @endif
 
 
+                    @if($ord->customised_short_test != null)
+
+                        <div class="details-info-address my-3">
+
+                            <h6 class="mb-3">@lang('Customized Short Text')</h6>
+                            <ul class="info-address-list">
+
+                                @php
+
+                                    $customised_short_test = OrderDetail::where('id', $pid)->first()->customised_short_test ?? null;
+
+                                @endphp
+
+
+                                <li>
+                                    <span class="title">@lang('Customized Short Text') </span>
+                                    <span>
+                                        <span class="devide-colon">:</span>
+                                        {{ $customised_short_test ?? " " }}
+                                    </span>
+                                </li>
+
+
+                            </ul>
+                        </div>
+
+                    @endif
+
+
                     @if($ord->front_photo != null)
 
                         <div class="details-info-address my-3">
