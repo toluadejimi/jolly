@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Constants\Status;
+use App\Http\Helpers\ImageHelper;
 use App\Models\AdminNotification;
 use App\Models\Brand;
 use App\Models\Category;
@@ -20,13 +21,24 @@ use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Validator;
 
 class SiteController extends Controller {
+
     public function index() {
         $pageTitle   = 'Home';
         $sections    = Page::where('tempname', activeTemplate())->where('slug', '/')->first();
         $seoContents = $sections->seo_content;
-        $seoImage    = @$seoContents->image ? getImage(getFilePath('seo') . '/' . @$seoContents->image, getFileSize('seo')) : null;
+
+        // Optimize SEO image (if exists)
+        $seoImagePath = @$seoContents->image
+            ? getFilePath('seo') . '/' . @$seoContents->image
+            : null;
+
+        $seoImage = $seoImagePath
+            ? ImageHelper::optimize($seoImagePath)
+            : null;
+
         return view('Template::home', compact('pageTitle', 'sections', 'seoContents', 'seoImage'));
     }
+
 
     public function about() {
         $pageTitle = 'About Us';

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 Route::namespace('Auth')->group(function () {
     Route::middleware('admin.guest')->group(function () {
         Route::controller('LoginController')->group(function () {
-            Route::get('/', 'showLoginForm')->name('login');
+            Route::get('/', 'showLoginForm')->name('login.form');
             Route::post('/', 'login')->name('login');
             Route::get('logout', 'logout')->middleware('admin')->withoutMiddleware('admin.guest')->name('logout');
         });
@@ -101,7 +101,7 @@ Route::middleware('admin')->group(function () {
 
         Route::get('detail/{id}', 'detail')->name('detail');
         Route::post('update/{id}', 'update')->name('update');
-        Route::get('send-notification/{id}', 'showNotificationSingleForm')->name('notification.single');
+        Route::get('send-notification/{id}', 'showNotificationSingleForm')->name('notification.single.form');
         Route::post('send-notification/{id}', 'sendNotificationSingle')->name('notification.single');
         Route::get('login/{id}', 'login')->name('login');
         Route::post('status/{id}', 'status')->name('status');
@@ -243,7 +243,7 @@ Route::middleware('admin')->group(function () {
     // Subscriber
     Route::controller('SubscriberController')->prefix('subscriber')->name('subscriber.')->group(function () {
         Route::get('/', 'index')->name('index');
-        Route::get('send-email', 'sendEmailForm')->name('send.email');
+        Route::get('send-email', 'sendEmailForm')->name('send.email.form');
         Route::post('remove/{id}', 'remove')->name('remove');
         Route::post('send-email', 'sendEmail')->name('send.email');
     });
@@ -362,7 +362,7 @@ Route::middleware('admin')->group(function () {
         Route::post('setting/system-configuration', 'systemConfigurationSubmit');
 
         // Logo-Icon
-        Route::get('setting/logo-icon', 'logoIcon')->name('setting.logo.icon');
+        Route::get('setting/logo-icon', 'logoIcon')->name('setting.logo.icon.form');
         Route::post('setting/logo-icon', 'logoIconUpdate')->name('setting.logo.icon');
 
         //Custom CSS

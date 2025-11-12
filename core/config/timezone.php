@@ -1,1 +1,2 @@
-<?php $timezone = "Africa/Lagos" ?>
+<?php
+return 'Africa/Lagos';
