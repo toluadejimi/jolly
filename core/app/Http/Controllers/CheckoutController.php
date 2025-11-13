@@ -148,8 +148,7 @@ class CheckoutController extends Controller {
             if ($product->categories->isNotEmpty()) {
                 $categoryId = $product->categories->first()->pivot->category_id;
 
-
-                if($categoryId == [4,5,7,9,11]) {
+                if (in_array($categoryId, [4,5,7,9,11])) {
                     $countries = getusaCountries();
                 }elseif($categoryId == 6){
                     $countries = getusacanadaCountries();
@@ -175,7 +174,7 @@ class CheckoutController extends Controller {
                 if ($product->categories->isNotEmpty()) {
                     $categoryId = $product->categories->first()->pivot->category_id;
 
-                    if($categoryId == [4,5,7,9,11]) {
+                    if (in_array($categoryId, [4,5,7,9,11])) {
                         $countries = getusaCountries();
                     }elseif($categoryId == 6){
                         $countries = getusacanadaCountries();
