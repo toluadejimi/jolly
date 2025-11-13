@@ -136,14 +136,58 @@ class CheckoutController extends Controller {
     //============= checkout step start here ===================//
     public function shippingInfo() {
         $pageTitle = 'Shipping Information';
+        $cartItems = $this->cartManager->getCart();
 
         $shippingAddresses = ShippingAddress::where('user_id', auth()->id())->get();
-        $countries         = getCountries();
+
+
+        $cartItems = $this->cartManager->getCart();
+        foreach ($cartItems as $cartItem) {
+            $product = $cartItem->product;
+
+            if ($product->categories->isNotEmpty()) {
+                $categoryId = $product->categories->first()->pivot->category_id;
+
+                if($categoryId == 5){
+
+                    $countries = getusaCountries();
+
+
+                }else{
+
+                    $countries = getCountries();
+
+                }
+            }
+
+        }
+
+
+
 
 
         if (auth()->user()) {
 
             $cartItems = $this->cartManager->getCart();
+            foreach ($cartItems as $cartItem) {
+                $product = $cartItem->product;
+
+                if ($product->categories->isNotEmpty()) {
+                    $categoryId = $product->categories->first()->pivot->category_id;
+
+                    if($categoryId == 5){
+
+                        $countries = getusaCountries();
+
+
+                    }else{
+
+                        $countries = getCountries();
+
+                    }
+                }
+
+            }
 
             $note = Product::where('id', $cartItems[0]['product_id'])->first()->note;
             $customer_photo = Product::where('id', $cartItems[0]['product_id'])->first()->customer_photo;

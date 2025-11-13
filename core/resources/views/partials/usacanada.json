@@ -1,0 +1,10 @@
+{
+    "US": {
+        "country": "United States",
+        "dial_code": "1"
+    },
+    "CA": {
+        "country": "Canada",
+        "dial_code": "1"
+    }
+}

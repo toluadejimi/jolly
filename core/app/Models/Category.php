@@ -10,7 +10,6 @@ class Category extends Model
 {
     use SoftDeletes;
 
-    protected $guarded = ['id'];
     protected $casts   = [
         'meta_keywords' => 'array',
     ];

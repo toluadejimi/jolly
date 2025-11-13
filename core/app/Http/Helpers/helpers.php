@@ -715,6 +715,14 @@ function getCountries() {
     return json_decode(file_get_contents(resource_path('views/partials/country.json')));
 }
 
+function getusaCountries() {
+    return json_decode(file_get_contents(resource_path('views/partials/usaonly.json')));
+}
+
+function getusacanadaCountries() {
+    return json_decode(file_get_contents(resource_path('views/partials/usacanada.json')));
+}
+
 
 function yn($condition) {
     return $condition ? trans('Yes') : trans('No');
