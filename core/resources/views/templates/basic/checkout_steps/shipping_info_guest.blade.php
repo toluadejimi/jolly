@@ -24,14 +24,14 @@
 
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label>@lang('First Name')</label>
+                        <label>Receiver's First name</label>
                         <input type="text" value="{{ @$shippingInformation->firstname }}"
                                class="form-control form--control" name="firstname" required>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label>@lang('Last Name')</label>
+                        <label>Receiver's Last name</label>
                         <input type="text" value="{{ @$shippingInformation->lastname }}"
                                class="form-control form--control" name="lastname" required>
                     </div>
@@ -40,7 +40,7 @@
 
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label>@lang('Mobile')</label>
+                        <label>@lang('Whatsapp No')</label>
                         <div class="input-group">
                             <!-- Country dropdown: set fixed width -->
                             <select name="mobile_country" id="mobileCountrySelect" class="form-select w-auto"
@@ -64,7 +64,7 @@
 
                             <!-- Mobile number input -->
                             <input type="number" name="mobile" value="{{ @$shippingInformation->mobile }}"
-                                   class="form-control form--control" placeholder="@lang('Enter mobile number')"
+                                   class="form-control form--control" placeholder="@lang('Enter whatsapp number')"
                                    required>
                         </div>
 
@@ -99,7 +99,7 @@
 
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label>@lang('Email')</label>
+                        <label>Receiver's Email</label>
                         <input type="text" value="{{ @$shippingInformation->email }}" class="form-control form--control"
                                name="email" required>
                     </div>
@@ -378,7 +378,7 @@
 
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label class="form-label">@lang('Country')</label>
+                        <label class="form-label">Receiver's Country</label>
                         <select name="country" class="form-control form--control select2" required>
                             <option value="">Search Country...</option>
                             @foreach ($countries as $key => $country)
@@ -409,7 +409,7 @@
 
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label>@lang('State')</label>
+                        <label>Receiver's State</label>
 
                         <div id="stateInputWrapper">
                             <input type="text"
@@ -478,7 +478,7 @@
 
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label>@lang('City')</label>
+                        <label>Receiver's City</label>
                         <input type="text" value="{{ @$shippingInformation->city }}" class="form-control form--control"
                                name="city" required>
                     </div>
@@ -488,7 +488,7 @@
 
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label>@lang('Apartment, suite, unit, flat etc')</label>
+                        <label>@lang('House number, Apartment, suite, unit, flat etc')</label>
                         <input type="text" value="{{ @$shippingInformation->city }}" class="form-control form--control"
                                name="apt">
                     </div>
@@ -496,7 +496,7 @@
 
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label>@lang('Address')</label>
+                        <label>Receiver's Street address</label>
                         <input type="text" value="{{ @$shippingInformation->address }}"
                                class="form-control form--control" name="address" required>
                     </div>
@@ -504,7 +504,7 @@
 
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label>@lang('Zip')</label>
+                        <label>Receiver's Zip</label>
                         <input type="text" value="{{ @$shippingInformation->zip }}" class="form-control form--control"
                                name="zip" required>
                     </div>

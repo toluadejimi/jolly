@@ -19,25 +19,25 @@
 
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>@lang('First Name')</label>
+                                <label>Receiver's First Name</label>
                                 <input type="text" class="form-control form--control" name="firstname" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>@lang('Last Name')</label>
+                                <label>Receiver Last Name</label>
                                 <input type="text" class="form-control form--control" name="lastname" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>@lang('Mobile')</label>
+                                <label>Receiver's Mobile (Whatsapp)</label>
                                 <input type="text" class="form-control form--control" name="mobile" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>@lang('Email')</label>
+                                <label>Receiver's Email</label>
                                 <input type="text" class="form-control form--control" name="email" required>
                             </div>
                         </div>
@@ -48,7 +48,7 @@
 
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="form-label">@lang('Country')</label>
+                                    <label class="form-label">Receiver's Country</label>
                                     <select name="country" class="form-control form--control select2" required>
                                         <option value="">Search Country...</option>
                                         @foreach ($countries as $key => $country)
@@ -68,7 +68,7 @@
 
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>@lang('State')</label>
+                                    <label>Receiver's State</label>
 
                                     <div id="stateInputWrapper">
                                         <input type="text"
@@ -85,7 +85,7 @@
 
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>@lang('City')</label>
+                                    <label>Receiver's City</label>
                                     <input type="text" value="{{ @$shippingInformation->city }}" class="form-control form--control"
                                            name="city" required>
                                 </div>
@@ -95,7 +95,7 @@
 
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label>@lang('Apartment, suite, unit, flat etc')</label>
+                                    <label>@lang('House number, Apartment, suite, unit, flat etc')</label>
                                     <input type="text" value="{{ @$shippingInformation->city }}" class="form-control form--control"
                                            name="apt">
                                 </div>
@@ -103,7 +103,7 @@
 
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>@lang('Address')</label>
+                                    <label>Receiver's Street Address</label>
                                     <input type="text" value="{{ @$shippingInformation->address }}"
                                            class="form-control form--control" name="address" required>
                                 </div>
@@ -111,7 +111,7 @@
 
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label>@lang('Zip')</label>
+                                    <label>Receiver's Zip</label>
                                     <input type="text" value="{{ @$shippingInformation->zip }}" class="form-control form--control"
                                            name="zip" required>
                                 </div>
@@ -226,13 +226,13 @@
             let action = `{{ route('user.shipping.address.store') }}`;
 
             $('.newAddress').on('click', function() {
-                modal.find('.modal-title').text(`@lang('Add New Shipping Address')`);
+                modal.find('.modal-title').text(`@lang('Add New Receiver Address')`);
                 modal.find('form').attr('action', action);
                 modal.modal('show');
             });
 
             $('.editAddress').on('click', function() {
-                modal.find('.modal-title').text(`@lang('Update Shipping Address')`);
+                modal.find('.modal-title').text(`@lang('Update Receiver Address')`);
                 let address = $(this).data('resource');
 
                 modal.find('[name=firstname]').val(address.firstname);
