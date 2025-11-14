@@ -213,7 +213,16 @@ class CheckoutController extends Controller {
             $view = 'Template::checkout_steps.shipping_info_guest';
         }
 
+
+
+
+
         return view($view, compact('pageTitle', 'shippingAddresses', 'countries'));
+
+
+
+
+
     }
 
     public function addShippingInfo(Request $request) {
