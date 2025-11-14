@@ -22,7 +22,7 @@ class ProcessController extends Controller
         $key = env('WEBKEY');
         $email = session('guest_user_data')['email'] ?? Auth::user()->email;
         $amount = round($deposit->final_amount, 2);
-        $url = "https://web.sprintpay.online/pay?amount=$amount&key=$key&ref=$deposit->trx&email=$email";
+        $url = "https://web.sprintpay.online/pay?amount=$amount&key=948746y7444747656f4645454556f646444&ref=$deposit->trx&email=$email";
         $send['url'] =  $url;
 
 
@@ -46,7 +46,7 @@ class ProcessController extends Controller
             $message = 'Unable to process';
             $notify[] = ['error', $message];
 
-            return redirect($deposit->failed_url)->withNotify($notify);
+            return redirect('checkout/payment-methods')->withNotify($notify);
 
         }else{
 

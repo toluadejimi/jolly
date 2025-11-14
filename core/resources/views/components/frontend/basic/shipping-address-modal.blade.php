@@ -41,43 +41,88 @@
                                 <input type="text" class="form-control form--control" name="email" required>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>@lang('City')</label>
-                                <input type="text" class="form-control form--control" name="city" required>
+
+                        <div class="row mt-4">
+
+
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">@lang('Country')</label>
+                                    <select name="country" class="form-control form--control select2" required>
+                                        <option value="">Search Country...</option>
+                                        @foreach ($countries as $key => $country)
+                                            <option data-mobile_code="{{ $country->dial_code }}"
+                                                    value="{{ $country->country }}"
+                                                    data-code="{{ $key }}">
+                                                {{ __($country->country) }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+
+
+
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>@lang('State')</label>
-                                <input type="text" class="form-control form--control" name="state" required>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>@lang('State')</label>
+
+                                    <div id="stateInputWrapper">
+                                        <input type="text"
+                                               value="{{ @$shippingInformation->state }}"
+                                               class="form-control form--control"
+                                               name="state"
+                                               id="stateInput"
+                                               required>
+                                    </div>
+                                </div>
+
+
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>@lang('Zip')</label>
-                                <input type="text" class="form-control form--control" name="zip" required>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>@lang('City')</label>
+                                    <input type="text" value="{{ @$shippingInformation->city }}" class="form-control form--control"
+                                           name="city" required>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>@lang('Country')</label>
-                                <select name="country" class="form-control form--control form-select select2">
-                                    <option value="" hidden>@lang('Select One')</option>
-                                    @foreach ($countries as $country)
-                                        <option value="{{ $country->country }}">{{ __($country->country) }}</option>
-                                    @endforeach
-                                </select>
+
+                            <hr>
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>@lang('Apartment, suite, unit, flat etc')</label>
+                                    <input type="text" value="{{ @$shippingInformation->city }}" class="form-control form--control"
+                                           name="apt">
+                                </div>
                             </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>@lang('Address')</label>
+                                    <input type="text" value="{{ @$shippingInformation->address }}"
+                                           class="form-control form--control" name="address" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>@lang('Zip')</label>
+                                    <input type="text" value="{{ @$shippingInformation->zip }}" class="form-control form--control"
+                                           name="zip" required>
+                                </div>
+                            </div>
+
+
                         </div>
 
-                        <div class="col-md-12">
-                            <div class="form-group mb-0">
-                                <label>@lang('Address')</label>
-                                <input type="text" class="form-control form--control" name="address" required>
-                            </div>
-                        </div>
+
                     </div>
+
                     <div class="col-12 mt-3">
                         <button type="submit" class="btn btn--base w-100 h-45">@lang('Submit')</button>
                     </div>
@@ -87,9 +132,95 @@
     </div>
 </div>
 
+
 @push('script')
+    <!-- jQuery must load FIRST -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <script>
-        "use strict";
+        $(document).ready(function () {
+
+            /** ---------------------------------------------------
+             * 1. Initialize Country Select2
+             * --------------------------------------------------- */
+            $("select[name='country']").select2({
+                placeholder: "Search Country...",
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#addressModal')
+            });
+
+
+            /** ---------------------------------------------------
+             * 2. Load States JSON Files (USA + Canada)
+             * --------------------------------------------------- */
+            let usaStates = {};
+            let canadaStates = {};
+
+            $.getJSON("{{ asset('core/resources/views/partials/usastates.json') }}", function(data) {
+                usaStates = data;
+            });
+
+            $.getJSON("{{ asset('core/resources/views/partials/castates.json') }}", function(data) {
+                canadaStates = data;
+            });
+
+
+            /** ---------------------------------------------------
+             * 3. Functions for input/select switching
+             * --------------------------------------------------- */
+            function loadStateSelect(states) {
+                let selectHtml = `
+                    <select name="state" id="stateSelect" class="form-control form--control select2" required>
+                        <option value="">Select State</option>
+                `;
+
+                $.each(states, function(key, value) {
+                    selectHtml += `<option value="${value}">${value}</option>`;
+                });
+
+                selectHtml += `</select>`;
+
+                $("#stateInputWrapper").html(selectHtml);
+
+                // initialize Select2 for states with modal parent
+                $("#stateSelect").select2({
+                    width: '100%',
+                    dropdownParent: $('#addressModal') // FIX
+                });
+            }
+
+            function loadStateInput() {
+                $("#stateInputWrapper").html(`
+                    <input type="text" class="form-control form--control" name="state" required>
+                `);
+            }
+
+            /** ---------------------------------------------------
+             * 4. Country change event
+             * --------------------------------------------------- */
+            $("select[name='country']").on("change", function () {
+                const selectedCountry = $(this).find(":selected").data("code");
+
+                if (selectedCountry === "US") {
+                    loadStateSelect(usaStates);
+                } else if (selectedCountry === "CA") {
+                    loadStateSelect(canadaStates);
+                } else {
+                    loadStateInput();
+                }
+            });
+
+            $("select[name='country']").trigger("change");
+        });
+    </script>
+
+    <!-- MODAL SCRIPT (Not related to Select2) -->
+    <script>
         (function($) {
             let modal = $('#addressModal');
             let action = `{{ route('user.shipping.address.store') }}`;
@@ -111,7 +242,7 @@
                 modal.find('[name=city]').val(address.city);
                 modal.find('[name=state]').val(address.state);
                 modal.find('[name=zip]').val(address.zip);
-                modal.find('[name=country]').val(address.country);
+                modal.find('[name=country]').val(address.country).trigger('change');
                 modal.find('[name=address]').val(address.address);
                 modal.find('[name=label]').val(address.label);
 

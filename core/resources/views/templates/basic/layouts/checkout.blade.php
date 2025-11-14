@@ -53,48 +53,48 @@
                                     </p>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="cart-step-box {{ menuActive('checkout.delivery.methods') }}">
-                                    <div class="cart-step-icon mb-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="50" height="50" x="0" y="0" viewBox="0 0 64 64" style="enable-background:new 0 0 512 512" xml:space="preserve" class="">
-                                            <g>
-                                                <g data-name="Artboard 35">
-                                                    <path fill="hsl(var(--base))" d="M60 51V37.783L54 25H40v26z" opacity="1" data-original="#c12b35" class=""></path>
-                                                    <path fill="#97262e" d="M48 42.644h-4a1 1 0 0 1 0-2h4a1 1 0 0 1 0 2z" opacity="1" data-original="#97262e" class=""></path>
-                                                    <path fill="#ccced5" d="M56.658 55H62v-4H2v4h8.342z" opacity="1" data-original="#ccced5"></path>
-                                                    <path fill="#f4ac1c" d="M4 51V19a2 2 0 0 1 2-2h32a2 2 0 0 1 2 2v32z" opacity="1" data-original="#f4ac1c" class=""></path>
-                                                    <path fill="#ffc239" d="M24.543 46a10.109 10.109 0 0 0 10.109-10.109V20.872A3.871 3.871 0 0 0 30.78 17H6a2 2 0 0 0-2 2v27z" opacity="1" data-original="#ffc239" class=""></path>
-                                                    <circle cx="51" cy="53" r="6" fill="#181a1c" opacity="1" data-original="#181a1c" class=""></circle>
-                                                    <circle cx="16" cy="53" r="6" fill="#181a1c" opacity="1" data-original="#181a1c" class=""></circle>
-                                                    <circle cx="51" cy="53" r="2" fill="#e0e2e6" opacity="1" data-original="#e0e2e6" class=""></circle>
-                                                    <circle cx="16" cy="53" r="2" fill="#e0e2e6" opacity="1" data-original="#e0e2e6" class=""></circle>
-                                                    <path fill="#76d8ff" d="M60 38H44V25h10l6 12.783" opacity="1" data-original="#76d8ff" class=""></path>
-                                                    <path fill="#2b2e33" d="M48 42h-4a1 1 0 0 1 0-2h4a1 1 0 0 1 0 2z" opacity="1" data-original="#2b2e33" class=""></path>
-                                                    <g fill="#f4ac1c">
-                                                        <path d="M14 45.693H5.147a1 1 0 1 1 0-2H14a1 1 0 0 1 0 2zM18 41.693H8a1 1 0 0 1 0-2h10a1 1 0 0 1 0 2zM60 41h-4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h4z" fill="#f4ac1c" opacity="1" data-original="#f4ac1c" class=""></path>
-                                                    </g>
-                                                    <path fill="#2b2e33" d="M55 55a2 2 0 0 1-2-2 2 2 0 0 0-4 0 2 2 0 0 1-4 0 6 6 0 0 1 12 0 2 2 0 0 1-2 2zM20 55a2 2 0 0 1-2-2 2 2 0 0 0-4 0 2 2 0 0 1-4 0 6 6 0 0 1 12 0 2 2 0 0 1-2 2z" opacity="1" data-original="#2b2e33" class=""></path>
-                                                    <rect width="18.147" height="4" x="24.446" y="51" fill="#f3f3f5" rx="2" opacity="1" data-original="#f3f3f5" class=""></rect>
-                                                    <path fill="#f3f3f5" d="M2 51h6.549v.747A3.253 3.253 0 0 1 5.3 55H2v-4zM58.245 51H62v4h-1.432a2.323 2.323 0 0 1-2.323-2.323V51z" opacity="1" data-original="#f3f3f5" class=""></path>
-                                                    <path fill="#ffc239" d="M56.3 41H60v3.288h-2.024a1.671 1.671 0 0 1-1.676-1.671V41z" opacity="1" data-original="#ffc239" class=""></path>
-                                                    <path fill="#ccf1ff" d="M46.652 27.283v2.967a5.967 5.967 0 0 0 5.968 5.967h6.645L54 25h-5.065a2.283 2.283 0 0 0-2.283 2.283z" opacity="1" data-original="#ccf1ff" class=""></path>
-                                                    <path fill="#ffda88" d="M5.065 25.367v-5.285a1.792 1.792 0 0 1 1.792-1.792h5.286a1.792 1.792 0 0 1 1.792 1.792 1.792 1.792 0 0 1-.525 1.267l-5.286 5.285a1.792 1.792 0 0 1-1.267.525 1.792 1.792 0 0 1-1.792-1.792z" opacity="1" data-original="#ffda88" class=""></path>
-                                                    <path fill="#e63a45" d="M14 45H2a1 1 0 0 1 0-2h12a1 1 0 0 1 0 2zM18 41H8a1 1 0 0 1 0-2h10a1 1 0 0 1 0 2z" opacity="1" data-original="#e63a45" class=""></path>
-                                                    <path fill="#f4ac1c" d="M31.975 17H12.612a9.652 9.652 0 0 0 1.918 5.213l6.132 10.73a1.877 1.877 0 0 0 3.261 0l6.135-10.735A9.656 9.656 0 0 0 31.975 17z" opacity="1" data-original="#f4ac1c" class=""></path>
-                                                    <path fill="hsl(var(--base))" d="M15.1 19.4 22.3 32l7.2-12.6a9 9 0 1 0-14.4 0z" opacity="1" data-original="#c12b35" class=""></path>
-                                                    <path fill="#e63a45" d="M29.492 19.4a9 9 0 0 0 .388-10.239 7.47 7.47 0 0 0-12.466 0A8.994 8.994 0 0 0 17.8 19.4l3.73 6.529a2.435 2.435 0 0 0 4.229 0z" opacity="1" data-original="#e63a45" class=""></path>
-                                                    <circle cx="22.293" cy="14" r="5" fill="#f3f3f5" opacity="1" data-original="#f3f3f5" class=""></circle>
-                                                    <path fill="#e0e2e6" d="M22.293 9a5.024 5.024 0 0 0-.847.085 4.985 4.985 0 0 1 0 9.83A4.994 4.994 0 1 0 22.293 9z" opacity="1" data-original="#e0e2e6" class=""></path>
-                                                    <path fill="#eb616a" d="M24.368 25.293a1.5 1.5 0 0 1-1.283-2.274l1.851-3.069A1.5 1.5 0 1 1 27.5 21.5l-1.851 3.069a1.5 1.5 0 0 1-1.281.724z" opacity="1" data-original="#eb616a" class=""></path>
-                                                </g>
-                                            </g>
-                                        </svg>
-                                    </div>
-                                    <p class="cart-step-title mb-0">
-                                        @lang('Delivery Info')
-                                    </p>
-                                </div>
-                            </div>
+{{--                            <div class="col">--}}
+{{--                                <div class="cart-step-box {{ menuActive('checkout.delivery.methods') }}">--}}
+{{--                                    <div class="cart-step-icon mb-2">--}}
+{{--                                        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="50" height="50" x="0" y="0" viewBox="0 0 64 64" style="enable-background:new 0 0 512 512" xml:space="preserve" class="">--}}
+{{--                                            <g>--}}
+{{--                                                <g data-name="Artboard 35">--}}
+{{--                                                    <path fill="hsl(var(--base))" d="M60 51V37.783L54 25H40v26z" opacity="1" data-original="#c12b35" class=""></path>--}}
+{{--                                                    <path fill="#97262e" d="M48 42.644h-4a1 1 0 0 1 0-2h4a1 1 0 0 1 0 2z" opacity="1" data-original="#97262e" class=""></path>--}}
+{{--                                                    <path fill="#ccced5" d="M56.658 55H62v-4H2v4h8.342z" opacity="1" data-original="#ccced5"></path>--}}
+{{--                                                    <path fill="#f4ac1c" d="M4 51V19a2 2 0 0 1 2-2h32a2 2 0 0 1 2 2v32z" opacity="1" data-original="#f4ac1c" class=""></path>--}}
+{{--                                                    <path fill="#ffc239" d="M24.543 46a10.109 10.109 0 0 0 10.109-10.109V20.872A3.871 3.871 0 0 0 30.78 17H6a2 2 0 0 0-2 2v27z" opacity="1" data-original="#ffc239" class=""></path>--}}
+{{--                                                    <circle cx="51" cy="53" r="6" fill="#181a1c" opacity="1" data-original="#181a1c" class=""></circle>--}}
+{{--                                                    <circle cx="16" cy="53" r="6" fill="#181a1c" opacity="1" data-original="#181a1c" class=""></circle>--}}
+{{--                                                    <circle cx="51" cy="53" r="2" fill="#e0e2e6" opacity="1" data-original="#e0e2e6" class=""></circle>--}}
+{{--                                                    <circle cx="16" cy="53" r="2" fill="#e0e2e6" opacity="1" data-original="#e0e2e6" class=""></circle>--}}
+{{--                                                    <path fill="#76d8ff" d="M60 38H44V25h10l6 12.783" opacity="1" data-original="#76d8ff" class=""></path>--}}
+{{--                                                    <path fill="#2b2e33" d="M48 42h-4a1 1 0 0 1 0-2h4a1 1 0 0 1 0 2z" opacity="1" data-original="#2b2e33" class=""></path>--}}
+{{--                                                    <g fill="#f4ac1c">--}}
+{{--                                                        <path d="M14 45.693H5.147a1 1 0 1 1 0-2H14a1 1 0 0 1 0 2zM18 41.693H8a1 1 0 0 1 0-2h10a1 1 0 0 1 0 2zM60 41h-4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h4z" fill="#f4ac1c" opacity="1" data-original="#f4ac1c" class=""></path>--}}
+{{--                                                    </g>--}}
+{{--                                                    <path fill="#2b2e33" d="M55 55a2 2 0 0 1-2-2 2 2 0 0 0-4 0 2 2 0 0 1-4 0 6 6 0 0 1 12 0 2 2 0 0 1-2 2zM20 55a2 2 0 0 1-2-2 2 2 0 0 0-4 0 2 2 0 0 1-4 0 6 6 0 0 1 12 0 2 2 0 0 1-2 2z" opacity="1" data-original="#2b2e33" class=""></path>--}}
+{{--                                                    <rect width="18.147" height="4" x="24.446" y="51" fill="#f3f3f5" rx="2" opacity="1" data-original="#f3f3f5" class=""></rect>--}}
+{{--                                                    <path fill="#f3f3f5" d="M2 51h6.549v.747A3.253 3.253 0 0 1 5.3 55H2v-4zM58.245 51H62v4h-1.432a2.323 2.323 0 0 1-2.323-2.323V51z" opacity="1" data-original="#f3f3f5" class=""></path>--}}
+{{--                                                    <path fill="#ffc239" d="M56.3 41H60v3.288h-2.024a1.671 1.671 0 0 1-1.676-1.671V41z" opacity="1" data-original="#ffc239" class=""></path>--}}
+{{--                                                    <path fill="#ccf1ff" d="M46.652 27.283v2.967a5.967 5.967 0 0 0 5.968 5.967h6.645L54 25h-5.065a2.283 2.283 0 0 0-2.283 2.283z" opacity="1" data-original="#ccf1ff" class=""></path>--}}
+{{--                                                    <path fill="#ffda88" d="M5.065 25.367v-5.285a1.792 1.792 0 0 1 1.792-1.792h5.286a1.792 1.792 0 0 1 1.792 1.792 1.792 1.792 0 0 1-.525 1.267l-5.286 5.285a1.792 1.792 0 0 1-1.267.525 1.792 1.792 0 0 1-1.792-1.792z" opacity="1" data-original="#ffda88" class=""></path>--}}
+{{--                                                    <path fill="#e63a45" d="M14 45H2a1 1 0 0 1 0-2h12a1 1 0 0 1 0 2zM18 41H8a1 1 0 0 1 0-2h10a1 1 0 0 1 0 2z" opacity="1" data-original="#e63a45" class=""></path>--}}
+{{--                                                    <path fill="#f4ac1c" d="M31.975 17H12.612a9.652 9.652 0 0 0 1.918 5.213l6.132 10.73a1.877 1.877 0 0 0 3.261 0l6.135-10.735A9.656 9.656 0 0 0 31.975 17z" opacity="1" data-original="#f4ac1c" class=""></path>--}}
+{{--                                                    <path fill="hsl(var(--base))" d="M15.1 19.4 22.3 32l7.2-12.6a9 9 0 1 0-14.4 0z" opacity="1" data-original="#c12b35" class=""></path>--}}
+{{--                                                    <path fill="#e63a45" d="M29.492 19.4a9 9 0 0 0 .388-10.239 7.47 7.47 0 0 0-12.466 0A8.994 8.994 0 0 0 17.8 19.4l3.73 6.529a2.435 2.435 0 0 0 4.229 0z" opacity="1" data-original="#e63a45" class=""></path>--}}
+{{--                                                    <circle cx="22.293" cy="14" r="5" fill="#f3f3f5" opacity="1" data-original="#f3f3f5" class=""></circle>--}}
+{{--                                                    <path fill="#e0e2e6" d="M22.293 9a5.024 5.024 0 0 0-.847.085 4.985 4.985 0 0 1 0 9.83A4.994 4.994 0 1 0 22.293 9z" opacity="1" data-original="#e0e2e6" class=""></path>--}}
+{{--                                                    <path fill="#eb616a" d="M24.368 25.293a1.5 1.5 0 0 1-1.283-2.274l1.851-3.069A1.5 1.5 0 1 1 27.5 21.5l-1.851 3.069a1.5 1.5 0 0 1-1.281.724z" opacity="1" data-original="#eb616a" class=""></path>--}}
+{{--                                                </g>--}}
+{{--                                            </g>--}}
+{{--                                        </svg>--}}
+{{--                                    </div>--}}
+{{--                                    <p class="cart-step-title mb-0">--}}
+{{--                                        @lang('Delivery Info')--}}
+{{--                                    </p>--}}
+{{--                                </div>--}}
+{{--                            </div>--}}
                             <div class="col">
                                 <div class="cart-step-box {{ menuActive(['checkout.payment.methods', 'deposit*']) }}">
                                     <div class="cart-step-icon mb-2">

@@ -79,6 +79,7 @@ class CheckoutController extends Controller {
             'city'      => 'required|string',
             'state'     => 'required|string',
             'zip'       => 'required|string',
+            'apt'       => 'required|string',
             'country'   => 'required|string',
             'address'   => 'required|string',
         ]);
@@ -116,6 +117,7 @@ class CheckoutController extends Controller {
             'email'        => $request->email,
             'city'         => $request->city,
             'state'        => $request->state,
+            'apt'        => $request->apt,
             'zip'          => $request->zip,
             'country_code' => $request->country_code,
             'dial_code'    => $request->mobile_code,
@@ -130,7 +132,22 @@ class CheckoutController extends Controller {
         ];
 
         Session::put('shipping_info', $shippingData);
-        return redirect()->route('checkout.delivery.methods');
+
+        $checkoutData = session('shipping_info');
+        $checkoutData['shipping_address_id'] = 1;
+
+        session()->put('shipping_info', $checkoutData);
+
+        $checkoutData = session('shipping_info');
+        $checkoutData['shipping_method_id'] = 1;
+
+
+        session()->put('shipping_info', $checkoutData);
+        return to_route('checkout.payment.methods');
+
+
+
+
     }
 
     //============= checkout step start here ===================//
@@ -139,7 +156,6 @@ class CheckoutController extends Controller {
         $cartItems = $this->cartManager->getCart();
 
         $shippingAddresses = ShippingAddress::where('user_id', auth()->id())->get();
-
 
         $cartItems = $this->cartManager->getCart();
         foreach ($cartItems as $cartItem) {
@@ -160,8 +176,6 @@ class CheckoutController extends Controller {
             }
 
         }
-
-
 
 
 
@@ -200,19 +214,26 @@ class CheckoutController extends Controller {
 
 
             $view = 'Template::checkout_steps.shipping_info';
+
+
         } else {
+
+
             if (!gs('guest_checkout')) {
                 abort(404);
             }
             $session = session()->get('guest_user_data');
+
+
+
             if (!$session) {
                 $notify[] = ['error', 'Session Expired'];
                 return to_route('cart.page')->withNotify($notify);
             }
 
             $view = 'Template::checkout_steps.shipping_info_guest';
-        }
 
+        }
 
 
 
@@ -221,11 +242,29 @@ class CheckoutController extends Controller {
 
 
 
-
-
     }
 
     public function addShippingInfo(Request $request) {
+
+
+
+        if (auth()->user()) {
+
+            $checkoutData = session('shipping_info');
+            $checkoutData['shipping_address_id'] = $request->shipping_address_id;
+            session()->put('shipping_info', $checkoutData);
+
+            $checkoutData = session('shipping_info');
+            $checkoutData['shipping_method_id'] = 1;
+
+
+            session()->put('shipping_info', $checkoutData);
+            return to_route('checkout.payment.methods');
+
+
+
+        }
+
         $ids = ShippingAddress::where('user_id', auth()->id())->pluck('id')->toArray();
 
         $request->validate([
@@ -240,6 +279,9 @@ class CheckoutController extends Controller {
 
         session()->put('shipping_info', $checkoutData);
         return to_route('checkout.delivery.methods');
+
+
+
     }
 
     public function deliveryMethods() {

@@ -48,6 +48,7 @@ class PaymentController extends Controller {
 
 
 
+
         $this->validation($request);
 
         $gatewayCurrency = $this->getGatewayCurrency($request);
@@ -213,7 +214,9 @@ class PaymentController extends Controller {
     private function getCheckoutData($hasPhysicalProduct) {
         $checkoutData = session('shipping_info');
 
-        if (!$checkoutData && $hasPhysicalProduct) {
+
+
+        if (!$checkoutData) {
             throw ValidationException::withMessages(['error' => 'Invalid session data']);
         }
 
@@ -227,9 +230,11 @@ class PaymentController extends Controller {
         if ($hasPhysicalProduct) {
             if (auth()->check()) {
                 $shippingAddress = ShippingAddress::where('user_id', auth()->id())->find($checkoutData['shipping_address_id']);
+
             } else {
                 $shippingAddress = (object) $checkoutData;
             }
+
 
             if (!$shippingAddress) {
                 throw ValidationException::withMessages(['error' => 'Invalid session data']);

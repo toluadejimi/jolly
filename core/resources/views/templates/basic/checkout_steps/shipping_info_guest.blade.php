@@ -1,7 +1,8 @@
 @extends($activeTemplate . 'layouts.checkout')
 
 @section('blade')
-    <form action="{{ route('checkout.guest.shipping.info.store') }}" method="POST" enctype="multipart/form-data" id="shipping-form">
+    <form action="{{ route('checkout.guest.shipping.info.store') }}" method="POST" enctype="multipart/form-data"
+          id="shipping-form">
         @csrf
         <div>
             @php
@@ -37,13 +38,13 @@
                 </div>
 
 
-
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>@lang('Mobile')</label>
                         <div class="input-group">
                             <!-- Country dropdown: set fixed width -->
-                            <select name="mobile_country" id="mobileCountrySelect" class="form-select w-auto" style="max-width: 150px;" required>
+                            <select name="mobile_country" id="mobileCountrySelect" class="form-select w-auto"
+                                    style="max-width: 150px;" required>
                                 @foreach ($countries as $code => $country)
                                     <option value="{{ $country->country }}"
                                             data-mobile_code="{{ $country->dial_code }}"
@@ -63,7 +64,8 @@
 
                             <!-- Mobile number input -->
                             <input type="number" name="mobile" value="{{ @$shippingInformation->mobile }}"
-                                   class="form-control form--control" placeholder="@lang('Enter mobile number')" required>
+                                   class="form-control form--control" placeholder="@lang('Enter mobile number')"
+                                   required>
                         </div>
 
                         <small class="text-muted">
@@ -95,10 +97,6 @@
                 </div>
 
 
-
-
-
-
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>@lang('Email')</label>
@@ -109,8 +107,6 @@
             </div>
 
 
-
-
             @if(session('customer_photo') === 1)
 
                 <div class="card my-4">
@@ -119,110 +115,111 @@
 
                         <h5 class="mb-1 ">Upload Customized Product Photo</h5>
 
-                            <div class="row">
+                        <div class="row">
 
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>@lang('Upload Front Picture')</label>
-                                        <input type="file" class="form-control form--control" name="front_picture"
-                                               id="front_picture" accept="image/*" required>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>@lang('Upload Front Picture')</label>
+                                    <input type="file" class="form-control form--control" name="front_picture"
+                                           id="front_picture" accept="image/*" required>
 
-                                        @if(session('customer_photo_front'))
-                                            <div class="mt-3 text-center position-relative d-inline-block">
-                                                <img src="{{url('')}}/core/storage/app/public/{{ session('customer_photo_front')}}"
-                                                     alt="Front Picture"
-                                                     class="img-fluid rounded shadow-sm mb-2"
-                                                     style="max-width: 250px;">
+                                    @if(session('customer_photo_front'))
+                                        <div class="mt-3 text-center position-relative d-inline-block">
+                                            <img
+                                                src="{{url('')}}/core/storage/app/public/{{ session('customer_photo_front')}}"
+                                                alt="Front Picture"
+                                                class="img-fluid rounded shadow-sm mb-2"
+                                                style="max-width: 250px;">
 
-                                                <a href="{{ route('remove_photo', ['type' => 'front']) }}"
-                                                   class="text-danger position-absolute"
-                                                   style="top: 5px; right: 10px; font-size: 20px; text-decoration: none;"
-                                                   title="Remove photo">
-                                                    &times;
-                                                </a>
-                                            </div>
-                                        @endif
-
-                                        <div class="mt-3 text-center">
-                                            <img id="frontPreview" src="#" alt="Front Picture Preview"
-                                                 class="img-fluid rounded shadow-sm d-none"
-                                                 style="max-width: 250px; height: auto;">
+                                            <a href="{{ route('remove_photo', ['type' => 'front']) }}"
+                                               class="text-danger position-absolute"
+                                               style="top: 5px; right: 10px; font-size: 20px; text-decoration: none;"
+                                               title="Remove photo">
+                                                &times;
+                                            </a>
                                         </div>
+                                    @endif
 
-
-                                        <small class="text-info d-block mt-2">
-                                            Please upload a clear front image (JPG, PNG format only, max size 2MB).
-                                        </small>
+                                    <div class="mt-3 text-center">
+                                        <img id="frontPreview" src="#" alt="Front Picture Preview"
+                                             class="img-fluid rounded shadow-sm d-none"
+                                             style="max-width: 250px; height: auto;">
                                     </div>
+
+
+                                    <small class="text-info d-block mt-2">
+                                        Please upload a clear front image (JPG, PNG format only, max size 2MB).
+                                    </small>
                                 </div>
-
-                                <div class="col-md-6 ">
-                                    <div class="form-group">
-                                        <label>@lang('Upload Back Picture')</label>
-                                        <input type="file" class="form-control form--control" name="back_picture"
-                                               id="back_picture" accept="image/*" required>
-
-                                        @if(session('customer_photo_front'))
-                                            <div class="mt-3 text-center position-relative d-inline-block">
-                                                <img src="{{url('')}}/core/storage/app/public/{{ session('customer_photo_back')}}"
-                                                     alt="Back Picture" class="img-fluid rounded shadow-sm"
-                                                     style="max-width: 250px;">
-
-
-                                                <a href="{{ route('remove_photo', ['type' => 'back']) }}"
-                                                   class="text-danger position-absolute"
-                                                   style="top: 5px; right: 10px; font-size: 20px; text-decoration: none;"
-                                                   title="Remove photo">
-                                                    &times;
-                                                </a>
-                                            </div>
-
-
-                                        @endif
-
-
-                                        <div class="mt-3 text-center">
-                                            <img id="backPreview" src="#" alt="Back Picture Preview"
-                                                 class="img-fluid rounded shadow-sm d-none"
-                                                 style="max-width: 250px; height: auto;">
-                                        </div>
-
-                                        <small class="text-info d-block mt-2">
-                                            Please upload a clear back image (JPG, PNG format only, max size 2MB).
-                                        </small>
-                                    </div>
-                                </div>
-
-                                <script>
-                                    // Preview Function
-                                    function previewImage(input, previewId) {
-                                        const file = input.files[0];
-                                        const preview = document.getElementById(previewId);
-
-                                        if (file) {
-                                            const reader = new FileReader();
-                                            reader.onload = function (e) {
-                                                preview.src = e.target.result;
-                                                preview.classList.remove('d-none');
-                                            };
-                                            reader.readAsDataURL(file);
-                                        } else {
-                                            preview.src = '#';
-                                            preview.classList.add('d-none');
-                                        }
-                                    }
-
-                                    // Event Listeners
-                                    document.getElementById('front_picture').addEventListener('change', function () {
-                                        previewImage(this, 'frontPreview');
-                                    });
-
-                                    document.getElementById('back_picture').addEventListener('change', function () {
-                                        previewImage(this, 'backPreview');
-                                    });
-                                </script>
-
                             </div>
+
+                            <div class="col-md-6 ">
+                                <div class="form-group">
+                                    <label>@lang('Upload Back Picture')</label>
+                                    <input type="file" class="form-control form--control" name="back_picture"
+                                           id="back_picture" accept="image/*" required>
+
+                                    @if(session('customer_photo_front'))
+                                        <div class="mt-3 text-center position-relative d-inline-block">
+                                            <img
+                                                src="{{url('')}}/core/storage/app/public/{{ session('customer_photo_back')}}"
+                                                alt="Back Picture" class="img-fluid rounded shadow-sm"
+                                                style="max-width: 250px;">
+
+
+                                            <a href="{{ route('remove_photo', ['type' => 'back']) }}"
+                                               class="text-danger position-absolute"
+                                               style="top: 5px; right: 10px; font-size: 20px; text-decoration: none;"
+                                               title="Remove photo">
+                                                &times;
+                                            </a>
+                                        </div>
+
+                                    @endif
+
+
+                                    <div class="mt-3 text-center">
+                                        <img id="backPreview" src="#" alt="Back Picture Preview"
+                                             class="img-fluid rounded shadow-sm d-none"
+                                             style="max-width: 250px; height: auto;">
+                                    </div>
+
+                                    <small class="text-info d-block mt-2">
+                                        Please upload a clear back image (JPG, PNG format only, max size 2MB).
+                                    </small>
+                                </div>
+                            </div>
+
+                            <script>
+                                // Preview Function
+                                function previewImage(input, previewId) {
+                                    const file = input.files[0];
+                                    const preview = document.getElementById(previewId);
+
+                                    if (file) {
+                                        const reader = new FileReader();
+                                        reader.onload = function (e) {
+                                            preview.src = e.target.result;
+                                            preview.classList.remove('d-none');
+                                        };
+                                        reader.readAsDataURL(file);
+                                    } else {
+                                        preview.src = '#';
+                                        preview.classList.add('d-none');
+                                    }
+                                }
+
+                                // Event Listeners
+                                document.getElementById('front_picture').addEventListener('change', function () {
+                                    previewImage(this, 'frontPreview');
+                                });
+
+                                document.getElementById('back_picture').addEventListener('change', function () {
+                                    previewImage(this, 'backPreview');
+                                });
+                            </script>
+
+                        </div>
 
 
                     </div>
@@ -248,14 +245,15 @@
                                 Note about your Customized Product. Ex: special note for delivery.
                             </p>
 
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label>@lang('Enter Customized Text')</label>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>@lang('Enter Customized Text')</label>
 
-                                        <textarea class="form-control form--control" name="customised_test" required placeholder="Enter your note here..." maxlength="5000"></textarea>
+                                    <textarea class="form-control form--control" name="customised_test" required
+                                              placeholder="Enter your note here..." maxlength="5000"></textarea>
 
-                                    </div>
                                 </div>
+                            </div>
 
 
                         </div>
@@ -279,14 +277,15 @@
                                 Short Note about your Customized Product. Ex: special note for delivery.
                             </p>
 
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label>@lang('Enter Short Customized Text (40)')</label>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>@lang('Enter Short Customized Text (40)')</label>
 
-                                        <textarea class="form-control form--control" name="customised_short_test" required placeholder="Enter your short note here..." maxlength="40"></textarea>
+                                    <textarea class="form-control form--control" name="customised_short_test" required
+                                              placeholder="Enter your short note here..." maxlength="40"></textarea>
 
-                                    </div>
                                 </div>
+                            </div>
 
 
                         </div>
@@ -313,7 +312,6 @@
                             </p>
 
 
-
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label>@lang('Enter Note')</label>
@@ -333,11 +331,11 @@
                                     </small>
 
                                     <small class="text-info d-block mt-1">
-                                        Note: To include a note with your order, an additional fee of ₦5,000 will be added.
+                                        Note: To include a note with your order, an additional fee of ₦5,000 will be
+                                        added.
                                     </small>
                                 </div>
                             </div>
-
 
 
                             <script>
@@ -378,29 +376,107 @@
                     </p>
                 @endif
 
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">@lang('Country')</label>
                         <select name="country" class="form-control form--control select2" required>
+                            <option value="">Search Country...</option>
                             @foreach ($countries as $key => $country)
-                                <option data-mobile_code="{{ $country->dial_code }}" value="{{ $country->country }}"
+                                <option data-mobile_code="{{ $country->dial_code }}"
+                                        value="{{ $country->country }}"
                                         data-code="{{ $key }}">
                                     {{ __($country->country) }}
                                 </option>
                             @endforeach
                         </select>
+
+                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+                        <script>
+                            $(document).ready(function () {
+                                $("select[name='country']").select2({
+                                    placeholder: "Search Country...",
+                                    allowClear: true,
+                                    width: '100%',
+                                    theme: "default"
+                                });
+                            });
+                        </script>
+
+
                     </div>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="form-group">
                         <label>@lang('State')</label>
-                        <input type="text" value="{{ @$shippingInformation->state }}" class="form-control form--control"
-                               name="state" required>
+
+                        <div id="stateInputWrapper">
+                            <input type="text"
+                                   value="{{ @$shippingInformation->state }}"
+                                   class="form-control form--control"
+                                   name="state"
+                                   id="stateInput"
+                                   required>
+                        </div>
                     </div>
+
+                    <script>
+                        $(document).ready(function () {
+
+                            let usaStates = {};
+                            let canadaStates = {};
+
+                            // Load USA states JSON
+                            $.getJSON("{{ asset('core/resources/views/partials/usastates.json') }}", function (data) {
+                                usaStates = data;
+                            });
+
+                            // Load Canada provinces JSON
+                            $.getJSON("{{ asset('core/resources/views/partials/castates.json') }}", function (data) {
+                                canadaStates = data;
+                            });
+
+                            function loadStateSelect(states) {
+                                let selectHtml = '<select name="state" id="stateSelect" class="form-control form--control select2" required>';
+                                selectHtml += '<option value="">Select State</option>';
+
+                                $.each(states, function (key, value) {
+                                    selectHtml += `<option value="${value}">${value}</option>`;
+                                });
+
+                                selectHtml += '</select>';
+
+                                $("#stateInputWrapper").html(selectHtml);
+                                $('.select2').select2();
+                            }
+
+                            function loadStateInput() {
+                                $("#stateInputWrapper").html(`
+                                        <input type="text" class="form-control form--control" name="state" required>
+                                    `);
+                            }
+
+                            $("select[name='country']").on("change", function () {
+                                const selectedCountry = $(this).find(":selected").data("code");
+
+                                if (selectedCountry === "US") {
+                                    loadStateSelect(usaStates);
+                                } else if (selectedCountry === "CA") {
+                                    loadStateSelect(canadaStates);
+                                } else {
+                                    loadStateInput();
+                                }
+                            });
+
+                            // Trigger change on load
+                            $("select[name='country']").trigger("change");
+                        });
+                    </script>
+
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="form-group">
                         <label>@lang('City')</label>
                         <input type="text" value="{{ @$shippingInformation->city }}" class="form-control form--control"
@@ -408,7 +484,25 @@
                     </div>
                 </div>
 
+                <hr>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>@lang('Apartment, suite, unit, flat etc')</label>
+                        <input type="text" value="{{ @$shippingInformation->city }}" class="form-control form--control"
+                               name="apt">
+                    </div>
+                </div>
+
                 <div class="col-md-6">
+                    <div class="form-group">
+                        <label>@lang('Address')</label>
+                        <input type="text" value="{{ @$shippingInformation->address }}"
+                               class="form-control form--control" name="address" required>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
                     <div class="form-group">
                         <label>@lang('Zip')</label>
                         <input type="text" value="{{ @$shippingInformation->zip }}" class="form-control form--control"
@@ -416,13 +510,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-12">
-                    <div class="form-group">
-                        <label>@lang('Address')</label>
-                        <input type="text" value="{{ @$shippingInformation->address }}"
-                               class="form-control form--control" name="address" required>
-                    </div>
-                </div>
+
             </div>
         </div>
 
