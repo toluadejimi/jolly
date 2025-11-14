@@ -11,16 +11,48 @@
             @endphp
 
             @if ($checkoutContent->shipping_info_recipient_info_title)
-                <h5 class="mb-1 ">{{ __($checkoutContent->shipping_info_recipient_info_title) }}</h5>
+                <h5 class="mb-4 ">Receiver's Details</h5>
             @endif
 
-            @if ($checkoutContent->shipping_info_recipient_info_description)
-                <p class="text-muted fst-italic">
-                    {{ __($checkoutContent->shipping_info_recipient_info_description) }}
-                </p>
-            @endif
+{{--            @if ($checkoutContent->shipping_info_recipient_info_description)--}}
+{{--                <p class="text-muted fst-italic">--}}
+{{--                    {{ __($checkoutContent->shipping_info_recipient_info_description) }}--}}
+{{--                </p>--}}
+{{--            @endif--}}
 
             <div class="row">
+
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label class="form-label">Country / Region</label>
+                        <select name="country" class="form-control form--control select2" required>
+                            <option value="">Search Country...</option>
+                            @foreach ($countries as $key => $country)
+                                <option data-mobile_code="{{ $country->dial_code }}"
+                                        value="{{ $country->country }}"
+                                        data-code="{{ $key }}">
+                                    {{ __($country->country) }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+                        <script>
+                            $(document).ready(function () {
+                                $("select[name='country']").select2({
+                                    placeholder: "Search Country...",
+                                    allowClear: true,
+                                    width: '100%',
+                                    theme: "default"
+                                });
+                            });
+                        </script>
+
+
+                    </div>
+                </div>
+
 
                 <div class="col-md-6">
                     <div class="form-group">
@@ -38,74 +70,164 @@
                 </div>
 
 
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="form-group">
-                        <label>@lang('Whatsapp No')</label>
-                        <div class="input-group">
-                            <!-- Country dropdown: set fixed width -->
-                            <select name="mobile_country" id="mobileCountrySelect" class="form-select w-auto"
-                                    style="max-width: 150px;" required>
-                                @foreach ($countries as $code => $country)
-                                    <option value="{{ $country->country }}"
-                                            data-mobile_code="{{ $country->dial_code }}"
-                                            data-code="{{ $code }}"
-                                        {{ isset($shippingInformation) && @$shippingInformation->country_code == $code ? 'selected' : '' }}>
-                                        {{ $country->country }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        <label>Street address</label>
+                        <input type="text" value="{{ @$shippingInformation->address }}"
+                               class="form-control form--control" placeholder="House Number and Street Name" name="address" required>
+                    </div>
+                </div>
 
-                            <!-- Dial code -->
-                            <span class="input-group-text" id="dialCode" style="min-width: 70px;"></span>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <input type="text" value="{{ @$shippingInformation->apt }}" placeholder="House number, Apartment, suite, unit, flat etc" class="form-control form--control"
+                               name="apt">
+                    </div>
+                </div>
 
-                            <!-- Hidden inputs -->
-                            <input type="hidden" name="mobile_code" id="mobile_code">
-                            <input type="hidden" name="country_code" id="country_code">
 
-                            <!-- Mobile number input -->
-                            <input type="number" name="mobile" value="{{ @$shippingInformation->mobile }}"
-                                   class="form-control form--control" placeholder="@lang('Enter whatsapp number')"
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>State / County</label>
+
+                        <div id="stateInputWrapper">
+                            <input type="text"
+                                   value="{{ @$shippingInformation->state }}"
+                                   class="form-control form--control"
+                                   name="state"
+                                   id="stateInput"
+                                   placeholder=""
                                    required>
                         </div>
-
-                        <small class="text-muted">
-                            <i class="la la-info-circle"></i> @lang('Enter the mobile number without the country code.')
-                        </small>
                     </div>
 
                     <script>
-                        document.addEventListener('DOMContentLoaded', function () {
-                            const countrySelect = document.getElementById('mobileCountrySelect');
-                            const dialCodeSpan = document.getElementById('dialCode');
-                            const mobileCodeInput = document.getElementById('mobile_code');
-                            const countryCodeInput = document.getElementById('country_code');
+                        $(document).ready(function () {
 
-                            function updateDialCode() {
-                                const selectedOption = countrySelect.options[countrySelect.selectedIndex];
-                                const dialCode = selectedOption.getAttribute('data-mobile_code');
-                                const code = selectedOption.getAttribute('data-code');
+                            let usaStates = {};
+                            let canadaStates = {};
 
-                                dialCodeSpan.textContent = '+' + dialCode;
-                                mobileCodeInput.value = dialCode;
-                                countryCodeInput.value = code;
+                            // Load USA states JSON
+                            $.getJSON("{{ asset('core/resources/views/partials/usastates.json') }}", function (data) {
+                                usaStates = data;
+                            });
+
+                            // Load Canada provinces JSON
+                            $.getJSON("{{ asset('core/resources/views/partials/castates.json') }}", function (data) {
+                                canadaStates = data;
+                            });
+
+                            function loadStateSelect(states) {
+                                let selectHtml = '<select name="state" id="stateSelect" class="form-control form--control select2" required>';
+                                selectHtml += '<option value="">Select State</option>';
+
+                                $.each(states, function (key, value) {
+                                    selectHtml += `<option value="${value}">${value}</option>`;
+                                });
+
+                                selectHtml += '</select>';
+
+                                $("#stateInputWrapper").html(selectHtml);
+                                $('.select2').select2();
                             }
 
-                            updateDialCode();
-                            countrySelect.addEventListener('change', updateDialCode);
+                            function loadStateInput() {
+                                $("#stateInputWrapper").html(`
+                                        <input type="text" class="form-control form--control" name="state" required>
+                                    `);
+                            }
+
+                            $("select[name='country']").on("change", function () {
+                                const selectedCountry = $(this).find(":selected").data("code");
+
+                                if (selectedCountry === "US") {
+                                    loadStateSelect(usaStates);
+                                } else if (selectedCountry === "CA") {
+                                    loadStateSelect(canadaStates);
+                                } else {
+                                    loadStateInput();
+                                }
+                            });
+
+                            // Trigger change on load
+                            $("select[name='country']").trigger("change");
                         });
                     </script>
+
                 </div>
 
 
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="form-group">
-                        <label>Receiver's Email</label>
-                        <input type="text" value="{{ @$shippingInformation->email }}" class="form-control form--control"
-                               name="email" required>
+                        <label>Town / City</label>
+                        <input type="text" value="{{ @$shippingInformation->city }}" class="form-control form--control"
+                               name="city" required>
                     </div>
                 </div>
+
+
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>Postcode / ZIP </label>
+                        <input type="text" value="{{ @$shippingInformation->zip }}" class="form-control form--control"
+                               name="zip" required>
+                    </div>
+                </div>
+
+
+
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>Receiver’s Phone Number ( Optional )</label>
+                        <div class="input-group">
+
+                            <input type="number" name="mobile" value="{{ @$shippingInformation->mobile }}" class="form-control form--control">
+
+                            <!-- Country dropdown: set fixed width -->
+{{--                            <select name="mobile_country" id="mobileCountrySelect" class="form-select w-auto"--}}
+{{--                                    style="max-width: 150px;" required>--}}
+{{--                                @foreach ($countries as $code => $country)--}}
+{{--                                    <option value="{{ $country->country }}"--}}
+{{--                                            data-mobile_code="{{ $country->dial_code }}"--}}
+{{--                                            data-code="{{ $code }}"--}}
+{{--                                        {{ isset($shippingInformation) && @$shippingInformation->country_code == $code ? 'selected' : '' }}>--}}
+{{--                                        {{ $country->country }}--}}
+{{--                                    </option>--}}
+{{--                                @endforeach--}}
+{{--                            </select>--}}
+
+                            <!-- Dial code -->
+{{--                            <span class="input-group-text" id="dialCode" style="min-width: 70px;"></span>--}}
+
+                            <!-- Hidden inputs -->
+                            <input type="hidden" value="0" name="mobile_code" id="mobile_code">
+                            <input type="hidden" value="0" name="country_code" id="country_code">
+                            <input type="hidden" value="receiver@mail.com" name="email">
+
+{{--                            <!-- Mobile number input -->--}}
+{{--                            <input type="number" name="mobile" value="{{ @$shippingInformation->mobile }}"--}}
+{{--                                   class="form-control form--control" placeholder="@lang('Enter whatsapp number')"--}}
+{{--                                   required>--}}
+{{--                        </div>--}}
+
+{{--                        <small class="text-muted">--}}
+{{--                            <i class="la la-info-circle"></i> @lang('Enter the mobile number without the country code.')--}}
+{{--                        </small>--}}
+                    </div>
+
+                </div>
+
+
+{{--                <div class="col-md-6">--}}
+{{--                    <div class="form-group">--}}
+{{--                        <label>Receiver's Email</label>--}}
+{{--                        <input type="text" value="{{ @$shippingInformation->email }}" class="form-control form--control"--}}
+{{--                               name="email" required>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
             </div>
 
+                <hr>
 
             @if(session('customer_photo') === 1)
 
@@ -362,156 +484,9 @@
             @endif
 
 
-            <hr>
-
-            <div class="row mt-4">
-
-                @if ($checkoutContent->description_in_shipping_info_title)
-                    <h5 class="mb-1 ">{{ __($checkoutContent->description_in_shipping_info_title) }}</h5>
-                @endif
-
-                @if ($checkoutContent->description_in_shipping_info_description)
-                    <p class="text-muted fst-italic">
-                        {{ __($checkoutContent->description_in_shipping_info_description) }}
-                    </p>
-                @endif
-
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label class="form-label">Receiver's Country</label>
-                        <select name="country" class="form-control form--control select2" required>
-                            <option value="">Search Country...</option>
-                            @foreach ($countries as $key => $country)
-                                <option data-mobile_code="{{ $country->dial_code }}"
-                                        value="{{ $country->country }}"
-                                        data-code="{{ $key }}">
-                                    {{ __($country->country) }}
-                                </option>
-                            @endforeach
-                        </select>
-
-                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-                        <script>
-                            $(document).ready(function () {
-                                $("select[name='country']").select2({
-                                    placeholder: "Search Country...",
-                                    allowClear: true,
-                                    width: '100%',
-                                    theme: "default"
-                                });
-                            });
-                        </script>
 
 
-                    </div>
-                </div>
 
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Receiver's State</label>
-
-                        <div id="stateInputWrapper">
-                            <input type="text"
-                                   value="{{ @$shippingInformation->state }}"
-                                   class="form-control form--control"
-                                   name="state"
-                                   id="stateInput"
-                                   required>
-                        </div>
-                    </div>
-
-                    <script>
-                        $(document).ready(function () {
-
-                            let usaStates = {};
-                            let canadaStates = {};
-
-                            // Load USA states JSON
-                            $.getJSON("{{ asset('core/resources/views/partials/usastates.json') }}", function (data) {
-                                usaStates = data;
-                            });
-
-                            // Load Canada provinces JSON
-                            $.getJSON("{{ asset('core/resources/views/partials/castates.json') }}", function (data) {
-                                canadaStates = data;
-                            });
-
-                            function loadStateSelect(states) {
-                                let selectHtml = '<select name="state" id="stateSelect" class="form-control form--control select2" required>';
-                                selectHtml += '<option value="">Select State</option>';
-
-                                $.each(states, function (key, value) {
-                                    selectHtml += `<option value="${value}">${value}</option>`;
-                                });
-
-                                selectHtml += '</select>';
-
-                                $("#stateInputWrapper").html(selectHtml);
-                                $('.select2').select2();
-                            }
-
-                            function loadStateInput() {
-                                $("#stateInputWrapper").html(`
-                                        <input type="text" class="form-control form--control" name="state" required>
-                                    `);
-                            }
-
-                            $("select[name='country']").on("change", function () {
-                                const selectedCountry = $(this).find(":selected").data("code");
-
-                                if (selectedCountry === "US") {
-                                    loadStateSelect(usaStates);
-                                } else if (selectedCountry === "CA") {
-                                    loadStateSelect(canadaStates);
-                                } else {
-                                    loadStateInput();
-                                }
-                            });
-
-                            // Trigger change on load
-                            $("select[name='country']").trigger("change");
-                        });
-                    </script>
-
-                </div>
-
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Receiver's City</label>
-                        <input type="text" value="{{ @$shippingInformation->city }}" class="form-control form--control"
-                               name="city" required>
-                    </div>
-                </div>
-
-                <hr>
-
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>@lang('House number, Apartment, suite, unit, flat etc')</label>
-                        <input type="text" value="{{ @$shippingInformation->city }}" class="form-control form--control"
-                               name="apt">
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>Receiver's Street address</label>
-                        <input type="text" value="{{ @$shippingInformation->address }}"
-                               class="form-control form--control" name="address" required>
-                    </div>
-                </div>
-
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>Receiver's Zip</label>
-                        <input type="text" value="{{ @$shippingInformation->zip }}" class="form-control form--control"
-                               name="zip" required>
-                    </div>
-                </div>
-
-
-            </div>
         </div>
 
         <div class="d-flex align-items-center justify-content-between flex-wrap mt-4">

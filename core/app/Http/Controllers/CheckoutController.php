@@ -42,18 +42,18 @@ class CheckoutController extends Controller {
         $request->validate([
             'email'        => 'required|email',
             'mobile'       => 'required|regex:/^([0-9]*)$/',
-            'country_code' => 'required|in:' . $countryCodes,
-            'country'      => 'required|in:' . $countries,
-            'mobile_code'  => 'required|in:' . $mobileCodes,
+//            'country_code' => 'required|in:' . $countryCodes,
+//            'country'      => 'required|in:' . $countries,
+//            'mobile_code'  => 'required|in:' . $mobileCodes,
         ]);
 
 
         $note = Product::where('id', $cartItems[0]['product_id'])->first()->note;
         $guest = Guest::where('email', $request->email)->where('mobile', $request->mobile)->where('dial_code', $request->mobile_code)->firstOrNew();
         $guest->email        = $request->email;
-        $guest->dial_code    = $request->mobile_code;
-        $guest->country_name = $request->country;
-        $guest->country_code = $request->country_code;
+        $guest->dial_code    = 0;
+        $guest->country_name = 0;
+        $guest->country_code = 0;
         $guest->mobile       = $request->mobile;
         $guest->session_id   = getSessionId();
         $guest->save();

@@ -7,21 +7,22 @@
                 </button>
                 <div class="mt-3">
                     <ul class="nav nav-tabs user-tab" id="loginGuestTabs" role="tablist">
+
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true">
-                                @lang('Login')
+                            <button class="nav-link active" id="guest-tab" data-bs-toggle="tab" data-bs-target="#guest" type="button" role="tab" aria-controls="guest" aria-selected="false">
+                                @lang('Checkout Without Login')
                             </button>
                         </li>
 
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="guest-tab" data-bs-toggle="tab" data-bs-target="#guest" type="button" role="tab" aria-controls="guest" aria-selected="false">
-                                @lang('Guest Checkout')
+                            <button class="nav-link" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true">
+                                @lang('Continue with Login')
                             </button>
                         </li>
                     </ul>
                 </div>
                 <div class="tab-content" id="loginGuestTabContent">
-                    <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
+                    <div class="tab-pane fade show" id="login" role="tabpanel" aria-labelledby="login-tab">
                         @include('Template::partials.login', ['idPrefix' => 'auth-user'])
                     </div>
 
@@ -38,12 +39,13 @@
                         $checkoutContent = getContent('guest_checkout.content', true)?->data_values;
                     @endphp
 
-                    <div class="tab-pane fade" id="guest" role="tabpanel" aria-labelledby="guest-tab">
+                    <div class="tab-pane fade show active" id="guest" role="tabpanel" aria-labelledby="guest-tab">
 
                         @if (@$checkoutContent->description_in_checkout_form)
                             <p class="my-3">
-                                <span class=""><i class="fa-solid fa-circle-info icon"></i></span>
-                                <span class="text">{{ @$checkoutContent->description_in_checkout_form }}</span>
+                                <h5> Billing details</h5>
+{{--                                <span class=""><i class="fa-solid fa-circle-info icon"></i></span>--}}
+{{--                                <span class="text">{{ @$checkoutContent->description_in_checkout_form }}</span>--}}
                             </p>
                         @endif
 
@@ -51,7 +53,7 @@
                             @csrf
 
                             <div class="form-group">
-                                <label for="guest-email">@lang('Email')</label>
+                                <label for="guest-email">Enter your own email address</label>
                                 <input type="text" value="{{ @$guestUser->email }}" class="form-control form--control" id="guest-email" name="email" required>
                             </div>
 
@@ -59,14 +61,17 @@
                             <input type="hidden" name="country_code">
 
                             <div class="form-group">
-                                <label for="guest-mobile">@lang('Whatsapp Number')</label>
+                                <label for="guest-mobile">Your WhatsApp Number</label>
                                 <div class="input-group">
-                                    <select name="country" class="input-group-text" required>
-                                        @foreach ($countries as $key => $country)
-                                            <option data-mobile_code="{{ $country->dial_code }}" value="{{ $country->country }}" data-code="{{ $key }}">+{{ __($country->dial_code) }}({{ $country->country }})</option>
-                                        @endforeach
-                                    </select>
-                                    <input type="number" name="mobile" value="{{ @$guestUser->mobile }}" class="form-control form--control ps-0" required>
+
+                                    <input type="number" name="mobile" value="{{ @$guestUser->mobile }}" class="form-control form--control" id="guest-email"  required>
+
+{{--                                    <select name="country" class="input-group-text" required>--}}
+{{--                                        @foreach ($countries as $key => $country)--}}
+{{--                                            <option data-mobile_code="{{ $country->dial_code }}" value="{{ $country->country }}" data-code="{{ $key }}">+{{ __($country->dial_code) }}({{ $country->country }})</option>--}}
+{{--                                        @endforeach--}}
+{{--                                    </select>--}}
+{{--                                    <input type="number" name="mobile" value="{{ @$guestUser->mobile }}" class="form-control form--control ps-0" required>--}}
                                 </div>
                             </div>
 
