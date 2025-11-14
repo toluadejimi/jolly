@@ -125,7 +125,7 @@
             width: 65px;
             height: 65px;
             bottom: 80px;
-            right: 20px;
+            left: 20px;
             background-color: #25D366;
             border-radius: 50%;
             text-align: center;
