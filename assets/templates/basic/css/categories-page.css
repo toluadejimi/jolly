@@ -18,7 +18,7 @@
 .category-tree-item a .title {
 	font-weight: 500;
 	transition: 0.3s;
-	font-size: 1rem;
+	font-size: 0.8rem;
 }
 
 .category-tree-item a .title:hover {
