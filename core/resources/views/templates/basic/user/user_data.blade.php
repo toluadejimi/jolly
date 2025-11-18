@@ -37,7 +37,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label class="form-label">@lang('Mobile')</label>
+                                            <label class="form-label">@lang('Whatsapp No')</label>
                                             <div class="input-group">
                                                 <span class="input-group-text mobile-code"></span>
                                                 <input type="hidden" name="mobile_code">
