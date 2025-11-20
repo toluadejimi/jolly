@@ -243,6 +243,7 @@
 
     @endif
 
+    {{dd(session('customised_short_test'))}}
 
     @if(session('customised_short_test') === 1)
 

@@ -65,8 +65,6 @@ class CheckoutController extends Controller {
         session()->put('customer_photo', $customer_photo);
 
 
-        dd($customised_short_test);
-
 
 
 
