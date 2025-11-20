@@ -65,6 +65,11 @@ class CheckoutController extends Controller {
         session()->put('customer_photo', $customer_photo);
 
 
+        dd(session()->put('customised_short_test', $customised_short_test));
+
+
+
+
         return redirect()->route('checkout.shipping.info');
     }
 
@@ -163,6 +168,7 @@ class CheckoutController extends Controller {
 
             if ($product->categories->isNotEmpty()) {
                 $categoryId = $product->categories->first()->pivot->category_id;
+
 
                 if (in_array($categoryId, [4,5,7,9,11])) {
                     $countries = getusaCountries();
