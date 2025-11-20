@@ -244,7 +244,7 @@
     @endif
 
 
-    @if(session('customised_short_test') === 1)
+    @if(session('customised_short_test') === "1")
 
         <div class="card my-4">
 
