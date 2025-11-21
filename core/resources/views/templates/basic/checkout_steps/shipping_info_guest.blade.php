@@ -398,9 +398,9 @@
                         <div class="row mt-4">
                             <h5 class="mb-1">Customized Short Text (40)</h5>
 
-                            <p class="text-muted fst-italic">
-                                Short Note about your Customized Product. Ex: special note for delivery.
-                            </p>
+{{--                            <p class="text-muted fst-italic">--}}
+{{--                                Short Note about your Customized Product. Ex: special note for delivery.--}}
+{{--                            </p>--}}
 
                             <div class="col-md-12">
                                 <div class="form-group">
