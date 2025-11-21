@@ -210,9 +210,9 @@
                 <div class="row mt-4">
                     <h5 class="mb-1">Customized Text</h5>
 
-                    <p class="text-muted fst-italic">
-                        Note about your order. Ex: special note for delivery.
-                    </p>
+{{--                    <p class="text-muted fst-italic">--}}
+{{--                        Note about your order. Ex: special note for delivery.--}}
+{{--                    </p>--}}
 
                     <form action="{{ url('checkout/upload-customised-test') }}" method="POST" enctype="multipart/form-data">
                         @csrf
