@@ -219,7 +219,7 @@
 
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label>@lang('Enter Customized Text')</label>
+{{--                                <label>@lang('Enter Customized Text')</label>--}}
 
                                 <textarea
                                     class="form-control form--control"
