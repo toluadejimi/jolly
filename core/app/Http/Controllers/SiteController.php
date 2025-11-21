@@ -27,6 +27,16 @@ class SiteController extends Controller {
         $sections    = Page::where('tempname', activeTemplate())->where('slug', '/')->first();
         $seoContents = $sections->seo_content;
 
+        session()->forget([
+            'customer_photo_front',
+            'customer_photo_back',
+            'shipping_info',
+            'note',
+            'customer_photo',
+            'customised_test',
+            'customised_short_test',
+        ]);
+
         // Optimize SEO image (if exists)
         $seoImagePath = @$seoContents->image
             ? getFilePath('seo') . '/' . @$seoContents->image
