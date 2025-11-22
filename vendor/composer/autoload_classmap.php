@@ -84,6 +84,8 @@ return array(
     'Normalizer' => $vendorDir . '/symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
     'Override' => $vendorDir . '/symfony/polyfill-php83/Resources/stubs/Override.php',
     'PhpToken' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/PhpToken.php',
+    'Rap2hpoutre\\LaravelLogViewer\\BaseController' => $vendorDir . '/rap2hpoutre/laravel-log-viewer/src/controllers/LogViewerController.php',
+    'Rap2hpoutre\\LaravelLogViewer\\LogViewerController' => $vendorDir . '/rap2hpoutre/laravel-log-viewer/src/controllers/LogViewerController.php',
     'ReflectionConstant' => $vendorDir . '/symfony/polyfill-php84/Resources/stubs/ReflectionConstant.php',
     'SQLite3Exception' => $vendorDir . '/symfony/polyfill-php83/Resources/stubs/SQLite3Exception.php',
     'Stringable' => $vendorDir . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',

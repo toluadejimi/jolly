@@ -3,6 +3,7 @@
         "barryvdh/laravel-debugbar": "^3.16"
     },
     "require": {
-        "spatie/laravel-image-optimizer": "^1.8"
+        "spatie/laravel-image-optimizer": "^1.8",
+        "rap2hpoutre/laravel-log-viewer": "^2.5"
     }
 }
