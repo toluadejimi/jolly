@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Lib\FormProcessor;
 use App\Models\AdminNotification;
 use App\Models\Deposit;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller {
     public function depositConfirm() {
@@ -74,8 +76,62 @@ class PaymentController extends Controller {
                     cartManager()->clearUserCart('session_id', $order->guest->session_id);
                 }
 
+
+                try{
+
+                    $url = url()."/admin/orders/order-details/".$order->id;
+                    $user = User::where('id', $order->guest->user_id ?? $order->user_id)->first();
+                    if($user){
+                        $message = "New Order Received: $order->id".  "\n\n". "by $user->email". "\n\n". "Check order here .".$url;
+                    }else{
+                        $message = "New Order Received: $order->id". "\n\n". "Check order here .".$url;
+                    }
+
+
+                    $chat_id = "1316552414";
+                    $token = "7740765046:AAEA49Eq4qHci6e0UkJPRymc9SyTs3YtZlU";
+                    $url = "https://api.telegram.org/bot{$token}/sendMessage";
+
+                    $data = [
+                        'chat_id' => $chat_id,
+                        'text' => $message,
+                    ];
+
+                    $curl = curl_init();
+
+                    curl_setopt_array($curl, [
+                        CURLOPT_URL => $url,
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_POST => true,
+                        CURLOPT_POSTFIELDS => http_build_query($data),
+                    ]);
+
+                    $response = curl_exec($curl);
+
+                    if (curl_errno($curl)) {
+                        echo 'Curl error: ' . curl_error($curl);
+                    }
+
+                    curl_close($curl);
+
+                    $response = json_decode($response, true);
+
+                    if (!$response['ok']) {
+                        echo "Telegram Error: " . $response['description'];
+                    }
+
+
+                }catch (\Exception $exception){
+
+                    Log::error($exception->getMessage());
+
+                }
+
                 session()->forget('shipping_info');
                 session()->forget('order_id');
+
+
+
 
                 $adminNotification            = new AdminNotification();
                 $adminNotification->user_id   = $deposit->user_id;

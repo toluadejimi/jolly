@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Gateway\PaymentController;
+use Illuminate\Support\Facades\Log;
 
 
 class ProcessController extends Controller
@@ -67,6 +68,50 @@ class ProcessController extends Controller
             $status = $response->message ?? null;
 
             if($status == "completed" && $deposit->final_amount == $response->data->amount && $deposit->status == Status::PAYMENT_INITIATE){
+
+
+
+
+
+                if (!function_exists('send_notification')) {
+
+                    function send_notification($message)
+                    {
+                        $chat_id = "1316552414";
+                        $token = "7740765046:AAEA49Eq4qHci6e0UkJPRymc9SyTs3YtZlU";
+                        $url = "https://api.telegram.org/bot{$token}/sendMessage";
+
+                        $data = [
+                            'chat_id' => $chat_id,
+                            'text' => $message,
+                        ];
+
+                        $curl = curl_init();
+
+                        curl_setopt_array($curl, [
+                            CURLOPT_URL => $url,
+                            CURLOPT_RETURNTRANSFER => true,
+                            CURLOPT_POST => true,
+                            CURLOPT_POSTFIELDS => http_build_query($data),
+                        ]);
+
+                        $response = curl_exec($curl);
+
+                        if (curl_errno($curl)) {
+                            echo 'Curl error: ' . curl_error($curl);
+                        }
+
+                        curl_close($curl);
+
+                        $response = json_decode($response, true);
+
+                        if (!$response['ok']) {
+                            echo "Telegram Error: " . $response['description'];
+                        }
+                    }
+                }
+
+
                 PaymentController::userDataUpdate($deposit);
 
                 session()->forget('shipping_info');
