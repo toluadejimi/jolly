@@ -215,6 +215,7 @@
       <path value="$PROJECT_DIR$/core/vendor/laravel/ui" />
       <path value="$PROJECT_DIR$/core/vendor/laravel/prompts" />
       <path value="$PROJECT_DIR$/core/vendor/laravel/framework" />
+      <path value="$PROJECT_DIR$/vendor/rap2hpoutre/laravel-log-viewer" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.3" />
@@ -223,7 +224,7 @@
   </component>
   <component name="PhpUnit">
     <phpunit_settings>
-      <PhpUnitSettings configuration_file_path="$PROJECT_DIR$/core/phpunit.xml" custom_loader_path="$PROJECT_DIR$/core/vendor/autoload.php" use_configuration_file="true" />
+      <PhpUnitSettings configuration_file_path="$PROJECT_DIR$/core/phpunit.xml" custom_loader_path="$PROJECT_DIR$/vendor/autoload.php" use_configuration_file="true" />
     </phpunit_settings>
   </component>
   <component name="PsalmOptionsConfiguration">
