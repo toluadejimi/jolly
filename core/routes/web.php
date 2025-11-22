@@ -7,7 +7,7 @@ Route::get('/clear', function () {
     \Illuminate\Support\Facades\Artisan::call('optimize:clear');
 });
 
-Route::get('logs', [LogViewerController::class, 'index']);
+Route::get('logger', [LogViewerController::class, 'index']);
 
 
 Route::get('/remove-photo/{type}', [\App\Http\Controllers\CheckoutController::class, 'removePhoto'])->name('remove_photo');
