@@ -26,9 +26,7 @@ class ProcessController extends Controller
         $url = "https://web.sprintpay.online/pay?amount=$amount&key=948746y7444747656f4645454556f646444&ref=$deposit->trx&email=$email";
         $send['url'] =  $url;
 
-
         $alias = $deposit->gateway->alias;
-
         $send['view'] = 'user.payment.'.$alias;
 
         return json_encode($send);
@@ -36,11 +34,15 @@ class ProcessController extends Controller
 
     public function ipn(request $request)
     {
+
+
+        LOG::info("payment ======>".json_encode($request->all()));
+
         $track = $request->trans_id;
 
 
-        $deposit = Deposit::where('trx', $track)->orderBy('id', 'DESC')->first();
 
+        $deposit = Deposit::where('trx', $track)->orderBy('id', 'DESC')->first();
 
         if (!isset($deposit)) {
 
