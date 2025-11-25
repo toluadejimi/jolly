@@ -41,7 +41,7 @@ class CheckoutController extends Controller {
 
         $request->validate([
             'email'        => 'required|email',
-            'mobile'       => 'required|regex:/^([0-9]*)$/',
+        //    'mobile'       => 'required|regex:/^([0-9]*)$/',
 //            'country_code' => 'required|in:' . $countryCodes,
 //            'country'      => 'required|in:' . $countries,
 //            'mobile_code'  => 'required|in:' . $mobileCodes,
@@ -77,12 +77,12 @@ class CheckoutController extends Controller {
         $request->validate([
             'firstname' => 'required|string',
             'lastname'  => 'required|string',
-            'mobile'    => 'required|string',
+            //'mobile'    => 'required|string',
             'email'     => 'required|email',
             'city'      => 'required|string',
             'state'     => 'required|string',
             'zip'       => 'required|string',
-            'apt'       => 'required|string',
+           // 'apt'       => 'required|string',
             'country'   => 'required|string',
             'address'   => 'required|string',
         ]);
