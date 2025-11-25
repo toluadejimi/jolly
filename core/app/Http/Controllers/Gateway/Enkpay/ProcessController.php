@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Gateway\Enkpay;
 
+use App\Models\Order;
 use App\Models\User;
 use App\Models\Deposit;
 use App\Constants\Status;
@@ -38,7 +39,11 @@ class ProcessController extends Controller
 
         LOG::info("payment one ======>".json_encode($request->all()));
 
+
+
+
         if($request->trans_id == null){
+
 
             if($request->order_id == null){
                 return response()->json([
@@ -48,6 +53,21 @@ class ProcessController extends Controller
             }
 
             $track = $request->order_id;
+            $ck_order = Deposit::where('trx', $track)->first()->status;
+            if($ck_order == 1){
+
+                $message = 'Transaction was successful, Ref: ' . $track;
+                $notify[] = ['success', $message];
+                $notifyApi[] = $message;
+
+                Log::info("Order Updated =====>". $request->order_id);
+                $deposit = Deposit::where('trx', $track)->first();
+
+                return redirect($deposit->success_url)->withNotify($notify);
+
+            }
+
+
             $deposit = Deposit::where('trx', $track)->orderBy('id', 'DESC')->first();
 
             if (!isset($deposit)) {
@@ -89,7 +109,9 @@ class ProcessController extends Controller
                     $notify[] = ['success', $message];
                     $notifyApi[] = $message;
 
-                    return redirect()->away($deposit->success_url)->withNotify($notify);
+                    Log::info("Order Updated =====>". $request->order_id);
+
+                   // return redirect()->away($deposit->success_url)->withNotify($notify);
 
                 } else {
 
