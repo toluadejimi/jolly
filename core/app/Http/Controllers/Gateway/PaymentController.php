@@ -79,7 +79,7 @@ class PaymentController extends Controller {
 
                 try{
 
-                    $url = url()."/admin/orders/order-details/".$order->id;
+                    $url = url('/admin/orders/order-details/' . $order->id);
                     $user = User::where('id', $order->guest->user_id ?? $order->user_id)->first();
                     if($user){
                         $message = "New Order Received: $order->id".  "\n\n". "by $user->email". "\n\n". "Check order here .".$url;
