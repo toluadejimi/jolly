@@ -78,6 +78,12 @@ class Order extends Model {
         });
     }
 
+    public function scopeIsUnpaidOrder($query) {
+        return $query->where(function ($query) {
+            $query->where('payment_status', Status::NO);
+        });
+    }
+
     public function statusBadge() {
         if ($this->status == Status::ORDER_PENDING) {
             $class = 'warning';

@@ -36,6 +36,13 @@ class OrderController extends Controller
         return view('admin.order.all', compact('pageTitle', 'orders'));
     }
 
+    public function unpaidOrders()
+    {
+        $pageTitle = "Unpaid Orders";
+        $orders    = $this->orderDataup('pending');
+        return view('admin.order.all', compact('pageTitle', 'orders'));
+    }
+
     public function onProcessing()
     {
         $pageTitle = "Orders on Processing";
@@ -89,6 +96,25 @@ class OrderController extends Controller
             ->paginate(getPaginate());
     }
 
+
+
+        private function orderDataup($scope = null)
+    {
+
+        $orders = Order::IsUnpaidOrder();
+
+        return $orders->searchable(['order_number', 'user:username'], false)
+            ->with([
+                'user',
+                'deposit',
+                'deposit.gateway',
+                'afterSaleDownloadableProducts:id,name,is_downloadable,delivery_type'
+            ])
+            ->orderBy('id', 'DESC')
+            ->paginate(getPaginate());
+    }
+
+
     public function orderDetails($id)
     {
         $pageTitle = 'Order Details';
@@ -96,6 +122,17 @@ class OrderController extends Controller
 
         $pid = $id;
         return view('admin.order.detail', compact('order', 'pageTitle', 'pid'));
+    }
+
+
+    public function orderPay($id)
+    {
+        Order::where('id', $id)->update(['payment_status' => 1]);
+
+        $notify[] = ['success', 'Order payment status has been  changed to paid'];
+        return back()->withNotify($notify);
+
+
     }
 
     public function changeStatus(Request $request, $id)

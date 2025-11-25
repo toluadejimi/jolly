@@ -383,6 +383,16 @@
                 "title": "COD Orders",
                 "route_name": "admin.order.cod",
                 "menu_active": "admin.order.cod"
+            },
+
+            {
+                "keyword": [
+                    "Unpaid Orders",
+                    "Orders"
+                ],
+                "title": "Unpaid Orders",
+                "route_name": "admin.order.unpaid",
+                "menu_active": "admin.order.unpaid"
             }
         ]
     },

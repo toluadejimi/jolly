@@ -54,7 +54,12 @@
 
                                             <a href="{{ route('admin.order.details', $order->id) }}"
                                                 class="btn btn-outline--dark btn-sm">
-                                                <i class="la la-desktop"></i>@lang('Details')
+                                                <i class="la la-cash-register"></i>@lang('Details')
+                                            </a>
+
+                                            <a href="{{ route('admin.order.pay', $order->id) }}"
+                                                class="btn btn-outline--warning btn-sm">
+                                                <i class="la la-desktop"></i>@lang('Pay')
                                             </a>
 
                                             @php

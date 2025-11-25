@@ -11,6 +11,9 @@ class MaintenanceMode
     {
         if (gs('maintenance_mode') == Status::ENABLE) {
 
+
+            dd(gs());
+
             if ($request->is('api/*')) {
                 if ($request->is('api/section-data/maintenance')) {
                     return $next($request);

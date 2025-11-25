@@ -269,7 +269,9 @@ Route::middleware('admin')->group(function () {
         Route::get('canceled', 'canceledOrders')->name('canceled');
         Route::get('returned', 'returned')->name('returned');
         Route::get('cod', 'codOrders')->name('cod');
+        Route::get('unpid', 'unpaidOrders')->name('unpaid');
         Route::get('order-details/{id}', 'orderDetails')->name('details');
+        Route::get('order-pay/{id}', 'orderPay')->name('pay');
 
         Route::post('return/{id}', 'return')->name('return');
     });
