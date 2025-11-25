@@ -36,11 +36,11 @@ class ProcessController extends Controller
     {
 
 
-        LOG::info("payment ======>".json_encode($request->all()));
+        if($request->trans_id == null){
+            return redirect()->away(url('')."/ipn/enkpay?trans_id=$request->order_id");
+        }
 
-        $track = $request->trans_id;
-
-
+        $track = $request->trans_id ?? $request->order_id;
 
         $deposit = Deposit::where('trx', $track)->orderBy('id', 'DESC')->first();
 
@@ -70,9 +70,6 @@ class ProcessController extends Controller
             $status = $response->message ?? null;
 
             if($status == "completed" && $deposit->final_amount == $response->data->amount && $deposit->status == Status::PAYMENT_INITIATE){
-
-
-
 
 
                 if (!function_exists('send_notification')) {
