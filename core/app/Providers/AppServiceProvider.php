@@ -99,7 +99,7 @@ class AppServiceProvider extends ServiceProvider {
         });
 
         if (gs('force_ssl')) {
-            \URL::forceScheme('http');
+            \URL::forceScheme('https');
         }
 
         Paginator::useBootstrapFive();
