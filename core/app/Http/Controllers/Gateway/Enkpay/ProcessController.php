@@ -60,7 +60,7 @@ class ProcessController extends Controller
                 $notify[] = ['success', $message];
                 $notifyApi[] = $message;
 
-                Log::info("Order Updated =====>". $request->order_id);
+                Log::info("Order redirected to success =====>". $request->order_id);
                 $deposit = Deposit::where('trx', $track)->first();
 
                 return redirect($deposit->success_url)->withNotify($notify);
