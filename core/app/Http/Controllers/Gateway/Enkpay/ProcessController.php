@@ -38,15 +38,74 @@ class ProcessController extends Controller
 
         LOG::info("payment one ======>".json_encode($request->all()));
 
-
         if($request->trans_id == null){
 
-            LOG::info("payment two ======>".json_encode($request->order_id));
+            if($request->order_id == null){
+                return response()->json([
+                    'status' => false,
+                    'message' => "Order id is null",
+                ]);
+            }
+
+            $track = $request->order_id;
+            $deposit = Deposit::where('trx', $track)->orderBy('id', 'DESC')->first();
+
+            if (!isset($deposit)) {
+
+                return response()->json([
+                    'status' => false,
+                    'message' => "Unable to process",
+                ]);
+
+
+            }else {
+
+                $query = array(
+                    "ref" => $track
+                );
+
+                $dataString = json_encode($query);
+                $ch = curl_init('https://web.sprintpay.online/api/verify-transaction');
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                $response = curl_exec($ch);
+                curl_close($ch);
+                $response = json_decode($response);
+                $status = $response->message ?? null;
+
+                if ($status == "completed" && $deposit->final_amount == $response->data->amount && $deposit->status == Status::PAYMENT_INITIATE) {
+
+                    PaymentController::userDataUpdate($deposit);
+
+                    session()->forget('shipping_info');
+                    session()->forget('note_to_seller');
+                    session()->forget('customer_photo_back');
+                    session()->forget('customer_photo_front');
+
+                    $message = 'Transaction was successful, Ref: ' . $track;
+                    $notify[] = ['success', $message];
+                    $notifyApi[] = $message;
+
+                    return redirect()->away($deposit->success_url)->withNotify($notify);
+
+                } else {
+
+                    return response()->json([
+                        'status' => false,
+                        'message' => "Unable to process",
+                    ]);
+
+                }
+
+
+            }
         }
 
 
-        $track = $request->trans_id ?? $request->order_id;
-
+        $track = $request->trans_id;
 
 
         $deposit = Deposit::where('trx', $track)->orderBy('id', 'DESC')->first();
