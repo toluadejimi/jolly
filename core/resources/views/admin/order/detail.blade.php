@@ -26,6 +26,7 @@
                         <thead>
                         <tr>
                             <th>@lang('Product')</th>
+                            <th>@lang('Category')</th>
                             <th>@lang('Price')</th>
                             <th>@lang('Quantity')</th>
                             <th>@lang('Total Price')</th>
@@ -41,6 +42,8 @@
                         @foreach ($order->orderDetail as $data)
                             @php
                                 $mainImage = $data->productVariant && @$data->productVariant->main_image_id ? $data->productVariant->mainImage(true) : @$data->product->mainImage(true);
+                                $get_cat = \App\Models\CategoryProduct::where('product_id', $data->product_id)->first()->category_id;
+                                $cat_name = \App\Models\Category::where('id', $get_cat)->first()->name;
                             @endphp
 
                             <tr>
@@ -67,6 +70,9 @@
                                 </td>
 
 
+                                <td>
+                                    {{ $cat_name ?? "CATEGORY" }}
+                                </td>
                                 <td>
                                     {{ showAmount($data->price) }}
                                 </td>
