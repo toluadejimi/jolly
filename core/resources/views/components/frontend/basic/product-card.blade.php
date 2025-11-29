@@ -63,7 +63,7 @@
                 <div class="product-badge">🇺🇸 US Delivery</div>
             @endif
             @if ($product->all_countries_delivery)
-                <div class="product-badge"> 🌎 All Countries Delivery</div>
+                <div style="font-size: 10px" class="product-badge"> 🌎 All Countries</div>
             @endif
             <img src="{{ getImage(null) }}" class="lazyload" data-src="{{ $product->mainImage() }}" alt="flash">
         </a>

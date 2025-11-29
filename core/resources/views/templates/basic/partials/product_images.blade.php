@@ -12,7 +12,7 @@
         <div class="product-badge">🇺🇸 US Delivery</div>
     @endif
     @if ($product->all_countries_delivery)
-        <div class="product-badge"> 🌎 All Countries Delivery</div>
+        <div style="font-size: 10px" class="product-badge"> 🌎Countries Delivery</div>
     @endif
 
 
