@@ -29,7 +29,7 @@ class ProductManager
     public function downloadDigitalProductFile($id)
     {
         try {
-            $file  = DigitalFile::with('fileable')->findOrFail(decrypt($id));
+            $file = DigitalFile::with('fileable')->findOrFail(decrypt($id));
             $fullPath = getFilePath('digitalProductFile') . '/' . $file->name;
             $mimetype = mime_content_type($fullPath);
             header('Content-Disposition: attachment; filename="' . slug($file->fileable->name) . '.' . pathinfo($file->name, PATHINFO_EXTENSION) . '";');
@@ -72,14 +72,14 @@ class ProductManager
     public function createStockLog($product, $changeQuantity, $description = '', $variant = null, $remark = null, $orderId = null)
     {
         if ($changeQuantity != 0) {
-            $log                     = new StockLog();
-            $log->product_id         = $product->id;
+            $log = new StockLog();
+            $log->product_id = $product->id;
             $log->product_variant_id = $variant ? $variant->id : 0;
-            $log->order_id           = $orderId;
-            $log->change_quantity    = abs($changeQuantity);
-            $log->post_quantity      = $variant->in_stock ?? $product->in_stock;
-            $log->description        = $description;
-            $log->remark             = $remark;
+            $log->order_id = $orderId;
+            $log->change_quantity = abs($changeQuantity);
+            $log->post_quantity = $variant->in_stock ?? $product->in_stock;
+            $log->description = $description;
+            $log->remark = $remark;
             $log->save();
         }
 
@@ -93,49 +93,50 @@ class ProductManager
      */
     public function setProductEntities(Request $request, Product $product)
     {
-        $product->name                      = $request->name ?? 'No Title';
-        $product->slug                      = $request->slug;
-        $product->product_type              = $request->product_type;
-        $product->brand_id                  = $request->brand_id ?? 0;
+        $product->name = $request->name ?? 'No Title';
+        $product->slug = $request->slug;
+        $product->product_type = $request->product_type;
+        $product->brand_id = $request->brand_id ?? 0;
 
-        $product->regular_price             = $request->regular_price ?? null;
-        $product->sale_price                = $request->sale_price ?? null;
-        $product->sale_starts_from          = $request->sale_starts_from;
-        $product->sale_ends_at              = $request->sale_ends_at;
-
-
-        $product->description               = $request->description;
-        $product->summary                   = $request->summary;
-
-        $product->meta_title                = $request->meta_title;
-        $product->meta_description          = $request->meta_description;
-        $product->meta_keywords             = $request->meta_keywords ?? null;
-
-        $product->main_image_id             = $request->main_image_id ?? 0;
-        $product->video_link                = $request->video_link;
-
-        $product->extra_descriptions        = $request->extra_description ?? null;
-
-        $product->is_published              = $request->is_published ? Status::YES : Status::NO;
-        $product->today_delivery              = $request->today_delivery ? Status::YES : Status::NO;
-        $product->customer_photo              = $request->customer_photo ? Status::YES : Status::NO;
-        $product->customised_test              = $request->customised_test ? Status::YES : Status::NO;
-        $product->customised_short_test              = $request->customised_short_test ? Status::YES : Status::NO;
-        $product->note                          = $request->note ? Status::YES : Status::NO;
-        $product->show_in_products_page               = $request->show_in_products_page ? Status::YES : Status::NO;
+        $product->regular_price = $request->regular_price ?? null;
+        $product->sale_price = $request->sale_price ?? null;
+        $product->sale_starts_from = $request->sale_starts_from;
+        $product->sale_ends_at = $request->sale_ends_at;
 
 
-        $product->is_downloadable           = $request->is_downloadable ? Status::YES : Status::NO;
-        $product->delivery_type             = $request->delivery_type;
+        $product->description = $request->description;
+        $product->summary = $request->summary;
 
-        $product->sku                       = $request->sku;
-        $product->track_inventory           = $request->track_inventory ? Status::YES : Status::NO;
-        $product->show_stock                = $request->show_stock ? Status::YES : Status::NO;
-        $product->in_stock                  = $request->in_stock ?? 0;
-        $product->alert_quantity            = $request->alert_quantity ?? 0;
+        $product->meta_title = $request->meta_title;
+        $product->meta_description = $request->meta_description;
+        $product->meta_keywords = $request->meta_keywords ?? null;
 
-        $product->product_type_id           = $request->product_type_id ?? 0;
-        $product->specification             = $request->specification ?? null;
+        $product->main_image_id = $request->main_image_id ?? 0;
+        $product->video_link = $request->video_link;
+        $product->extra_descriptions = $request->extra_description ?? null;
+        $product->is_published = $request->is_published ? Status::YES : Status::NO;
+        $product->today_delivery = $request->today_delivery ? Status::YES : Status::NO;
+        $product->usa_express_delivery = $request->usa_express_delivery ? Status::YES : Status::NO;
+        $product->usa_delivery = $request->usa_delivery ? Status::YES : Status::NO;
+        $product->all_countries_delivery = $request->all_countries_delivery ? Status::YES : Status::NO;
+        $product->customer_photo = $request->customer_photo ? Status::YES : Status::NO;
+        $product->customised_test = $request->customised_test ? Status::YES : Status::NO;
+        $product->customised_short_test = $request->customised_short_test ? Status::YES : Status::NO;
+        $product->note = $request->note ? Status::YES : Status::NO;
+        $product->show_in_products_page = $request->show_in_products_page ? Status::YES : Status::NO;
+
+
+        $product->is_downloadable = $request->is_downloadable ? Status::YES : Status::NO;
+        $product->delivery_type = $request->delivery_type;
+
+        $product->sku = $request->sku;
+        $product->track_inventory = $request->track_inventory ? Status::YES : Status::NO;
+        $product->show_stock = $request->show_stock ? Status::YES : Status::NO;
+        $product->in_stock = $request->in_stock ?? 0;
+        $product->alert_quantity = $request->alert_quantity ?? 0;
+
+        $product->product_type_id = $request->product_type_id ?? 0;
+        $product->specification = $request->specification ?? null;
 
         $product->save();
     }
@@ -213,9 +214,9 @@ class ProductManager
      * This function allows you to modify the attributes associated with a product.
      * You can either update the existing attributes or attach new attributes.
      *
-     * @param array   $attributes An array containing the IDs of the attributes to be associated with the product.
-     * @param Product $product    An instance of the Product class representing the product whose attributes are to be adjusted.
-     * @param bool    $isUpdate   A boolean flag indicating whether to update the product's attributes or attach new attributes to it.
+     * @param array $attributes An array containing the IDs of the attributes to be associated with the product.
+     * @param Product $product An instance of the Product class representing the product whose attributes are to be adjusted.
+     * @param bool $isUpdate A boolean flag indicating whether to update the product's attributes or attach new attributes to it.
      * @return void
      */
     public function adjustProductAttributes(array $attributes, Product $product, bool $isUpdate): void
@@ -234,9 +235,9 @@ class ProductManager
      * This function allows you to modify the attribute values associated with a product.
      * You can either update the existing attribute values or attach new ones.
      *
-     * @param array   $attributeValues An array containing  the IDs of the attribute values to be associated with the product.
-     * @param Product $product         An instance of the Product class representing the product whose attribute values are to be adjusted.
-     * @param bool    $isUpdate        A boolean flag indicating whether to update the product's attribute values or attach new ones.
+     * @param array $attributeValues An array containing  the IDs of the attribute values to be associated with the product.
+     * @param Product $product An instance of the Product class representing the product whose attribute values are to be adjusted.
+     * @param bool $isUpdate A boolean flag indicating whether to update the product's attribute values or attach new ones.
      * @return void
      */
     public function adjustProductAttributeValues(array $attributeValues, Product $product, bool $isUpdate): void
@@ -259,17 +260,17 @@ class ProductManager
     public function saveProductVariants($generatedVariants, $product)
     {
         foreach ($generatedVariants as $variant) {
-            $variant                    = collect($variant);
-            $attributeArray             = $this->prepareAttributeValuesArray($variant);
-            $savedVariant               = $product->productVariants->where('attribute_values', $attributeArray)->first();
+            $variant = collect($variant);
+            $attributeArray = $this->prepareAttributeValuesArray($variant);
+            $savedVariant = $product->productVariants->where('attribute_values', $attributeArray)->first();
 
             if ($savedVariant && $savedVariant->trashed()) {
                 $savedVariant->restore();
             }
 
-            $productVariant                   = $savedVariant ?? new ProductVariant();
-            $productVariant->product_id       = $product->id;
-            $productVariant->name             = implode(' - ', $variant->pluck('name')->toArray());
+            $productVariant = $savedVariant ?? new ProductVariant();
+            $productVariant->product_id = $product->id;
+            $productVariant->name = implode(' - ', $variant->pluck('name')->toArray());
             $productVariant->attribute_values = $attributeArray;
 
             $productVariant->save();
@@ -287,7 +288,7 @@ class ProductManager
         // Group the attribute_values by the attributes
         $attributeGroup = $attributeValues->groupBy('attribute_id');
 
-        $variantsArray   = [];
+        $variantsArray = [];
 
         foreach ($attributeGroup as $attributes) {
             $variantArray = [];

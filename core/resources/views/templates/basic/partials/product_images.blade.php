@@ -4,6 +4,17 @@
     @if ($product->today_delivery)
         <div class="product-badge">Today Delivery</div>
     @endif
+    @if ($product->usa_express_delivery)
+        <div class="product-badge">🇺🇸 US Express Shipping</div>
+    @endif
+
+    @if ($product->usa_delivery)
+        <div class="product-badge">🇺🇸 US Delivery</div>
+    @endif
+    @if ($product->all_countries_delivery)
+        <div class="product-badge"> 🌎 All Countries Delivery</div>
+    @endif
+
 
     <img class="@if ($product->is_downloadable) downloadable_image @else xzoom5 @endif"
          id="xzoom-magnific"

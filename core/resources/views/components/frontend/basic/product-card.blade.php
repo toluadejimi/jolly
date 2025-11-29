@@ -12,33 +12,40 @@
 
 <div class="product-card">
     @if (Route::is('wishlist.page'))
-        <button class="active removeWishlist wishlist-product-remove-btn" data-page="1" data-id="{{ $wishlist->id }}" data-pid="{{ $product->id }}"><i class="las la-trash"></i></button>
+        <button class="active removeWishlist wishlist-product-remove-btn" data-page="1" data-id="{{ $wishlist->id }}"
+                data-pid="{{ $product->id }}"><i class="las la-trash"></i></button>
     @endif
     <div class="product-thumb">
         <ul class="product-card-buttons">
             @if (gs('product_wishlist'))
                 <li class="product-wishlist-btn">
                     @if (!Route::is('wishlist.page'))
-                        <button tyepe="button" @class(['addToWishlist', 'active' => checkWishList($product->id)]) data-id="{{ $product->id }}"><i class="lar la-heart"></i></button>
+                        <button tyepe="button"
+                                @class(['addToWishlist', 'active' => checkWishList($product->id)]) data-id="{{ $product->id }}">
+                            <i class="lar la-heart"></i></button>
                     @endif
                 </li>
             @endif
 
             @if ($product->product_type_id && gs('product_compare'))
                 <li class="product-compare-btn">
-                    <button tyepe="button" class="addToCompare {{ $addedInCompareList ? 'active' : '' }}" data-id="{{ $product->id }}"><i class="las la-exchange-alt"></i></button>
+                    <button tyepe="button" class="addToCompare {{ $addedInCompareList ? 'active' : '' }}"
+                            data-id="{{ $product->id }}"><i class="las la-exchange-alt"></i></button>
                 </li>
             @endif
 
             @if (!$showCartButton)
                 @if ($product->productVariants->count())
                     <li class="product-quick-view-btn">
-                        <button class="quickViewBtn" data-product="{{ $product->slug }}"><i class="las la-cart-plus"></i></button>
+                        <button class="quickViewBtn" data-product="{{ $product->slug }}"><i
+                                class="las la-cart-plus"></i></button>
                     </li>
                 @else
                     <li class="product-quick-view-btn">
                         <input type="hidden" name="quantity" value="1">
-                        <button tyepe="button" class="addToCart" data-id="{{ $product->id }}" data-product_type="{{ $product->product_type }}"><i class="las la-cart-plus"></i></button>
+                        <button tyepe="button" class="addToCart" data-id="{{ $product->id }}"
+                                data-product_type="{{ $product->product_type }}"><i class="las la-cart-plus"></i>
+                        </button>
                     </li>
                 @endif
             @endif
@@ -47,6 +54,16 @@
         <a href="{{ $product->link() }}">
             @if ($product->today_delivery)
                 <div class="product-badge">Today Delivery</div>
+            @endif
+            @if ($product->usa_express_delivery)
+                <div class="product-badge">🇺🇸 US Express Shipping</div>
+            @endif
+
+            @if ($product->usa_delivery)
+                <div class="product-badge">🇺🇸 US Delivery</div>
+            @endif
+            @if ($product->all_countries_delivery)
+                <div class="product-badge"> 🌎 All Countries Delivery</div>
             @endif
             <img src="{{ getImage(null) }}" class="lazyload" data-src="{{ $product->mainImage() }}" alt="flash">
         </a>
@@ -57,7 +74,8 @@
         <div class="product-before-content">
             @if ($showTitle)
                 <h6 class="title">
-                    <a data-src="{{ $product->mainImage() }}"  href="{{ $product->link() }}">{{ strLimit(__($product->name), 40) }}</a>
+                    <a data-src="{{ $product->mainImage() }}"
+                       href="{{ $product->link() }}">{{ strLimit(__($product->name), 40) }}</a>
                 </h6>
             @endif
 
@@ -87,10 +105,13 @@
 
         @if ($showCartButton)
             @if ($product->productVariants->count())
-                <button class="quickViewBtn add-to-cart-btn" data-product="{{ $product->slug }}"><i class="las la-shopping-bag"></i> @lang('Add to Cart')</button>
+                <button class="quickViewBtn add-to-cart-btn" data-product="{{ $product->slug }}"><i
+                        class="las la-shopping-bag"></i> @lang('Add to Cart')</button>
             @else
                 <input type="hidden" name="quantity" value="1">
-                <button type="button" class="addToCart add-to-cart-btn" data-id="{{ $product->id }}" data-product_type="{{ $product->product_type }}"><i class="las la-shopping-bag"></i> @lang('Add to Cart')</button>
+                <button type="button" class="addToCart add-to-cart-btn" data-id="{{ $product->id }}"
+                        data-product_type="{{ $product->product_type }}"><i
+                        class="las la-shopping-bag"></i> @lang('Add to Cart')</button>
             @endif
         @endif
     </div>

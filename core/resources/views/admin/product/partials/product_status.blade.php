@@ -34,6 +34,41 @@
             </div>
         </div>
 
+
+
+        <div class="form-group row">
+            <div class="col-xl-12">
+                <label>
+                    @lang('🇺🇸 US Express Shipping')
+                </label>
+            </div>
+            <div class="col-xl-12">
+                <x-toggle-switch name="usa_express_delivery" value="1" :checked="@$product->usa_express_delivery" />
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-12">
+                <label>
+                    @lang('🇺🇸 US Delivery')
+                </label>
+            </div>
+            <div class="col-xl-12">
+                <x-toggle-switch name="usa_delivery" value="1" :checked="@$product->usa_delivery" />
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-12">
+                <label>
+                    @lang('🌎 All Countries Delivery')
+                </label>
+            </div>
+            <div class="col-xl-12">
+                <x-toggle-switch name="all_countries_delivery" value="1" :checked="@$product->all_countries_delivery" />
+            </div>
+        </div>
+
         <div class="form-group row">
             <div class="col-xl-12">
                 <label>
