@@ -5,14 +5,14 @@
         <div class="product-badge">Today Delivery</div>
     @endif
     @if ($product->usa_express_delivery)
-        <div class="product-badge">🇺🇸 US Express Shipping</div>
+        <div style="font-size: 10px" class="product-badge">🇺🇸 US Express Shipping</div>
     @endif
 
     @if ($product->usa_delivery)
         <div class="product-badge">🇺🇸 US Delivery</div>
     @endif
     @if ($product->all_countries_delivery)
-        <div style="font-size: 10px" class="product-badge"> 🌎Countries Delivery</div>
+        <div style="font-size: 10px" class="product-badge"> 🌎 All Countries Delivery</div>
     @endif
 
 
