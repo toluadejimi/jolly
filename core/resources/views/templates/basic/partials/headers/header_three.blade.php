@@ -42,10 +42,10 @@
                             ])
                         @endif
 
-{{--                        @if ($key == 'widgets')--}}
-{{--                            <div class="action-btn-inner d-flex">--}}
-{{--                                @foreach (collect($group)->where('status', 'on') as $widget)--}}
-{{--                                    @if ($widget->key == 'cart')--}}
+                        @if ($key == 'widgets')
+                            <div class="action-btn-inner d-flex">
+                                @foreach (collect($group)->where('status', 'on') as $widget)
+                                    @if ($widget->key == 'cart')
 {{--                                        <div class="cart-icon-design">--}}
 {{--                                            <button class="button cart-button flex-shrink-0" @disabled(Route::is('cart.page')) @if (@$widget->background_color) style="background-color: {{ '#' . $widget->background_color }} !important" @endif>--}}
 {{--                                                <i class="las la-shopping-bag"></i>--}}
@@ -55,40 +55,40 @@
 {{--                                                </span>--}}
 {{--                                            </button>--}}
 {{--                                        </div>--}}
-{{--                                    @elseif($widget->key == 'wishlist' && gs('product_wishlist'))--}}
-{{--                                        <div class="cart-icon-design widget--style" @if (@$widget->background_color) style="background-color: {{ '#' . @$widget->background_color }} !important" @endif>--}}
-{{--                                            <button class="button wish-button" @disabled(Route::is('wishlist.page')) id="wish-button">--}}
-{{--                                                <span class="ico">--}}
-{{--                                                    <i class="lar la-heart"></i>--}}
-{{--                                                </span>--}}
-{{--                                                <span class="wishlist-count ecommerce__is">0</span>--}}
-{{--                                            </button>--}}
-{{--                                        </div>--}}
-{{--                                    @elseif($widget->key == 'compare' && gs('product_compare'))--}}
-{{--                                        <div class="cart-icon-design widget--style" @if (@$widget->background_color) style="background-color: {{ '#' . @$widget->background_color }} !important" @endif>--}}
-{{--                                            <a href="{{ route('compare.all') }}">--}}
-{{--                                                <span class="ico">--}}
-{{--                                                    <i class="las la-exchange-alt"></i>--}}
-{{--                                                </span>--}}
-{{--                                                <span class="compare-count ecommerce__is">0</span>--}}
-{{--                                            </a>--}}
-{{--                                        </div>--}}
-{{--                                    @elseif($widget->key == 'user_auth')--}}
-{{--                                        <div class="h-100 d-flex align-items-center" @if (@$widget->background_color) style="background-color: {{ '#' . @$widget->background_color }} !important" @endif>--}}
-{{--                                            @include('Template::partials.user_auth_options')--}}
-{{--                                        </div>--}}
-{{--                                    @elseif($widget->key == 'language')--}}
-{{--                                        <div class="h-100 d-flex align-items-center" @if (@$widget->background_color) style="background-color: {{ '#' . @$widget->background_color }} !important" @endif>--}}
-{{--                                            @include($activeTemplate . 'partials.menu.language_menu')--}}
-{{--                                        </div>--}}
-{{--                                    @elseif($widget->key == 'notifications')--}}
-{{--                                        <div class="h-100 d-flex align-items-center" @if (@$widget->background_color) style="background-color: {{ '#' . @$widget->background_color }} !important" @endif>--}}
-{{--                                            <x-user-notification-component />--}}
-{{--                                        </div>--}}
-{{--                                    @endif--}}
-{{--                                @endforeach--}}
-{{--                            </div>--}}
-{{--                        @endif--}}
+                                    @elseif($widget->key == 'wishlist' && gs('product_wishlist'))
+                                        <div class="cart-icon-design widget--style" @if (@$widget->background_color) style="background-color: {{ '#' . @$widget->background_color }} !important" @endif>
+                                            <button class="button wish-button" @disabled(Route::is('wishlist.page')) id="wish-button">
+                                                <span class="ico">
+                                                    <i class="lar la-heart"></i>
+                                                </span>
+                                                <span class="wishlist-count ecommerce__is">0</span>
+                                            </button>
+                                        </div>
+                                    @elseif($widget->key == 'compare' && gs('product_compare'))
+                                        <div class="cart-icon-design widget--style" @if (@$widget->background_color) style="background-color: {{ '#' . @$widget->background_color }} !important" @endif>
+                                            <a href="{{ route('compare.all') }}">
+                                                <span class="ico">
+                                                    <i class="las la-exchange-alt"></i>
+                                                </span>
+                                                <span class="compare-count ecommerce__is">0</span>
+                                            </a>
+                                        </div>
+                                    @elseif($widget->key == 'user_auth')
+                                        <div class="h-100 d-flex align-items-center" @if (@$widget->background_color) style="background-color: {{ '#' . @$widget->background_color }} !important" @endif>
+                                            @include('Template::partials.user_auth_options')
+                                        </div>
+                                    @elseif($widget->key == 'language')
+                                        <div class="h-100 d-flex align-items-center" @if (@$widget->background_color) style="background-color: {{ '#' . @$widget->background_color }} !important" @endif>
+                                            @include($activeTemplate . 'partials.menu.language_menu')
+                                        </div>
+                                    @elseif($widget->key == 'notifications')
+                                        <div class="h-100 d-flex align-items-center" @if (@$widget->background_color) style="background-color: {{ '#' . @$widget->background_color }} !important" @endif>
+                                            <x-user-notification-component />
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        @endif
                     @endforeach
                 </div>
             </div>
