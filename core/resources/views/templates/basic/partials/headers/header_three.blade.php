@@ -46,15 +46,15 @@
                             <div class="action-btn-inner d-flex">
                                 @foreach (collect($group)->where('status', 'on') as $widget)
                                     @if ($widget->key == 'cart')
-{{--                                        <div class="cart-icon-design">--}}
-{{--                                            <button class="button cart-button flex-shrink-0" @disabled(Route::is('cart.page')) @if (@$widget->background_color) style="background-color: {{ '#' . $widget->background_color }} !important" @endif>--}}
-{{--                                                <i class="las la-shopping-bag"></i>--}}
-{{--                                                <span class="flex-shrink-0">--}}
+                                        <div class="cart-icon-design">
+                                            <button class="button cart-button flex-shrink-0" @disabled(Route::is('cart.page')) @if (@$widget->background_color) style="background-color: {{ '#' . $widget->background_color }} !important" @endif>
+                                                <i class="las la-shopping-bag"></i>
+                                                <span class="flex-shrink-0">
 {{--                                                    <span class="amount d-block">{{ gs('cur_sym') }}<span class="cartSubtotal">0</span></span>--}}
 {{--                                                    <span class="items d-block">(<span class="cartItemCount">0</span>) @lang('items')</span>--}}
-{{--                                                </span>--}}
-{{--                                            </button>--}}
-{{--                                        </div>--}}
+                                                </span>
+                                            </button>
+                                        </div>
                                     @elseif($widget->key == 'wishlist' && gs('product_wishlist'))
                                         <div class="cart-icon-design widget--style" @if (@$widget->background_color) style="background-color: {{ '#' . @$widget->background_color }} !important" @endif>
                                             <button class="button wish-button" @disabled(Route::is('wishlist.page')) id="wish-button">
