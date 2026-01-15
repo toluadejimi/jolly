@@ -47,8 +47,9 @@
                                 @foreach (collect($group)->where('status', 'on') as $widget)
                                     @if ($widget->key == 'cart')
                                         <div class="cart-icon-design">
-                                            <button class="button cart-button flex-shrink-0" @disabled(Route::is('cart.page')) @if (@$widget->background_color) style="background-color: {{ '#' . $widget->background_color }} !important" @endif>
-                                                <i class="las la-shopping-bag"></i>
+{{--                                            <button class="button cart-button flex-shrink-0" @disabled(Route::is('cart.page')) @if (@$widget->background_color) style="background-color: {{ '#' . $widget->background_color }} !important" @endif>--}}
+                                            <button class="button cart-button flex-shrink-0">
+                                                <i class="las la-user-check"></i>
                                                 <span class="flex-shrink-0">
 {{--                                                    <span class="amount d-block">{{ gs('cur_sym') }}<span class="cartSubtotal">0</span></span>--}}
 {{--                                                    <span class="items d-block">(<span class="cartItemCount">0</span>) @lang('items')</span>--}}
