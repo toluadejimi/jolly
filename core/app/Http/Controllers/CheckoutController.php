@@ -194,7 +194,7 @@ class CheckoutController extends Controller {
             $order_detail = [
                 'order_id' => $order->id,
                 'product_id' => $product->id,
-                'product_variant_id' => $variant->id,
+                'product_variant_id' => $variant->id ?? null,
                 'quantity' => 1,
                 'price' => $price,
                 'note' => $request->note_to_seller,
