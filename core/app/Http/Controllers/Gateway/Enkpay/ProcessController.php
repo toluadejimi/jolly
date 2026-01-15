@@ -74,8 +74,6 @@ class ProcessController extends Controller
 
 
 
-
-
                 if (!function_exists('send_notification')) {
 
                     function send_notification($message)
@@ -126,14 +124,14 @@ class ProcessController extends Controller
                 $message = 'Transaction was successful, Ref: ' . $track;
                     $notify[] = ['success', $message];
                     $notifyApi[] = $message;
-                    return redirect($deposit->success_url)->withNotify($notify);
+                    return redirect('/user/orders')->withNotify($notify);
             }else{
 
                 session()->forget('shipping_info');
                 $message = 'Unable to process';
                 $notify[] = ['error', $message];
 
-                return redirect('cart')->withNotify($notify);
+                return redirect('/user/orders')->withNotify($notify);
 
 
             }
