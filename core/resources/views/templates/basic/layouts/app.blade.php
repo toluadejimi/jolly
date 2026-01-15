@@ -17,6 +17,8 @@
     @stack('style')
     <link href="{{ asset($activeTemplateTrue . 'css/custom.css') }}" rel="stylesheet">
 
+    <script src="{{ asset('assets/global/js/jquery-3.7.1.min.js') }}"></script>
+
 
     <style>
         .product-badge {

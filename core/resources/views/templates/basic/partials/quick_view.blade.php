@@ -88,33 +88,115 @@
 
             <div class="d-flex gap-2 flex-column">
                 <div class="product-add-to-cart">
-                    <x-frontend.quantity-input :isDigital="$product->is_downloadable" data-update="no" />
-                    <button class="btn btn--base btn--sm addToCart flex-shrink-0" data-id="{{ $product->id }}" data-product_type="{{ $product->product_type }}" @disabled(!$product->salePrice()) type="button">@lang('Add To Cart')</button>
-                </div>
-                <div class="product-wishlist d-flex gap-2 mt-3">
+{{--                    <x-frontend.quantity-input :isDigital="$product->is_downloadable" data-update="no" />--}}
 
-                    @if (gs('product_wishlist'))
-                        <button class="add-to-wishlist-btn @if (checkWishList($product->id)) active @endif addToWishlist" data-id="{{ $product->id }}">
-                            <span class="wish-icon"></span> @lang('Wishlist')
-                        </button>
-                    @endif
 
-                    @if ($product->product_type_id && gs('product_compare'))
-                        <button class="add-to-wishlist-btn  @if (checkCompareList($product->id)) active @endif addToCompare" data-id="{{ $product->id }}">
-                            <i class="las la-exchange-alt compare-icon"></i> @lang('Compare')
+                    @auth
+
+                        <button class="btn btn--base btn--sm flex-shrink-0 showShippingFormBtn"
+                                data-id="{{ $product->id }}"
+                                data-product_type="{{ $product->product_type }}"
+                                type="button">
+                            @lang('Buy Now')
                         </button>
-                    @endif
+
+
+                    @else
+
+                        <div class="justify-content-center my-5">
+                            <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#loginModal" class="btn btn--base btn--lg">
+                                Login to Continue
+                            </a>
+                        </div>
+
+
+                        <!-- Login Modal -->
+                        <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="loginModalLabel">Login</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+
+                                    <div class="modal-body">
+
+                                        <form action="{{ route('user.login.product') }}" method="POST" id="loginModalForm">
+                                            @csrf
+
+                                            <div class="form-group mb-3">
+                                                <label class="form-label">Email</label>
+                                                <input type="email" name="username" class="form-control form--control"
+                                                       placeholder="Enter your email" required>
+                                            </div>
+
+                                            <div class="form-group mb-2">
+                                                <label class="form-label">Password</label>
+                                                <input type="password" name="password" class="form-control form--control"
+                                                       placeholder="Enter your password" required>
+                                            </div>
+
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="1" id="remember" name="remember">
+                                                    <label class="form-check-label" for="remember">
+                                                        Remember Me
+                                                    </label>
+                                                </div>
+
+                                                <a href="{{ route('user.password.request') }}" class="text--base">
+                                                    Forgot Password?
+                                                </a>
+                                            </div>
+
+                                            <button type="submit" class="btn btn--base w-100 h-45">
+                                                Login
+                                            </button>
+                                        </form>
+
+                                        <div class="text-center mt-3">
+                                            <span>Don't have an account?</span>
+                                            <a href="{{ route('user.register') }}" class="text--base fw-bold">Register</a>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                    @endauth
+
+
+{{--                    <button class="btn btn--base btn--sm addToCart flex-shrink-0" data-id="{{ $product->id }}" data-product_type="{{ $product->product_type }}" @disabled(!$product->salePrice()) type="button">@lang('Buy Now')</button>--}}
                 </div>
+{{--                <div class="product-wishlist d-flex gap-2 mt-3">--}}
+
+{{--                    @if (gs('product_wishlist'))--}}
+{{--                        <button class="add-to-wishlist-btn @if (checkWishList($product->id)) active @endif addToWishlist" data-id="{{ $product->id }}">--}}
+{{--                            <span class="wish-icon"></span> @lang('Wishlist')--}}
+{{--                        </button>--}}
+{{--                    @endif--}}
+
+{{--                    @if ($product->product_type_id && gs('product_compare'))--}}
+{{--                        <button class="add-to-wishlist-btn  @if (checkCompareList($product->id)) active @endif addToCompare" data-id="{{ $product->id }}">--}}
+{{--                            <i class="las la-exchange-alt compare-icon"></i> @lang('Compare')--}}
+{{--                        </button>--}}
+{{--                    @endif--}}
+{{--                </div>--}}
 
             </div>
 
-            @if ($quickView)
-                <div>
-                    <a class="btn btn-sm btn--base outline" href="{{ $product->link() }}">@lang('View Details')</a>
-                </div>
-            @else
-                <x-frontend.product-sharer :product="$product" />
-            @endif
+{{--            @if ($quickView)--}}
+{{--                <div>--}}
+{{--                    <a class="btn btn-sm btn--base outline" href="{{ $product->link() }}">@lang('View Details')</a>--}}
+{{--                </div>--}}
+{{--            @else--}}
+{{--                <x-frontend.product-sharer :product="$product" />--}}
+{{--            @endif--}}
         </div>
     </div>
 </div>
@@ -179,3 +261,97 @@
     (jQuery);
 </script>
 @endPushIf
+
+
+    @push('script')
+        <script>
+            "use strict";
+            (function($){
+
+                function totalRequiredAttributes() {
+                    return parseInt(@json($product->attributes->count())) || 0;
+                }
+
+                function totalSelectedAttributes() {
+                    return $('.attributeBtn.active').length || 0;
+                }
+
+                function validateVariantBeforeProceed() {
+                    const required = totalRequiredAttributes();
+                    if (required <= 0) return true;
+
+                    const selected = totalSelectedAttributes();
+                    return selected >= required;
+                }
+
+                $(document).on('click', '.showShippingFormBtn', function () {
+
+                    // ✅ Check variants if variable product
+                    const productType = "{{ $product->product_type }}";
+                    const variableType = "{{ Status::PRODUCT_TYPE_VARIABLE }}";
+
+                    if (productType == variableType) {
+                        if (!validateVariantBeforeProceed()) {
+                            notify('error', 'Please select product options (variant) before continuing');
+                            return;
+                        }
+                    }
+
+                    // ✅ show the form
+                    $('#shippingFormCard').removeClass('d-none');
+
+                    // ✅ scroll to form
+                    document.getElementById('shippingFormCard')?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+
+                    // ✅ optional highlight effect
+                    $('#shippingFormCard').addClass('border border--base');
+                    setTimeout(function(){
+                        $('#shippingFormCard').removeClass('border border--base');
+                    }, 2000);
+                });
+
+            })(jQuery);
+        </script>
+    @endpush
+
+
+    @push('script')
+        <script>
+            "use strict";
+            (function($){
+
+                // collect selected variants and store in hidden input
+                function updateVariantAttributes() {
+                    let selected = [];
+
+                    $('.attributeBtn.active').each(function () {
+                        const data = $(this).data('attribute'); // {id: ?, type: ?}
+                        if (data) selected.push(data);
+                    });
+
+                    $('#variantAttributes').val(JSON.stringify(selected));
+                    return selected;
+                }
+
+                // whenever user clicks variant button, update hidden field
+                $(document).on('click', '.attributeBtn', function () {
+                    setTimeout(updateVariantAttributes, 100);
+                });
+
+                // when Buy Now clicked and form revealed
+                $(document).on('click', '.showShippingFormBtn', function () {
+                    updateVariantAttributes();
+                });
+
+                // ✅ IMPORTANT: before submitting shipping form
+                $('#shipping-form').on('submit', function (e) {
+                    updateVariantAttributes();
+                });
+
+            })(jQuery);
+        </script>
+    @endpush
+

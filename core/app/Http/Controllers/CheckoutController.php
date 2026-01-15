@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Lib\CartManager;
+use App\Models\Deposit;
 use App\Models\Guest;
 use App\Models\Order;
+use App\Models\OrderDetail;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\ShippingAddress;
 use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
@@ -74,6 +78,7 @@ class CheckoutController extends Controller {
     public function storeGuestShippingInfo(Request $request) {
 
 
+
         $request->validate([
             'firstname' => 'required|string',
             'lastname'  => 'required|string',
@@ -92,6 +97,45 @@ class CheckoutController extends Controller {
         }else{
             $note_charge = 0;
         }
+
+
+        $product = Product::where('id', $request->product_id)->first();
+        $get_variant = ProductVariant::where('product_id', $request->product_id)->first() ?? null;
+
+        if($get_variant){
+
+            $variantAttributes = json_decode($request->variant_attributes, true);
+
+            $selectedIds = collect($variantAttributes)
+                ->pluck('id')
+                ->filter()
+                ->map(fn($id) => (int)$id)
+                ->unique()
+                ->values()
+                ->toArray();
+
+            $variant = ProductVariant::where('product_id', $request->product_id)
+                ->where('attribute_values', json_encode($selectedIds)) // attributes = "[65]"
+                ->first();
+
+
+
+        }
+
+        if($get_variant){
+
+            $price = $variant->regular_price;
+
+        }else{
+
+            $price = $product->regular_price;
+
+        }
+
+
+
+
+
 
 
         if($request->front_picture != null){
@@ -113,6 +157,8 @@ class CheckoutController extends Controller {
         }
 
 
+        $order_id = "JOLFR".random_int(0000, 9999);
+
         $shippingData = [
             'firstname'    => $request->firstname,
             'lastname'     => $request->lastname,
@@ -132,20 +178,81 @@ class CheckoutController extends Controller {
             'back_picture'      => $backPath ?? null,
             'front_picture'      => $frontPath ?? null,
             'note_charge'      => $note_charge ?? 0,
+            'order_number'      => $order_id,
+            'user_id'      => Auth::id(),
+            'shipping_address'      => $request->address,
+            'subtotal'      =>    $price,
+            'total_amount'      => $price + $note_charge,
         ];
 
-        Session::put('shipping_info', $shippingData);
 
-        $checkoutData = session('shipping_info');
-        $checkoutData['shipping_address_id'] = 1;
+        $order = Order::create($shippingData);
 
-        session()->put('shipping_info', $checkoutData);
-
-        $checkoutData = session('shipping_info');
-        $checkoutData['shipping_method_id'] = 1;
+        if($order){
 
 
-        session()->put('shipping_info', $checkoutData);
+            $order_detail = [
+                'order_id' => $order->id,
+                'product_id' => $product->id,
+                'product_variant_id' => $variant->id,
+                'quantity' => 1,
+                'price' => $price,
+                'note' => $request->note_to_seller,
+                'customised_test' => $request->customised_test,
+                'customised_short_test' => $request->customised_short_test,
+                'front_photo' => $request->front_picture,
+                'back_photo' => $request->back_picture,
+            ];
+
+            $order_details = OrderDetail::create($order_detail);
+
+
+            if($order_details){
+
+                $deposit = new Deposit();
+                $deposit->user_id = Auth::id() ?? 0;
+                $deposit->order_id = $order->id;
+                $deposit->method_code = "127";
+                $deposit->amount = $price + $note_charge;
+                $deposit->method_currency = "NGN";
+                $deposit->final_amount = $price + $note_charge;
+                $deposit->trx = $order_id;
+                $deposit->success_url = url('')."/order-confirmation/".$order_id;
+                $deposit->failed_url = url('')."/products/".$order_id;
+                $deposit->save();
+
+
+                if($deposit){
+
+                    $enkpayAcc = json_decode($deposit->gatewayCurrency()->gateway_parameter);
+                    $key = env('WEBKEY');
+                    $email = Auth::user()->email;
+                    $amount = round($deposit->final_amount, 2);
+                    $url = "https://web.sprintpay.online/pay?amount=$amount&key=948746y7444747656f4645454556f646444&ref=$deposit->trx&email=$email";
+                    $send['url'] =  $url;
+
+
+                    return redirect()->away($send['url']);
+
+
+
+                }
+
+
+
+
+
+
+            }
+
+
+
+
+        }
+
+        dd($order, $shippingData);
+
+
         return to_route('checkout.payment.methods');
 
 
@@ -249,8 +356,6 @@ class CheckoutController extends Controller {
     }
 
     public function addShippingInfo(Request $request) {
-
-
 
         if (auth()->user()) {
 
@@ -434,4 +539,35 @@ class CheckoutController extends Controller {
         $coupon->discount_amount = $coupon->discountAmount($subtotal);
         return $coupon;
     }
+
+
+    public function LoginProduct(Request $request)
+    {
+        $request->validate([
+            'username' => 'required',   // email or username depending on your system
+            'password' => 'required',
+        ]);
+
+
+
+        $credentials = [
+            'email' => $request->username,
+            'password' => $request->password,
+        ];
+
+        $remember = $request->filled('remember');
+
+        // login attempt
+        if (Auth::attempt($credentials, $remember)) {
+            $request->session()->regenerate();
+
+            $notify[] = ['success', 'Login successful'];
+
+            return redirect()->back()->withNotify($notify);
+        }
+
+        $notify[] = ['error', 'Invalid login details'];
+        return redirect()->back()->withNotify($notify)->withInput();
+    }
+
 }

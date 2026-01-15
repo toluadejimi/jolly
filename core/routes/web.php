@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CheckoutController;
 use Illuminate\Support\Facades\Route;
 use Rap2hpoutre\LaravelLogViewer\LogViewerController;
 
@@ -11,6 +12,15 @@ Route::get('logger', [LogViewerController::class, 'index']);
 
 
 Route::get('/remove-photo/{type}', [\App\Http\Controllers\CheckoutController::class, 'removePhoto'])->name('remove_photo');
+
+
+
+
+Route::post('/product/login', [CheckoutController::class, 'LoginProduct'])->name('user.login.product');
+
+
+
+
 
 // User Support Ticket
 Route::controller('TicketController')->prefix('ticket')->name('ticket.')->group(function () {

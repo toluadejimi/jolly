@@ -25,4 +25,17 @@ class OrderDetail extends Model
     {
         return $this->morphOne(DigitalFile::class, 'fileable');
     }
+
+    protected $fillable = [
+        'order_id',
+        'product_id',
+        'product_variant_id',
+        'quantity',
+        'price',
+        'note',
+        'customised_test',
+        'customised_short_test',
+        'front_photo',
+        'back_photo',
+    ];
 }
