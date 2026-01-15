@@ -145,6 +145,9 @@
                 @endif
             </div>
 
+
+
+
             <div class="col-md-6">
                 @if ($order->shipping_address)
                     <div class="details-info-address">
@@ -154,42 +157,42 @@
                                 <span class="title">@lang('Name') </span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    {{ $order->shipping_address->firstname . ' ' . $order->shipping_address->lastname }}
+                                    {{ $order_detail->firstname ?? "Name" . ' ' . $order_detail->lastname ?? "name" }}
                                 </span>
                             </li>
                             <li>
                                 <span class="title">@lang('Address')</span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    {{ $order->shipping_address->address }}
+                                    {{ $order->shipping_address  ?? "address"}}
                                 </span>
                             </li>
                             <li>
                                 <span class="title">@lang('State')</span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    {{ $order->shipping_address->state }}
+                                    {{ $order->state }}
                                 </span>
                             </li>
                             <li>
                                 <span class="title">@lang('City')</span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    {{ $order->shipping_address->city }}
+                                    {{ $order->city }}
                                 </span>
                             </li>
                             <li>
                                 <span class="title">@lang('Zip')</span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    {{ $order->shipping_address->zip }}
+                                    {{ $order->zip }}
                                 </span>
                             </li>
                             <li>
                                 <span class="title">@lang('Country')</span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    {{ $order->shipping_address->country }}
+                                    {{ $order->country }}
                                 </span>
                             </li>
                         </ul>

@@ -56,6 +56,7 @@ class OrderController extends Controller {
     public function orderDetails($orderNumber) {
         $pageTitle = 'Order Details';
 
+        $order_detail = Order::where('order_number', $orderNumber)->firstOrFail();
         $order = Order::where('order_number', $orderNumber)->with('deposit', 'orderDetail.product', 'orderDetail.productVariant', 'appliedCoupon')->firstOrFail();
 
         if ($order->user_id && $order->user_id !=  auth()->id()) {
@@ -64,7 +65,7 @@ class OrderController extends Controller {
 
         $layout = $order->user_id ? 'user': 'master';
 
-        return view('Template::user.orders.details', compact('order', 'pageTitle', 'layout'));
+        return view('Template::user.orders.details', compact('order','order_detail', 'pageTitle', 'layout'));
     }
 
     public function download($id) {

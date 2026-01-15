@@ -118,7 +118,7 @@ class OrderController extends Controller
     public function orderDetails($id)
     {
         $pageTitle = 'Order Details';
-        $order     = Order::isValidOrder()->where('id', $id)->with('user', 'deposit', 'deposit.gateway', 'orderDetail.product', 'orderDetail.productVariant', 'appliedCoupon')->firstOrFail();
+        $order     = Order::where('id', $id)->with('user', 'deposit', 'deposit.gateway', 'orderDetail.product', 'orderDetail.productVariant', 'appliedCoupon')->firstOrFail();
 
         $pid = $id;
         return view('admin.order.detail', compact('order', 'pageTitle', 'pid'));

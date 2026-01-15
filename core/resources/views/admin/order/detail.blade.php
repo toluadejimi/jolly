@@ -161,7 +161,7 @@
                                     <span class="title">@lang('Name') </span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->shipping_address->firstname . ' ' . $order->shipping_address->lastname }}
+                                        {{ $order->firstname . ' ' . $order->lastname }}
                                     </span>
                                 </li>
 
@@ -169,7 +169,7 @@
                                     <span class="title">@lang('Address')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->shipping_address->address }}
+                                        {{ $order->shipping_address }}
                                     </span>
                                 </li>
 
@@ -177,7 +177,7 @@
                                     <span class="title">@lang('State')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->shipping_address->state }}
+                                        {{ $order->state }}
                                     </span>
                                 </li>
 
@@ -185,7 +185,7 @@
                                     <span class="title">@lang('City')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->shipping_address->city }}
+                                        {{ $order->city }}
                                     </span>
                                 </li>
 
@@ -193,7 +193,7 @@
                                     <span class="title">@lang('Zip')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->shipping_address->zip }}
+                                        {{ $order->zip }}
                                     </span>
                                 </li>
 
@@ -201,7 +201,7 @@
                                     <span class="title">@lang('Country')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->shipping_address->country }}
+                                        {{ $order->country }}
                                     </span>
                                 </li>
                             </ul>
@@ -213,10 +213,14 @@
                     @php
 
                         $ord = OrderDetail::where('id', $pid)->first() ?? null;
+                        $note = OrderDetail::where('id', $pid)->first()->note ?? null;
+                        $customised_test = OrderDetail::where('id', $pid)->first()->customised_test ?? null;
+                        $customised_short_test = OrderDetail::where('id', $pid)->first()->customised_short_test ?? null;
+                        $front_photo = OrderDetail::where('id', $pid)->first()->front_photo ?? null;
 
                     @endphp
 
-                    @if($ord->note != null)
+                    @if($ord)
 
                         <div class="details-info-address my-3">
 
@@ -245,7 +249,7 @@
                     @endif
 
 
-                    @if($ord->customised_test != null)
+                    @if($customised_test)
 
                         <div class="details-info-address my-3">
 
@@ -274,7 +278,7 @@
                     @endif
 
 
-                    @if($ord->customised_short_test != null)
+                    @if($customised_short_test != null)
 
                         <div class="details-info-address my-3">
 
@@ -303,7 +307,7 @@
                     @endif
 
 
-                    @if($ord->front_photo != null)
+                    @if($front_photo != null)
 
                         <div class="details-info-address my-3">
 
