@@ -8,18 +8,18 @@
             <div class="product-header">
                 <h3 class="product-title product-id" data-pdi="{{ $product->id }}">{{ __($product->name) }}</h3>
 
-                @if (gs('product_review'))
-                    <div class="ratings-area">
-                        <span class="ratings">
-                            @php echo __(displayRating($product->reviews_avg_rating)) @endphp
-                        </span>
-                        @if ($product->reviews_count)
-                            <span>({{ $product->reviews_count }})</span>
-                        @else
-                            <span> | @lang('No Review')</span>
-                        @endif
-                    </div>
-                @endif
+{{--                @if (gs('product_review'))--}}
+{{--                    <div class="ratings-area">--}}
+{{--                        <span class="ratings">--}}
+{{--                            @php echo __(displayRating($product->reviews_avg_rating)) @endphp--}}
+{{--                        </span>--}}
+{{--                        @if ($product->reviews_count)--}}
+{{--                            <span>({{ $product->reviews_count }})</span>--}}
+{{--                        @else--}}
+{{--                            <span> | @lang('No Review')</span>--}}
+{{--                        @endif--}}
+{{--                    </div>--}}
+{{--                @endif--}}
 
                 <div class="d-flex flex-wrap align-items-center gap-2 product-detail-price">
                     <span class="product-price" id="productPrice">
