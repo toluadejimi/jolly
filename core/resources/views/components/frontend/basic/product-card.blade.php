@@ -105,13 +105,13 @@
 
         @if ($showCartButton)
             @if ($product->productVariants->count())
-                <button class="quickViewBtn add-to-cart-btn" data-product="{{ $product->slug }}"><i
-                        class="las la-shopping-bag"></i> @lang('Add to Cart')</button>
+                <a href="/product/{{$product->slug}}" class="quickViewBtn add-to-cart-btn" data-product="{{ $product->slug }}"><i
+                        class="las la-shopping-bag"></i> @lang('Choose Options')</a>
             @else
                 <input type="hidden" name="quantity" value="1">
-                <button type="button" class="addToCart add-to-cart-btn" data-id="{{ $product->id }}"
+                <a href="/product/{{$product->slug}}" type="button" class="addToCart add-to-cart-btn" data-id="{{ $product->id }}"
                         data-product_type="{{ $product->product_type }}"><i
-                        class="las la-shopping-bag"></i> @lang('Add to Cart')</button>
+                        class="las la-shopping-bag"></i> @lang('Buy Now')</a>
             @endif
         @endif
     </div>
