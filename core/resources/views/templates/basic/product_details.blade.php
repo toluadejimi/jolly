@@ -38,7 +38,7 @@
                     @include($activeTemplate . 'partials.quick_view')
 
                     @php
-                        $description = preg_replace('/<\/?br>/</div>', '', $product->description, 1);
+                        $description = preg_replace('/<\/?br>/div/', '', $product->description, 1);
                         $shippingInformation = (object) Session::get('shipping_info');
                         $checkoutContent = getContent('guest_checkout.content', true)?->data_values;
                     @endphp
@@ -315,7 +315,7 @@
 
                     @endauth
 
-                </div>{{-- col-xl-9 --}}
+                </>{{-- col-xl-9 --}}
 
 
                 {{-- RIGHT SIDE --}}
