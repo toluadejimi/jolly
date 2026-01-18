@@ -204,6 +204,15 @@
                                         {{ $order->country }}
                                     </span>
                                 </li>
+
+
+                                <li>
+                                    <span class="title">@lang('Customer Phone')</span>
+                                    <span>
+                                        <span class="devide-colon">:</span>
+                                        {{ $order->mobile }}
+                                    </span>
+                                </li>
                             </ul>
                         </div>
                     @endif
@@ -212,11 +221,12 @@
 
                     @php
 
-                        $ord = OrderDetail::where('id', $pid)->first() ?? null;
-                        $note = OrderDetail::where('id', $pid)->first()->note ?? null;
-                        $customised_test = OrderDetail::where('id', $pid)->first()->customised_test ?? null;
-                        $customised_short_test = OrderDetail::where('id', $pid)->first()->customised_short_test ?? null;
-                        $front_photo = OrderDetail::where('id', $pid)->first()->front_photo ?? null;
+                        $ord = OrderDetail::where('order_id', $pid)->first() ?? null;
+
+                        $note = OrderDetail::where('order_id', $pid)->first()->note ?? null;
+                        $customised_test = OrderDetail::where('order_id', $pid)->first()->customised_test ?? null;
+                        $customised_short_test = OrderDetail::where('order_id', $pid)->first()->customised_short_test ?? null;
+                        $front_photo = OrderDetail::where('order_id', $pid)->first()->front_photo ?? null;
 
                     @endphp
 
@@ -229,7 +239,7 @@
 
                                 @php
 
-                                    $note = OrderDetail::where('id', $pid)->first()->note ?? null;
+                                    $note = OrderDetail::where('order_id', $pid)->first()->note ?? null;
 
                                 @endphp
 
@@ -258,7 +268,7 @@
 
                                 @php
 
-                                    $customised_test = OrderDetail::where('id', $pid)->first()->customised_test ?? null;
+                                    $customised_test = OrderDetail::where('order_id', $pid)->first()->customised_test ?? null;
 
                                 @endphp
 
@@ -287,7 +297,7 @@
 
                                 @php
 
-                                    $customised_short_test = OrderDetail::where('id', $pid)->first()->customised_short_test ?? null;
+                                    $customised_short_test = OrderDetail::where('order_id', $pid)->first()->customised_short_test ?? null;
 
                                 @endphp
 

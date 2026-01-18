@@ -29,6 +29,8 @@
         <div class="container">
             <div class="row g-4 g-xl-5">
 
+
+
                 {{-- LEFT SIDE --}}
                 <div class="col-xl-9">
 
@@ -40,6 +42,20 @@
                         $shippingInformation = (object) Session::get('shipping_info');
                         $checkoutContent = getContent('guest_checkout.content', true)?->data_values;
                     @endphp
+
+
+                    <div class="card my-2">
+
+                        <h6 class="m-3">Product Description</h6>
+
+                        <div class="card-body">
+
+                            {{$description}}
+
+                        </div>
+
+                    </div>
+
 
 
                     @auth

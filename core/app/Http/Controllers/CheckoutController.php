@@ -17,16 +17,19 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
-class CheckoutController extends Controller {
+class CheckoutController extends Controller
+{
     private $cartManager;
 
-    public function __construct(CartManager $cartManager) {
+    public function __construct(CartManager $cartManager)
+    {
         parent::__construct();
         $this->cartManager = $cartManager;
     }
 
 
-    public function storeGuestUser(Request $request) {
+    public function storeGuestUser(Request $request)
+    {
 
 
         $cartItems = $this->cartManager->getCart();
@@ -37,15 +40,14 @@ class CheckoutController extends Controller {
         $customer_photo = Product::where('id', $cartItems[0]['product_id'])->first()->customer_photo;
 
 
-
-        $countryData  = (array)json_decode(file_get_contents(resource_path('views/partials/country.json')));
+        $countryData = (array)json_decode(file_get_contents(resource_path('views/partials/country.json')));
         $countryCodes = implode(',', array_keys($countryData));
-        $mobileCodes  = implode(',', array_column($countryData, 'dial_code'));
-        $countries    = implode(',', array_column($countryData, 'country'));
+        $mobileCodes = implode(',', array_column($countryData, 'dial_code'));
+        $countries = implode(',', array_column($countryData, 'country'));
 
         $request->validate([
-            'email'        => 'required|email',
-        //    'mobile'       => 'required|regex:/^([0-9]*)$/',
+            'email' => 'required|email',
+            //    'mobile'       => 'required|regex:/^([0-9]*)$/',
 //            'country_code' => 'required|in:' . $countryCodes,
 //            'country'      => 'required|in:' . $countries,
 //            'mobile_code'  => 'required|in:' . $mobileCodes,
@@ -54,12 +56,12 @@ class CheckoutController extends Controller {
 
         $note = Product::where('id', $cartItems[0]['product_id'])->first()->note;
         $guest = Guest::where('email', $request->email)->where('mobile', $request->mobile)->where('dial_code', $request->mobile_code)->firstOrNew();
-        $guest->email        = $request->email;
-        $guest->dial_code    = 0;
+        $guest->email = $request->email;
+        $guest->dial_code = 0;
         $guest->country_name = 0;
         $guest->country_code = 0;
-        $guest->mobile       = $request->mobile;
-        $guest->session_id   = getSessionId();
+        $guest->mobile = $request->mobile;
+        $guest->session_id = getSessionId();
         $guest->save();
 
         session()->put('guest_user_data', $guest);
@@ -69,32 +71,29 @@ class CheckoutController extends Controller {
         session()->put('customer_photo', $customer_photo);
 
 
-
-
-
         return redirect()->route('checkout.shipping.info');
     }
 
-    public function storeGuestShippingInfo(Request $request) {
-
+    public function storeGuestShippingInfo(Request $request)
+    {
 
 
         $request->validate([
             'firstname' => 'required|string',
-            'lastname'  => 'required|string',
+            'lastname' => 'required|string',
             //'mobile'    => 'required|string',
-            'email'     => 'required|email',
-            'city'      => 'required|string',
-            'state'     => 'required|string',
-            'zip'       => 'required|string',
-           // 'apt'       => 'required|string',
-            'country'   => 'required|string',
-            'address'   => 'required|string',
+            'email' => 'required|email',
+            'city' => 'required|string',
+            'state' => 'required|string',
+            'zip' => 'required|string',
+            // 'apt'       => 'required|string',
+            'country' => 'required|string',
+            'address' => 'required|string',
         ]);
 
-        if($request->note_to_seller != null){
+        if ($request->note_to_seller != null) {
             $note_charge = 5000;
-        }else{
+        } else {
             $note_charge = 0;
         }
 
@@ -102,7 +101,7 @@ class CheckoutController extends Controller {
         $product = Product::where('id', $request->product_id)->first();
         $get_variant = ProductVariant::where('product_id', $request->product_id)->first() ?? null;
 
-        if($get_variant){
+        if ($get_variant) {
 
             $variantAttributes = json_decode($request->variant_attributes, true);
 
@@ -119,149 +118,126 @@ class CheckoutController extends Controller {
                 ->first();
 
 
-
         }
 
-        if($get_variant){
+        if ($get_variant) {
 
             $price = $variant->regular_price;
 
-        }else{
+        } else {
 
             $price = $product->regular_price;
 
         }
 
 
-
-
-
-
-
-        if($request->front_picture != null){
-
-
-            $request->validate([
-                'front_picture' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-                'back_picture'  => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            ]);
-
-            $frontPath = $request->file('front_picture')->store('temp_photos', 'public');
-            $backPath  = $request->file('back_picture')->store('temp_photos', 'public');
-
-
-            session([
-                'customer_photo_front' => $frontPath,
-                'customer_photo_back'  => $backPath,
-            ]);
-        }
-
-
-        $order_id = "JOLFR".random_int(0000, 9999);
+        $order_id = "JOLFR" . random_int(0000, 9999);
 
         $shippingData = [
-            'firstname'    => $request->firstname,
-            'lastname'     => $request->lastname,
-            'mobile'       => $request->mobile,
-            'email'        => $request->email,
-            'city'         => $request->city,
-            'state'        => $request->state,
-            'apt'        => $request->apt,
-            'zip'          => $request->zip,
+            'firstname' => $request->firstname,
+            'lastname' => $request->lastname,
+            'mobile' => $request->mobile,
+            'email' => $request->email,
+            'city' => $request->city,
+            'state' => $request->state,
+            'apt' => $request->apt,
+            'zip' => $request->zip,
             'country_code' => $request->country_code,
-            'dial_code'    => $request->mobile_code,
-            'country'      => $request->country,
-            'address'      => $request->address,
-            'note_to_seller'      => $request->note_to_seller,
-            'customised_test'      => $request->customised_test,
-            'customised_short_test'      => $request->customised_short_test,
-            'back_picture'      => $backPath ?? null,
-            'front_picture'      => $frontPath ?? null,
-            'note_charge'      => $note_charge ?? 0,
-            'order_number'      => $order_id,
-            'user_id'      => Auth::id(),
-            'shipping_address'      => $request->address,
-            'subtotal'      =>    $price,
-            'total_amount'      => $price + $note_charge,
+            'dial_code' => $request->mobile_code,
+            'country' => $request->country,
+            'address' => $request->address,
+            'note_to_seller' => $request->note_to_seller,
+            'customised_test' => $request->customised_test,
+            'customised_short_test' => $request->customised_short_test,
+            'back_picture' => $backPath ?? null,
+            'front_picture' => $frontPath ?? null,
+            'note_charge' => $note_charge ?? 0,
+            'order_number' => $order_id,
+            'user_id' => Auth::id(),
+            'shipping_address' => $request->address,
+            'subtotal' => $price,
+            'total_amount' => $price + $note_charge,
         ];
 
 
         $order = Order::create($shippingData);
 
-        if($order){
+        if ($order) {
 
 
-            $order_detail = [
-                'order_id' => $order->id,
-                'product_id' => $product->id,
-                'product_variant_id' => $variant->id ?? 0,
-                'quantity' => 1,
-                'price' => $price,
-                'note' => $request->note_to_seller,
-                'customised_test' => $request->customised_test,
-                'customised_short_test' => $request->customised_short_test,
-                'front_photo' => $request->front_picture,
-                'back_photo' => $request->back_picture,
-            ];
-
-            $order_details = OrderDetail::create($order_detail);
+            if ($request->front_picture != null || $request->back_picture != null) {
 
 
-            if($order_details){
+                $request->validate([
+                    'front_picture' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+                ]);
 
-                $deposit = new Deposit();
-                $deposit->user_id = Auth::id() ?? 0;
-                $deposit->order_id = $order->id;
-                $deposit->method_code = "127";
-                $deposit->amount = $price + $note_charge;
-                $deposit->method_currency = "NGN";
-                $deposit->final_amount = $price + $note_charge;
-                $deposit->trx = $order_id;
-                $deposit->success_url = url('')."/order-confirmation/".$order_id;
-                $deposit->failed_url = url('')."/products/".$order_id;
-                $deposit->save();
-
-
-                if($deposit){
-
-                    $enkpayAcc = json_decode($deposit->gatewayCurrency()->gateway_parameter);
-                    $key = env('WEBKEY');
-                    $email = Auth::user()->email;
-                    $amount = round($deposit->final_amount, 2);
-                    $url = "https://web.sprintpay.online/pay?amount=$amount&key=948746y7444747656f4645454556f646444&ref=$deposit->trx&email=$email";
-                    $send['url'] =  $url;
-
-
-                    return redirect()->away($send['url']);
-
-
-
-                }
-
-
-
-
+                $frontPath = $request->file('front_picture')->store('temp_photos', 'public');
+                $backPath = $request->file('back_picture')->store('temp_photos', 'public');
 
 
             }
 
 
+        }
+
+
+        $order_detail = [
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'product_variant_id' => $variant->id ?? 0,
+            'quantity' => 1,
+            'price' => $price,
+            'note' => $request->note_to_seller,
+            'customised_test' => $request->customised_test,
+            'customised_short_test' => $request->customised_short_test,
+            'front_photo' => $frontPath ?? null,
+            'back_photo' => $backPath ?? null,
+        ];
+
+        $order_details = OrderDetail::create($order_detail);
+
+
+        if ($order_details) {
+
+            $deposit = new Deposit();
+            $deposit->user_id = Auth::id() ?? 0;
+            $deposit->order_id = $order->id;
+            $deposit->method_code = "127";
+            $deposit->amount = $price + $note_charge;
+            $deposit->method_currency = "NGN";
+            $deposit->final_amount = $price + $note_charge;
+            $deposit->trx = $order_id;
+            $deposit->success_url = url('') . "/order-confirmation/" . $order_id;
+            $deposit->failed_url = url('') . "/products/" . $order_id;
+            $deposit->save();
+
+
+            if ($deposit) {
+
+                $enkpayAcc = json_decode($deposit->gatewayCurrency()->gateway_parameter);
+                $key = env('WEBKEY');
+                $email = Auth::user()->email;
+                $amount = round($deposit->final_amount, 2);
+                $url = "https://web.sprintpay.online/pay?amount=$amount&key=948746y7444747656f4645454556f646444&ref=$deposit->trx&email=$email";
+                $send['url'] = $url;
+
+
+                return redirect()->away($send['url']);
+
+
+            }
 
 
         }
 
-        dd($order, $shippingData);
-
-
-        return to_route('checkout.payment.methods');
-
-
-
 
     }
 
+
     //============= checkout step start here ===================//
-    public function shippingInfo() {
+    public function shippingInfo()
+    {
         $pageTitle = 'Shipping Information';
         $cartItems = $this->cartManager->getCart();
 
@@ -275,11 +251,11 @@ class CheckoutController extends Controller {
                 $categoryId = $product->categories->first()->pivot->category_id;
 
 
-                if (in_array($categoryId, [4,5,7,9,11])) {
+                if (in_array($categoryId, [4, 5, 7, 9, 11])) {
                     $countries = getusaCountries();
-                }elseif($categoryId == 6){
+                } elseif ($categoryId == 6) {
                     $countries = getusacanadaCountries();
-                } else{
+                } else {
 
                     $countries = getCountries();
 
@@ -287,7 +263,6 @@ class CheckoutController extends Controller {
             }
 
         }
-
 
 
         if (auth()->user()) {
@@ -299,11 +274,11 @@ class CheckoutController extends Controller {
                 if ($product->categories->isNotEmpty()) {
                     $categoryId = $product->categories->first()->pivot->category_id;
 
-                    if (in_array($categoryId, [4,5,7,9,11])) {
+                    if (in_array($categoryId, [4, 5, 7, 9, 11])) {
                         $countries = getusaCountries();
-                    }elseif($categoryId == 6){
+                    } elseif ($categoryId == 6) {
                         $countries = getusacanadaCountries();
-                    } else{
+                    } else {
 
                         $countries = getCountries();
 
@@ -336,7 +311,6 @@ class CheckoutController extends Controller {
             $session = session()->get('guest_user_data');
 
 
-
             if (!$session) {
                 $notify[] = ['error', 'Session Expired'];
                 return to_route('cart.page')->withNotify($notify);
@@ -347,15 +321,13 @@ class CheckoutController extends Controller {
         }
 
 
-
-
         return view($view, compact('pageTitle', 'shippingAddresses', 'countries'));
-
 
 
     }
 
-    public function addShippingInfo(Request $request) {
+    public function addShippingInfo(Request $request)
+    {
 
         if (auth()->user()) {
 
@@ -369,7 +341,6 @@ class CheckoutController extends Controller {
 
             session()->put('shipping_info', $checkoutData);
             return to_route('checkout.payment.methods');
-
 
 
         }
@@ -390,23 +361,24 @@ class CheckoutController extends Controller {
         return to_route('checkout.delivery.methods');
 
 
-
     }
 
-    public function deliveryMethods() {
+    public function deliveryMethods()
+    {
         $pageTitle = 'Delivery Methods';
         $shippingMethods = ShippingMethod::active()->get();
         return view('Template::checkout_steps.shipping_methods', compact('pageTitle', 'shippingMethods'));
     }
 
-    public function addDeliveryMethod(Request $request) {
+    public function addDeliveryMethod(Request $request)
+    {
         $ids = ShippingMethod::active()->pluck('id')->toArray();
 
         $request->validate([
             'shipping_method_id' => 'required|in:' . implode(',', $ids)
         ], [
             'shipping_method_id.required' => 'Delivery type field is required',
-            'shipping_method_id.in'       => 'Invalid delivery type selected'
+            'shipping_method_id.in' => 'Invalid delivery type selected'
         ]);
 
         $checkoutData = session('shipping_info');
@@ -417,8 +389,9 @@ class CheckoutController extends Controller {
         return to_route('checkout.payment.methods');
     }
 
-    public function confirmation($orderNumber) {
-        $order  = Order::where('order_number', $orderNumber)->with('deposit', 'orderDetail.product',  'orderDetail.productVariant', 'appliedCoupon')->first();
+    public function confirmation($orderNumber)
+    {
+        $order = Order::where('order_number', $orderNumber)->with('deposit', 'orderDetail.product', 'orderDetail.productVariant', 'appliedCoupon')->first();
 
         $pageTitle = 'Order Number -' . $order->order_number;
 
@@ -430,16 +403,16 @@ class CheckoutController extends Controller {
 
         $request->validate([
             'front_picture' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'back_picture'  => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'back_picture' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $frontPath = $request->file('front_picture')->store('temp_photos', 'public');
-        $backPath  = $request->file('back_picture')->store('temp_photos', 'public');
+        $backPath = $request->file('back_picture')->store('temp_photos', 'public');
 
 
         session([
             'customer_photo_front' => $frontPath,
-            'customer_photo_back'  => $backPath,
+            'customer_photo_back' => $backPath,
         ]);
 
         $notify[] = ['success', 'Photos uploaded successfully'];
@@ -516,7 +489,8 @@ class CheckoutController extends Controller {
     }
 
 
-    private function appliedCoupon($cartData, $subtotal) {
+    private function appliedCoupon($cartData, $subtotal)
+    {
         $coupon = session('coupon');
 
         if (!$coupon) {
@@ -524,7 +498,7 @@ class CheckoutController extends Controller {
         }
 
         // Match the coupon code with database and check is exists
-        $coupon  = $this->cartManager->getCouponByCode($coupon['code']);
+        $coupon = $this->cartManager->getCouponByCode($coupon['code']);
 
         if (!$coupon) {
             return ['error' => "Applied coupon is invalid or expired"];
@@ -547,7 +521,6 @@ class CheckoutController extends Controller {
             'username' => 'required',   // email or username depending on your system
             'password' => 'required',
         ]);
-
 
 
         $credentials = [
