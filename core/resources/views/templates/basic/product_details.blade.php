@@ -315,7 +315,7 @@
 
                     @endauth
 
-                </>{{-- col-xl-9 --}}
+                </div>{{-- col-xl-9 --}}
 
 
                 {{-- RIGHT SIDE --}}
