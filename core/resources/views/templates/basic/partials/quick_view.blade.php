@@ -15,20 +15,14 @@
                     <span id="stockBadge"></span>
                 </div>
 
-                <div class="product-header-actions d-flex gap-2 flex-wrap">
-                    <button class="btn btn-outline--base btn--sm addToCartBtn"
-                            data-id="{{ $product->id }}"
-                            data-product_type="{{ $product->product_type }}"
-                            type="button">
-                        Add to Cart
-                    </button>
-                    <button class="btn btn--base btn--sm flex-shrink-0 showShippingFormBtn"
-                            data-id="{{ $product->id }}"
-                            data-product_type="{{ $product->product_type }}"
-                            type="button">
-                        Buy Now
-                    </button>
-                </div>
+{{--                <div class="product-header-actions d-flex gap-2 flex-wrap">--}}
+{{--                    <button class="btn btn--base btn--sm flex-shrink-0 showShippingFormBtn"--}}
+{{--                            data-id="{{ $product->id }}"--}}
+{{--                            data-product_type="{{ $product->product_type }}"--}}
+{{--                            type="button">--}}
+{{--                        Buy Now--}}
+{{--                    </button>--}}
+{{--                </div>--}}
             </div>
 
             @if ($product->summary)

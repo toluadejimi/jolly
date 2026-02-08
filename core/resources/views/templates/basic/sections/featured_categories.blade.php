@@ -3,11 +3,11 @@
     $content = getContent('featured_categories.content', true);
 @endphp
 
-<section class="my-60">
+<section class="featured-categories-section my-60">
     <div class="container">
         @if (!blank($topCategories))
-            <div class="section-header">
-                <h5 class="title">{{ __(@$content->data_values->title) }}</h5>
+            <div class="section-header featured-categories-section__header">
+                <h2 class="title">{{ __(@$content->data_values->title) }}</h2>
             </div>
 
             <div class="category-card-wrapper">

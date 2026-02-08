@@ -9,57 +9,6 @@
 <!-- Footer Section Starts Here -->
 <footer class="footer-area footer-bg ">
     <div class="container">
-        @if (
-            @$footer->logo ||
-                @$footer->footer_note ||
-                gs('subscriber_module') == Status::YES ||
-                @$footer->contact_address ||
-                @$footer->cell_number ||
-                @$footer->email)
-            <div class="footer-top">
-                <div class="footer-widget widget-about">
-                    @if (@$footer->logo)
-                        <img src="{{ getImage(null) }}"
-                            data-src="{{ getImage('assets/images/frontend/footer/' . @$footer->logo) }}"
-                            class="lazyload footer-logo" alt="footer-logo">
-                    @endif
-
-                    @if (@$footer->footer_note)
-                        <p class="mb-0">{{ __($footer->footer_note) }}</p>
-                    @endif
-                </div>
-
-                @include('Template::partials.newsletter')
-
-                @if (@$footer->contact_address || @$footer->cell_number || @$footer->email)
-                    <div class="widget-contact">
-                        @if (@$footer->contact_heading)
-                            <h6 class="title">{{ __(@$footer->contact_heading) }}</h6>
-                        @endif
-                        <ul>
-                            @if ($footer->contact_address)
-                                <li>
-                                    <i class="las la-map-marker"></i> {{ __(@$footer->contact_address) }}
-                                </li>
-                            @endif
-
-                            @if (@$footer->cell_number)
-                                <li>
-                                    <a href="tel:{{ @$footer->cell_number }}"><i
-                                            class="las la-phone"></i>{{ @$footer->cell_number }}</a>
-                                </li>
-                            @endif
-                            @if (@$footer->email)
-                                <li>
-                                    <a href="mailto:{{ @$footer->email }}"><i
-                                            class="las la-envelope"></i>{{ @$footer->email }}</a>
-                                </li>
-                            @endif
-                        </ul>
-                    </div>
-                @endif
-            </div>
-        @endif
         @if ($menus)
             <div class="footer-middle">
                 @foreach ($menus as $menu)

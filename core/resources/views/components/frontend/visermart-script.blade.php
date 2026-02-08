@@ -401,19 +401,21 @@
     }
 
     // add to cart handler
-    function addToCartClickHandler() {
-        let productType = $(this).data('product_type');
-        let productId = $(this).data('id');
-        let attributeValues = $(this).parents('.product-details').find('.attributeBtn.active').map((i, element) => $(element).data('attribute').id).toArray();
-
+    function addToCartClickHandler(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        if ($btn.hasClass('is-loading') || $btn.prop('disabled')) return;
+        let productType = $btn.data('product_type');
+        let productId = $btn.data('id');
+        let attributeValues = $btn.parents('.product-details').find('.attributeBtn.active').map((i, element) => $(element).data('attribute').id).toArray();
 
         if (productType == 2 && attributeValues.length < 1) {
             notify('error', 'Please select variants');
             return false;
         }
 
-        let quantity = $(this).parent().find('[name=quantity]').val();
-        if (quantity == null) {
+        let quantity = $btn.parent().find('[name=quantity]').val() || 1;
+        if (!quantity || quantity < 1) {
             notify('error', 'The quantity field is required');
             return;
         }
@@ -426,17 +428,25 @@
 
         let addToCartUrl = "{{ route('cart.add', ':id') }}".replace(':id', productId);
 
+        $btn.addClass('is-loading').prop('disabled', true);
         $.post(addToCartUrl, data).done((response) => {
             if (response.status == 'success') {
                 setPartialCart(response.partialCartData);
                 setCartCount(response.cartItemCount);
                 setCartSubtotal(response.cartSubtotal);
+                $('.cartItemCount').text(response.cartItemCount).removeClass('d-none');
                 $('.cart-count').text(response.cartItemCount);
+                $('.cart--products').html(response.partialCartData);
+                $('.cartSubtotal').text(response.cartSubtotal);
                 $('#cart-sidebar-area').addClass('active');
                 $('.body-overlay').addClass('active');
                 $('body').addClass('scroll-hide-sm');
             }
             notify(response.status, response.message);
+        }).fail(function() {
+            notify('error', 'Could not add to cart. Please try again.');
+        }).always(function() {
+            $btn.removeClass('is-loading').prop('disabled', false);
         });
     }
 

@@ -374,14 +374,12 @@
   font-size: 0.8125rem;
 }
 
-/* ---- Related products sidebar ---- */
+/* ---- Related products sidebar (base; theme overrides in custom.css) ---- */
 .product-details-page .sticky-sidebar {
   position: sticky;
   top: 1rem;
   padding: 1.25rem;
-  background: #fafafa;
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 @media (max-width: 1199px) {
