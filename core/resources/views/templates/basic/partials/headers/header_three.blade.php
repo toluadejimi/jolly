@@ -54,15 +54,6 @@
                                                 <span class="cartItemCount ecommerce__is badge-count">{{ $cartCount ?? 0 }}</span>
                                             </button>
                                         </div>
-                                    @elseif($widget->key == 'wishlist' && gs('product_wishlist'))
-                                        <div class="cart-icon-design widget--style" @if (@$widget->background_color) style="background-color: {{ '#' . @$widget->background_color }} !important" @endif>
-                                            <button class="button wish-button" @disabled(Route::is('wishlist.page')) id="wish-button">
-                                                <span class="ico">
-                                                    <i class="lar la-heart"></i>
-                                                </span>
-                                                <span class="wishlist-count ecommerce__is">0</span>
-                                            </button>
-                                        </div>
                                     @elseif($widget->key == 'compare' && gs('product_compare'))
                                         <div class="cart-icon-design widget--style" @if (@$widget->background_color) style="background-color: {{ '#' . @$widget->background_color }} !important" @endif>
                                             <a href="{{ route('compare.all') }}">

@@ -38,17 +38,19 @@
 </ul>
 
 
-<div class="site-sidebar mobile-menu sidebar-nav d-lg-none">
-    <button type="button" class="sidebar-close-btn">
-        <i class="las la-times"></i>
-    </button>
-
+<div class="site-sidebar mobile-menu sidebar-nav d-lg-none" id="mobile-menu-sidebar">
+    <div class="mobile-menu-sidebar__header">
+        <h5 class="mobile-menu-sidebar__title">@lang('Menu')</h5>
+        <button type="button" class="sidebar-close-btn mobile-menu-sidebar__close" aria-label="@lang('Close')">
+            <i class="las la-times"></i>
+        </button>
+    </div>
     <div class="mobile-menu-header">
         <div class="d-block d-lg-none">
             @include('Template::partials.menu.language_menu')
         </div>
     </div>
     <div class="mobile-menu-body">
-        @include('Template::partials.menu.site_menu')
+        @include('Template::partials.menu.site_menu', ['withIcons' => true])
     </div>
 </div>

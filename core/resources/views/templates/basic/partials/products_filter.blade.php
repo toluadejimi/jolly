@@ -1,6 +1,6 @@
 <div class="row g-3" id="grid-view">
     @foreach ($products as $product)
-        <div class="col-6 grid-control col-md-4 col-lg-3">
+        <div class="col-6 grid-control">
             <x-dynamic-component :component="frontendComponent('product-card')" :product="$product" />
         </div>
     @endforeach

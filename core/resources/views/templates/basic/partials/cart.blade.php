@@ -15,7 +15,7 @@
     <div class="cart-bottom">
         @include($activeTemplate . 'partials.cart_bottom')
         @if ($cartItems->count() > 0)
-            <div class="btn-wrapper text-end">
+            <div class="btn-wrapper text-end mt-3">
                 @php
                     $route = cartManager()->checkPhysicalProductExistence()
                         ? route('checkout.shipping.info')

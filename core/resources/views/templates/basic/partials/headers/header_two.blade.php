@@ -48,17 +48,6 @@
                                         </li>
                                     @endif
 
-                                    @if (gs('product_wishlist') && $widget->key == 'wishlist' && @$widget->status == 'on')
-                                        <li class="d-none d-lg-block">
-                                            <a href="javascript:void(0)" class="ecommerce wish-button">
-                                                <span class="ecommerce__icon">
-                                                    <i class="las la-heart"></i>
-                                                    <span class="ecommerce__is wishlist-count d-none"></span>
-                                                </span>
-                                                <span class="ecommerce__text">@lang('Wishlist')</span>
-                                            </a>
-                                        </li>
-                                    @endif
                                     @if ($widget->key == 'cart' && @$widget->status == 'on')
                                         <li>
                                             <a href="javascript:void(0)" class="ecommerce cart-button" title="@lang('Cart')">

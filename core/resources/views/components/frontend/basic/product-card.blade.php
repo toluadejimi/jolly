@@ -16,16 +16,6 @@
     @endif
     <div class="product-thumb">
         <ul class="product-card-buttons">
-            @if (gs('product_wishlist'))
-                <li class="product-wishlist-btn">
-                    @if (!Route::is('wishlist.page'))
-                        <button tyepe="button"
-                                @class(['addToWishlist', 'active' => checkWishList($product->id)]) data-id="{{ $product->id }}">
-                            <i class="lar la-heart"></i></button>
-                    @endif
-                </li>
-            @endif
-
             @if ($product->product_type_id && gs('product_compare'))
                 <li class="product-compare-btn">
                     <button tyepe="button" class="addToCompare {{ $addedInCompareList ? 'active' : '' }}"

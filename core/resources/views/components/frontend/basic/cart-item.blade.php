@@ -44,13 +44,6 @@
                 </div>
 
                 <div class="cart-item-action">
-                    @if (gs('product_wishlist'))
-                    <button @class([
-                        'addToWishlist text-muted ',
-                        'active' => checkWishList($cartItem?->product->id),
-                    ]) data-id="{{ $cartItem?->product->id }}"><i class="lar la-heart"></i></button>
-                    @endif
-
                     <button class="removeCart text-muted" data-id="{{ $cartItem->id }}" data-pid="{{ $cartItem->product->id }}" href="javascript:void(0)"><i class="las la-trash"></i></button>
                 </div>
             </div>
