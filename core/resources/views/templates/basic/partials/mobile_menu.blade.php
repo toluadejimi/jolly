@@ -27,8 +27,6 @@
     </li>
 
 
-
-
     <li>
         <a href="javascript:void(0)" class="ecommerce @auth user-account-btn @endauth" id="account-button" aria-label="@lang('My Account')" @guest data-bs-toggle="modal" data-bs-target="#loginModal" @endguest>
             <span class="ecommerce__icon">
