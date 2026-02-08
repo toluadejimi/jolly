@@ -23,6 +23,10 @@
 </li>
 
 <li>
+    <a href="{{ route('user.api.keys.index') }}" class="{{ menuActive('user.api.keys*') }}"><i class="las la-code"></i> @lang('API Keys')</a>
+</li>
+
+<li>
     <a href="{{ route('ticket.index') }}" class="{{ menuActive('ticket.*') }}"><i class="la la-ticket"></i> @lang('Support Tickets')</a>
 </li>
 

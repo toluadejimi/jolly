@@ -86,6 +86,12 @@ Route::middleware('auth')->name('user.')->group(function () {
                 Route::post('review/add', 'add')->name('add');
                 Route::post('review/reply/{id}/{reply_id?}', 'reviewReply')->name('reply');
             });
+
+            Route::controller('ApiKeyController')->prefix('api-keys')->name('api.keys.')->group(function () {
+                Route::get('', 'index')->name('index');
+                Route::post('', 'store')->name('store');
+                Route::delete('{id}', 'destroy')->name('destroy');
+            });
         });
     });
 });

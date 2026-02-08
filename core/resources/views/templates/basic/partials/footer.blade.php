@@ -18,6 +18,10 @@
                 <img src="{{ svg('product') }}" alt="" class="footer-product-icon" width="20" height="20">
                 <span>@lang('Products')</span>
             </a>
+            <a href="{{ route('api.documentation') }}" class="footer-product-link d-inline-flex align-items-center gap-2">
+                <i class="las la-code footer-product-icon" style="font-size: 1.25rem;"></i>
+                <span>@lang('API Docs')</span>
+            </a>
         </div>
         @if ($menus)
             <div class="footer-middle">

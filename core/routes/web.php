@@ -111,6 +111,11 @@ Route::controller('User\OrderController')->group(function () {
     Route::get('digital-item/download/{id}', 'download')->name('order.item.download');
 });
 
+Route::get('api-documentation', function () {
+    $pageTitle = 'API Documentation';
+    return view('Template::api_documentation', compact('pageTitle'));
+})->name('api.documentation');
+
 Route::controller('SiteController')->group(function () {
     Route::get('categories', 'categories')->name('categories');
     Route::get('brands', 'brands')->name('brands');

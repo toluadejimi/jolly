@@ -22,7 +22,7 @@ class ProcessController extends Controller
 
         $enkpayAcc = json_decode($deposit->gatewayCurrency()->gateway_parameter);
         $key = env('WEBKEY');
-        $email = session('guest_user_data')['email'] ?? Auth::user()->email;
+        $email = $deposit->customer?->email ?? $deposit->user?->email ?? session('guest_user_data')['email'] ?? Auth::user()?->email ?? '';
         $amount = round($deposit->final_amount, 2);
         $url = "https://web.sprintpay.online/pay?amount=$amount&key=948746y7444747656f4645454556f646444&ref=$deposit->trx&email=$email";
         $send['url'] =  $url;

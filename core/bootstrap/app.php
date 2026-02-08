@@ -10,6 +10,7 @@ use App\Http\Middleware\RedirectIfAdmin;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\RedirectIfNotAdmin;
 use App\Http\Middleware\RegistrationStep;
+use App\Http\Middleware\ValidateApiKey;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -36,6 +37,10 @@ return Application::configure(basePath: dirname(__DIR__))
                     ->group(base_path('routes/ipn.php'));
 
                 Route::middleware(['web', 'maintenance'])->prefix('user')->group(base_path('routes/user.php'));
+                Route::middleware(['api'])
+                    ->prefix('api')
+                    ->namespace('Api')
+                    ->group(base_path('routes/api.php'));
                 Route::middleware(['web', 'maintenance'])->group(base_path('routes/web.php'));
             });
         }
@@ -70,11 +75,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'checkout.step' => CheckoutStepMiddleware::class,
             'registration.complete' => RegistrationStep::class,
             'maintenance' => MaintenanceMode::class,
-            'checkModule' => CheckModuleIsEnabled::class
+            'checkModule' => CheckModuleIsEnabled::class,
+            'api.key' => ValidateApiKey::class,
         ]);
 
         $middleware->validateCsrfTokens(
-            except: ['user/deposit', 'ipn*']
+            except: ['user/deposit', 'ipn*', 'api/*']
         );
     })
     ->withExceptions(function (Exceptions $exceptions) {

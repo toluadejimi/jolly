@@ -33,4 +33,12 @@
             </a>
         </li>
     @endforeach
+    <li>
+        <a href="{{ route('api.documentation') }}" @class(['active' => Route::is('api.documentation')])>
+            @if(!empty($withIcons))
+                <span class="menu-item__icon"><i class="las la-code"></i></span>
+            @endif
+            <span class="menu-item__label">@lang('API Docs')</span>
+        </a>
+    </li>
 </ul>
