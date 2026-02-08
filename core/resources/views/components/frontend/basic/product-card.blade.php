@@ -108,6 +108,14 @@
                 <a href="/product/{{$product->slug}}" class="quickViewBtn add-to-cart-btn" data-product="{{ $product->slug }}"><i
                         class="las la-shopping-bag"></i> @lang('Choose Options')</a>
             @else
+
+                <button class="addToCart add-to-cart-btn"
+                        data-id="{{ $product->id }}"
+                        data-product_type="{{ $product->product_type }}">
+                    🛒 Add to Cart
+                </button>
+
+
                 <input type="hidden" name="quantity" value="1">
                 <a href="/product/{{$product->slug}}" type="button" class="addToCart add-to-cart-btn" data-id="{{ $product->id }}"
                         data-product_type="{{ $product->product_type }}"><i

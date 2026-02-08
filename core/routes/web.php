@@ -11,6 +11,10 @@ Route::get('/clear', function () {
 Route::get('logger', [LogViewerController::class, 'index']);
 
 
+
+
+
+
 Route::get('/remove-photo/{type}', [\App\Http\Controllers\CheckoutController::class, 'removePhoto'])->name('remove_photo');
 
 
@@ -90,6 +94,7 @@ Route::name('checkout.')->group(function () {
 
     Route::controller('PaymentController')->group(function () {
         Route::get('checkout/payment-methods', 'paymentMethods')->name('payment.methods')->middleware('checkout.step:payment');
+        Route::get('checkout/payment-redirect', 'redirectToPayment')->name('payment.redirect')->middleware('checkout.step:payment');
         Route::post('checkout/complete-checkout', 'completeCheckout')->name('complete')->middleware('checkout.step:payment');
     });
 });

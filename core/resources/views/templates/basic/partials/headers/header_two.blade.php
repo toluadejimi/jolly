@@ -61,10 +61,10 @@
                                     @endif
                                     @if ($widget->key == 'cart' && @$widget->status == 'on')
                                         <li>
-                                            <a href="javascript:void(0)" class="ecommerce cart-button">
+                                            <a href="javascript:void(0)" class="ecommerce cart-button" title="@lang('Cart')">
                                                 <span class="ecommerce__icon">
-                                                    <i class="las la-shopping-bag"></i>
-                                                    <span class="ecommerce__is cartItemCount d-none"></span>
+                                                    <i class="las la-shopping-cart"></i>
+                                                    <span class="ecommerce__is cartItemCount badge-count">{{ $cartCount ?? 0 }}</span>
                                                 </span>
                                                 <span class="ecommerce__text">@lang('Cart')</span>
                                             </a>
@@ -91,7 +91,13 @@
                                         </li>
                                     @endif
                                 @endforeach
-
+                                <li class="d-none d-lg-block">
+                                    <button type="button" class="ecommerce theme-switcher-btn border-0 bg-transparent p-0" id="theme-switcher" title="@lang('Toggle theme')" aria-label="@lang('Toggle theme')">
+                                        <span class="ecommerce__icon theme-icon-light"><i class="las la-sun"></i></span>
+                                        <span class="ecommerce__icon theme-icon-dark d-none"><i class="las la-moon"></i></span>
+                                        <span class="ecommerce__text d-none d-md-inline">@lang('Theme')</span>
+                                    </button>
+                                </li>
                             </ul>
                         @endif
                     @endif

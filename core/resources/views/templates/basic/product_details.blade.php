@@ -25,7 +25,7 @@
     @endphp
 
 
-    <div class="py-60">
+    <div class="product-details-page py-60">
         <div class="container">
             <div class="row g-4 g-xl-5">
 
@@ -44,23 +44,18 @@
                     @endphp
 
 
-                    <div class="card my-2">
-
-                        <h6 class="m-3">Product Description</h6>
-
+                    <div class="card my-2 product-description-card">
+                        <h6 class="card-header-title">Product Description</h6>
                         <div class="card-body">
-
-                            {{$description}}
-
+                            {{ $description }}
                         </div>
-
                     </div>
 
 
 
                     @auth
-
-                        <div class="card my-4 d-none" id="shippingFormCard">
+                    {{-- Checkout form: only for logged-in users --}}
+                    <div class="card my-4" id="shippingFormCard">
                             <div class="card-body">
                                 <form action="{{ route('checkout.guest.shipping.info.store') }}"
                                       method="POST"
@@ -201,7 +196,12 @@
 
                                                 <input type="hidden" value="0" name="mobile_code" id="mobile_code">
                                                 <input type="hidden" value="0" name="country_code" id="country_code">
-                                                <input type="hidden" value="receiver@mail.com" name="email">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label>Email</label>
+                                                <input type="email" name="email" class="form-control form--control" value="{{ auth()->check() ? auth()->user()->email : (optional(session('guest_user_data'))->email ?? old('email')) }}" required>
                                             </div>
                                         </div>
 
@@ -308,11 +308,12 @@
                             </div>
 
                         </div>
-
                     @else
-
-
-
+                    <div class="card my-4">
+                        <div class="card-body">
+                            <p class="mb-0">@lang('Please') <a href="javascript:void(0)" class="login-trigger text--base">@lang('login')</a> @lang('or continue as guest from cart to checkout.')</p>
+                        </div>
+                    </div>
                     @endauth
 
                 </div>{{-- col-xl-9 --}}
@@ -515,4 +516,6 @@
             $("select[name='country']").trigger("change");
         });
     </script>
+
+
 @endpush

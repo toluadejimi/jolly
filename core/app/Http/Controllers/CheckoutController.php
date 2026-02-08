@@ -76,30 +76,68 @@ class CheckoutController extends Controller
 
     public function storeGuestShippingInfo(Request $request)
     {
-
-
         $request->validate([
             'firstname' => 'required|string',
             'lastname' => 'required|string',
-            //'mobile'    => 'required|string',
             'email' => 'required|email',
             'city' => 'required|string',
             'state' => 'required|string',
             'zip' => 'required|string',
-            // 'apt'       => 'required|string',
             'country' => 'required|string',
             'address' => 'required|string',
         ]);
 
-        if ($request->note_to_seller != null) {
-            $note_charge = 5000;
-        } else {
-            $note_charge = 0;
+        $note_charge = !empty($request->note_to_seller) ? 5000 : 0;
+
+        // ----- CART CHECKOUT: no product_id = checkout from cart (multiple items) -----
+        if (!$request->filled('product_id')) {
+            $cartItems = $this->cartManager->getCart();
+            if ($cartItems->isEmpty()) {
+                $notify[] = ['error', 'Your cart is empty.'];
+                return to_route('cart.page')->withNotify($notify);
+            }
+
+            $shippingMethod = ShippingMethod::active()->first();
+            $shippingMethodId = $shippingMethod ? $shippingMethod->id : 0;
+
+            session()->put('shipping_info', [
+                'firstname' => $request->firstname,
+                'lastname' => $request->lastname,
+                'mobile' => $request->mobile ?? '',
+                'email' => $request->email,
+                'city' => $request->city,
+                'state' => $request->state,
+                'apt' => $request->apt ?? '',
+                'zip' => $request->zip,
+                'country' => $request->country,
+                'country_code' => $request->country_code ?? '',
+                'dial_code' => $request->mobile_code ?? '',
+                'address' => $request->address,
+                'note_to_seller' => $request->note_to_seller ?? null,
+                'note_charge' => $note_charge,
+                'shipping_method_id' => $shippingMethodId,
+                'front_picture' => null,
+                'back_picture' => null,
+                'customized_text' => $request->customised_test ?? null,
+                'customized_short_text' => $request->customised_short_test ?? null,
+            ]);
+
+            if (!empty($request->note_to_seller)) {
+                session()->put('note_to_seller', $request->note_to_seller);
+            }
+
+            return redirect()->route('checkout.payment.redirect');
         }
 
-
+        // ----- SINGLE PRODUCT CHECKOUT (from product page "Buy Now") -----
         $product = Product::where('id', $request->product_id)->first();
+        if (!$product) {
+            $notify[] = ['error', 'Product not found.'];
+            return back()->withNotify($notify);
+        }
+
         $get_variant = ProductVariant::where('product_id', $request->product_id)->first() ?? null;
+        $variant = null;
 
         if ($get_variant) {
 
@@ -266,54 +304,36 @@ class CheckoutController extends Controller
 
 
         if (auth()->user()) {
-
-            $cartItems = $this->cartManager->getCart();
-            foreach ($cartItems as $cartItem) {
-                $product = $cartItem->product;
-
-                if ($product->categories->isNotEmpty()) {
-                    $categoryId = $product->categories->first()->pivot->category_id;
-
-                    if (in_array($categoryId, [4, 5, 7, 9, 11])) {
-                        $countries = getusaCountries();
-                    } elseif ($categoryId == 6) {
-                        $countries = getusacanadaCountries();
-                    } else {
-
-                        $countries = getCountries();
-
-                    }
-                }
-
+            // Same as guest: show receiver-details form (no saved-address selection)
+            $firstItem = $cartItems->first();
+            if ($firstItem && $firstItem->product) {
+                $p = $firstItem->product;
+                session()->put('note', $p->note);
+                session()->put('customer_photo', $p->customer_photo);
+                session()->put('customised_test', $p->customised_test);
+                session()->put('customised_short_test', $p->customised_short_test);
             }
-
-            $note = Product::where('id', $cartItems[0]['product_id'])->first()->note;
-            $customer_photo = Product::where('id', $cartItems[0]['product_id'])->first()->customer_photo;
-            $customised_test = Product::where('id', $cartItems[0]['product_id'])->first()->customised_test;
-            $customised_short_test = Product::where('id', $cartItems[0]['product_id'])->first()->customised_short_test;
-
-
-            session()->put('note', $note);
-            session()->put('customer_photo', $customer_photo);
-            session()->put('customised_test', $customised_test);
-            session()->put('customised_short_test', $customised_short_test);
-
-
-            $view = 'Template::checkout_steps.shipping_info';
-
-
+            $view = 'Template::checkout_steps.shipping_info_guest';
         } else {
-
 
             if (!gs('guest_checkout')) {
                 abort(404);
             }
             $session = session()->get('guest_user_data');
 
-
             if (!$session) {
                 $notify[] = ['error', 'Session Expired'];
                 return to_route('cart.page')->withNotify($notify);
+            }
+
+            // Same as auth: set note/photo/custom from first cart item for simple checkout form
+            $firstItem = $cartItems->first();
+            if ($firstItem && $firstItem->product) {
+                $p = $firstItem->product;
+                session()->put('note', $p->note);
+                session()->put('customer_photo', $p->customer_photo);
+                session()->put('customised_test', $p->customised_test);
+                session()->put('customised_short_test', $p->customised_short_test);
             }
 
             $view = 'Template::checkout_steps.shipping_info_guest';
@@ -328,25 +348,25 @@ class CheckoutController extends Controller
 
     public function addShippingInfo(Request $request)
     {
-
         if (auth()->user()) {
+            $ids = ShippingAddress::where('user_id', auth()->id())->pluck('id')->toArray();
+            $request->validate([
+                'shipping_address_id' => 'required|in:' . implode(',', $ids ?: [0])
+            ], [
+                'shipping_address_id.required' => 'Shipping address is required',
+                'shipping_address_id.in' => 'Invalid address selected'
+            ]);
 
-            $checkoutData = session('shipping_info');
+            $checkoutData = session('shipping_info') ?? [];
             $checkoutData['shipping_address_id'] = $request->shipping_address_id;
+            $defaultShipping = ShippingMethod::active()->first();
+            $checkoutData['shipping_method_id'] = $defaultShipping ? $defaultShipping->id : 1;
             session()->put('shipping_info', $checkoutData);
 
-            $checkoutData = session('shipping_info');
-            $checkoutData['shipping_method_id'] = 1;
-
-
-            session()->put('shipping_info', $checkoutData);
-            return to_route('checkout.payment.methods');
-
-
+            return to_route('checkout.payment.redirect');
         }
 
         $ids = ShippingAddress::where('user_id', auth()->id())->pluck('id')->toArray();
-
         $request->validate([
             'shipping_address_id' => 'required|in:' . implode(',', $ids)
         ], [
@@ -356,11 +376,8 @@ class CheckoutController extends Controller
 
         $checkoutData = session('shipping_info');
         $checkoutData['shipping_address_id'] = $request->shipping_address_id;
-
         session()->put('shipping_info', $checkoutData);
         return to_route('checkout.delivery.methods');
-
-
     }
 
     public function deliveryMethods()
@@ -386,7 +403,7 @@ class CheckoutController extends Controller
 
 
         session()->put('shipping_info', $checkoutData);
-        return to_route('checkout.payment.methods');
+        return to_route('checkout.payment.redirect');
     }
 
     public function confirmation($orderNumber)
@@ -543,4 +560,49 @@ class CheckoutController extends Controller
         return redirect()->back()->withNotify($notify)->withInput();
     }
 
+    public function update(Request $request)
+    {
+        $cart = session()->get('cart', []);
+
+        if(isset($cart[$request->id])) {
+            if($request->action == "increase") {
+                $cart[$request->id]['quantity']++;
+            } elseif($request->action == "decrease" && $cart[$request->id]['quantity'] > 1) {
+                $cart[$request->id]['quantity']--;
+            }
+
+            session()->put('cart', $cart);
+        }
+
+        return back();
+    }
+    public function add(Request $request)
+    {
+        $product = Product::findOrFail($request->id);
+
+        $cart = session()->get('cart', []);
+
+        // Unique key for product + variants
+        $variantKey = $request->variant ?? 'simple';
+        $cartKey = $product->id . '_' . $variantKey;
+
+        if(isset($cart[$cartKey])) {
+            $cart[$cartKey]['quantity']++;
+        } else {
+            $cart[$cartKey] = [
+                "name" => $product->name,
+                "price" => $product->salePrice(),
+                "quantity" => 1,
+                "image" => getImage(getFilePath('product') . '/' . $product->image),
+                "variant" => $request->variant
+            ];
+        }
+
+        session()->put('cart', $cart);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Product added to cart'
+        ]);
+    }
 }

@@ -6,27 +6,28 @@
     <div class="col-md-7">
         <div class="product-details">
             <div class="product-header">
-                <h3 class="product-title product-id" data-pdi="{{ $product->id }}">{{ __($product->name) }}</h3>
-
-{{--                @if (gs('product_review'))--}}
-{{--                    <div class="ratings-area">--}}
-{{--                        <span class="ratings">--}}
-{{--                            @php echo __(displayRating($product->reviews_avg_rating)) @endphp--}}
-{{--                        </span>--}}
-{{--                        @if ($product->reviews_count)--}}
-{{--                            <span>({{ $product->reviews_count }})</span>--}}
-{{--                        @else--}}
-{{--                            <span> | @lang('No Review')</span>--}}
-{{--                        @endif--}}
-{{--                    </div>--}}
-{{--                @endif--}}
+                <h1 class="product-title product-id" data-pdi="{{ $product->id }}">{{ __($product->name) }}</h1>
 
                 <div class="d-flex flex-wrap align-items-center gap-2 product-detail-price">
                     <span class="product-price" id="productPrice">
-                        @php echo $product->formattedPrice();  @endphp
+                        @php echo $product->formattedPrice(); @endphp
                     </span>
-
                     <span id="stockBadge"></span>
+                </div>
+
+                <div class="product-header-actions d-flex gap-2 flex-wrap">
+                    <button class="btn btn-outline--base btn--sm addToCartBtn"
+                            data-id="{{ $product->id }}"
+                            data-product_type="{{ $product->product_type }}"
+                            type="button">
+                        Add to Cart
+                    </button>
+                    <button class="btn btn--base btn--sm flex-shrink-0 showShippingFormBtn"
+                            data-id="{{ $product->id }}"
+                            data-product_type="{{ $product->product_type }}"
+                            type="button">
+                        Buy Now
+                    </button>
                 </div>
             </div>
 

@@ -95,6 +95,7 @@
 {{--                                    </p>--}}
 {{--                                </div>--}}
 {{--                            </div>--}}
+                            @if (!Route::is('checkout.shipping.info') && !Route::is('cart.page'))
                             <div class="col">
                                 <div class="cart-step-box {{ menuActive(['checkout.payment.methods', 'deposit*']) }}">
                                     <div class="cart-step-icon mb-2">
@@ -146,6 +147,7 @@
                                     </p>
                                 </div>
                             </div>
+                            @endif
                         </div>
                     </div>
                 </div>

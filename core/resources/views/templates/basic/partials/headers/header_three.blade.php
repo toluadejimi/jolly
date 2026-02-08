@@ -46,14 +46,12 @@
                             <div class="action-btn-inner d-flex">
                                 @foreach (collect($group)->where('status', 'on') as $widget)
                                     @if ($widget->key == 'cart')
-                                        <div class="cart-icon-design">
-{{--                                            <button class="button cart-button flex-shrink-0" @disabled(Route::is('cart.page')) @if (@$widget->background_color) style="background-color: {{ '#' . $widget->background_color }} !important" @endif>--}}
-                                            <button class="button flex-shrink-0">
-                                                <i class="las la-user-check"></i>
-                                                <span class="flex-shrink-0">
-{{--                                                    <span class="amount d-block">{{ gs('cur_sym') }}<span class="cartSubtotal">0</span></span>--}}
-{{--                                                    <span class="items d-block">(<span class="cartItemCount">0</span>) @lang('items')</span>--}}
+                                        <div class="cart-icon-design widget--style" @if (@$widget->background_color) style="background-color: {{ '#' . @$widget->background_color }} !important" @endif>
+                                            <button type="button" class="button cart-button flex-shrink-0" title="@lang('Cart')" @disabled(Route::is('cart.page'))>
+                                                <span class="ico">
+                                                    <i class="las la-shopping-cart"></i>
                                                 </span>
+                                                <span class="cartItemCount ecommerce__is badge-count">{{ $cartCount ?? 0 }}</span>
                                             </button>
                                         </div>
                                     @elseif($widget->key == 'wishlist' && gs('product_wishlist'))
@@ -88,6 +86,12 @@
                                         </div>
                                     @endif
                                 @endforeach
+                                <div class="h-100 d-flex align-items-center">
+                                    <button type="button" class="button theme-switcher-btn border-0 bg-transparent p-2" id="theme-switcher-bottom" title="@lang('Toggle theme')" aria-label="@lang('Toggle theme')">
+                                        <span class="theme-icon-light"><i class="las la-sun"></i></span>
+                                        <span class="theme-icon-dark d-none"><i class="las la-moon"></i></span>
+                                    </button>
+                                </div>
                             </div>
                         @endif
                     @endforeach

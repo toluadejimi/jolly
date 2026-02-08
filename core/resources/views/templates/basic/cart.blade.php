@@ -29,9 +29,9 @@
                 <a href="{{ route('checkout.shipping.info') }}" class="btn btn--base h-45">
                     @lang('Continue To Next') <i class="las la-angle-right"></i>
                 </a>
-            </div>
-        @else
-            <button class="btn btn--base mt-3 login-trigger" data-bs-toggle="modal" data-bs-target="@if (gs('guest_checkout')) #loginAndGuestModal @else #loginModal @endif">@lang('Continue To Next') <i class="las la-angle-right"></i></button>
-        @endauth
+            @else
+                <button type="button" class="btn btn--base h-45 login-trigger" data-bs-toggle="modal" data-bs-target="@if (gs('guest_checkout')) #loginAndGuestModal @else #loginModal @endif">@lang('Continue To Next') <i class="las la-angle-right"></i></button>
+            @endauth
+        </div>
     @endif
 @endsection

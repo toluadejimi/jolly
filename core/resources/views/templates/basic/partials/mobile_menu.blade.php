@@ -8,6 +8,15 @@
         </a>
     </li>
 
+    <li class="d-lg-none">
+        <a href="javascript:void(0)" class="ecommerce cart-button" title="@lang('Cart')">
+            <span class="ecommerce__icon">
+                <i class="las la-shopping-cart"></i>
+                <span class="ecommerce__is cartItemCount">{{ $cartCount ?? 0 }}</span>
+            </span>
+            <span class="ecommerce__text">@lang('Cart')</span>
+        </a>
+    </li>
     @if (gs('product_wishlist'))
         <li>
             <a href="javascript:void(0)" class="ecommerce wish-button">
@@ -32,6 +41,13 @@
         </li>
     @endif
 
+    <li>
+        <button type="button" class="ecommerce theme-switcher-btn border-0 bg-transparent w-100 text-start" id="theme-switcher-mobile" title="@lang('Toggle theme')">
+            <span class="ecommerce__icon theme-icon-light"><i class="las la-sun"></i></span>
+            <span class="ecommerce__icon theme-icon-dark d-none"><i class="las la-moon"></i></span>
+            <span class="ecommerce__text">@lang('Theme')</span>
+        </button>
+    </li>
     <li>
         <a href="javascript:void(0)" class="ecommerce @auth user-account-btn @endauth" id="account-button" @guest data-bs-toggle="modal" data-bs-target="#loginModal" @endguest>
             <span class="ecommerce__icon">

@@ -44,6 +44,71 @@ class PaymentController extends Controller {
         return view('Template::checkout_steps.payment_methods', compact('pageTitle', 'gatewayCurrencies', 'shippingMethod', 'subtotal', 'coupon', 'hasPhysicalProduct'));
     }
 
+    /**
+     * Skip payment-methods page: go straight to payment using default gateway.
+     */
+    public function redirectToPayment() {
+        $cartData = $this->cartManager->getCart();
+        if (blank($cartData)) {
+            $notify[] = ['error', 'No product found to place order'];
+            return to_route('cart.page')->withNotify($notify);
+        }
+
+        $checkStock = $this->checkStock($cartData);
+        if ($checkStock instanceof RedirectResponse) {
+            return $checkStock;
+        }
+
+        $checkPrice = $this->cartManager->checkProductsPrice($cartData);
+        if (!$checkPrice['status']) {
+            $notify[] = ['error', $checkPrice['message']];
+            return to_route('cart.page')->withNotify($notify);
+        }
+
+        $hasPhysicalProduct = $this->cartManager->checkPhysicalProductExistence();
+        $subtotal = $this->cartManager->subtotal();
+        $shippingMethod = ShippingMethod::active()->where('id', @session('shipping_info')['shipping_method_id'])->first();
+        $shippingCharge = $shippingMethod->charge ?? 0;
+        $noteCharge = (int) (session('shipping_info')['note_charge'] ?? 0);
+        $coupon = $this->appliedCoupon($cartData, $subtotal);
+        $couponAmount = 0;
+        if ($coupon && !isset($coupon['error'])) {
+            $couponAmount = is_object($coupon) ? ($coupon->discount_amount ?? 0) : ($coupon['discount_amount'] ?? 0);
+            $couponAmount = $couponAmount > $subtotal ? $subtotal : $couponAmount;
+        }
+        $totalAmount = $subtotal + $shippingCharge + $noteCharge - $couponAmount;
+
+        $gatewayCurrency = GatewayCurrency::whereHas('method', function ($gate) {
+            $gate->where('status', Status::ENABLE);
+        })->with('method')->orderBy('method_code', 'desc')->first();
+
+        if (!$gatewayCurrency && gs('cod') && $hasPhysicalProduct) {
+            $gatewayCurrency = (new GatewayCurrency())->codMethod();
+        }
+        if (!$gatewayCurrency) {
+            $gatewayCurrency = GatewayCurrency::whereHas('method', function ($gate) {
+                $gate->where('status', Status::ENABLE);
+            })->with('method')->first();
+        }
+        if (!$gatewayCurrency) {
+            $notify[] = ['error', 'No payment method available'];
+            return to_route('cart.page')->withNotify($notify);
+        }
+
+        $gateway = $gatewayCurrency->id == 0 ? 0 : $gatewayCurrency->method_code;
+        $currency = $gatewayCurrency->currency ?? gs('cur_text');
+
+        $request = Request::create(route('checkout.complete'), 'POST', [
+            'gateway' => $gateway,
+            'currency' => $currency,
+            'total_amount_' => $totalAmount,
+            '_token' => csrf_token(),
+        ]);
+        $request->setLaravelSession(request()->session());
+
+        return $this->completeCheckout($request);
+    }
+
     public function completeCheckout(Request $request) {
 
 
@@ -85,18 +150,11 @@ class PaymentController extends Controller {
         }
 
 
-        $n_charge = session()->get('shipping_info')['note_charge'] ?? 0;
+        $noteCharge = (int) (session()->get('shipping_info')['note_charge'] ?? 0);
 
-
-        if($n_charge > 0){
-            $note_charge = $n_charge;
-        }else{
-            $note_charge = 0;
-        }
-        $subtotal = $request->total_amount_;
-
-
-        $coupon   = $this->appliedCoupon($cartData, $subtotal);
+        // Cart checkout: use actual cart subtotal (all items) and include note charge in total
+        $cartSubtotal = $this->cartManager->subtotal($cartData);
+        $coupon = $this->appliedCoupon($cartData, $cartSubtotal);
 
         if (isset($coupon['error'])) {
             $notify[] = ['error', $coupon['error']];
@@ -108,13 +166,8 @@ class PaymentController extends Controller {
 
         $order = null;
 
-
-
-
         if ($orderId) {
             $order = Order::find($orderId);
-
-
 
             if (!$order) {
                 $notify[] = ['error', 'Session expired'];
@@ -134,13 +187,20 @@ class PaymentController extends Controller {
                     abort(403);
                 }
             }
+
+            // Cart checkout: do not reuse an old order if cart content/total doesn't match (e.g. user added more items)
+            $orderItemCount = $order->orderDetail()->count();
+            $cartItemCount  = $cartData->count();
+            if ($orderItemCount !== $cartItemCount || (float) $order->subtotal !== (float) $cartSubtotal) {
+                $order = null;
+            }
+
             session()->forget('order_id');
             session()->save();
         }
 
         if (!$order) {
-
-            $order = $this->saveOrder($subtotal, $coupon, $gatewayCurrency, $cartData, $hasPhysicalProduct);
+            $order = $this->saveOrder($cartSubtotal, $coupon, $gatewayCurrency, $cartData, $hasPhysicalProduct, $noteCharge);
         }
 
         if ($coupon) {
@@ -149,7 +209,7 @@ class PaymentController extends Controller {
 
         $this->sendAdminNotification($order);
 
-        $trx = $order->initiatePayment($gatewayCurrency, $subtotal);
+        $trx = $order->initiatePayment($gatewayCurrency, $order->total_amount);
 
         if (!$order->is_cod) {
             session()->put('Track', $trx);
@@ -228,13 +288,12 @@ class PaymentController extends Controller {
         $shippingAddress = null;
 
         if ($hasPhysicalProduct) {
-            if (auth()->check()) {
+            // Inline address (from guest-style form) has 'address' key; saved-address flow has 'shipping_address_id'
+            if (auth()->check() && !empty($checkoutData['shipping_address_id'])) {
                 $shippingAddress = ShippingAddress::where('user_id', auth()->id())->find($checkoutData['shipping_address_id']);
-
             } else {
                 $shippingAddress = (object) $checkoutData;
             }
-
 
             if (!$shippingAddress) {
                 throw ValidationException::withMessages(['error' => 'Invalid session data']);
@@ -258,33 +317,36 @@ class PaymentController extends Controller {
         return $shippingMethod;
     }
 
-    private function saveOrder($subtotal, $coupon, $gatewayCurrency, $cartData, $hasPhysicalProduct) {
+    private function saveOrder($subtotal, $coupon, $gatewayCurrency, $cartData, $hasPhysicalProduct, $noteCharge = 0) {
         $checkoutData = $this->getCheckoutData($hasPhysicalProduct);
 
         $shippingAddress = $this->getShippingAddress($hasPhysicalProduct, $checkoutData);
         $shippingMethod  = $this->getShippingMethod($hasPhysicalProduct, $checkoutData);
         $guestUser       = session('guest_user_data');
 
-        $couponAmount = $coupon->discount_amount ?? 0;
-        $couponAmount = $couponAmount > $subtotal ? $subtotal : $couponAmount;
+        $shippingCharge = $shippingMethod->charge ?? 0;
+        $couponAmount   = $coupon->discount_amount ?? 0;
+        $couponAmount   = $couponAmount > $subtotal ? $subtotal : $couponAmount;
 
-        $order               = new Order();
-        $order->order_number = $this->getOrderNumber();
-        $order->user_id      = auth()->id() ?? 0;
-        $order->guest_id     = $guestUser->id ?? null;
+        $order                    = new Order();
+        $order->order_number      = $this->getOrderNumber();
+        $order->user_id           = auth()->id() ?? 0;
+        $order->guest_id          = $guestUser?->id ?? null;
 
         if (auth()->check()) {
-            $order->shipping_address   = $shippingAddress ? $this->setShippingAddress($shippingAddress) : null;
+            $order->shipping_address = $shippingAddress
+                ? ($shippingAddress instanceof ShippingAddress ? $this->setShippingAddress($shippingAddress) : $shippingAddress)
+                : null;
         } else {
-            $order->shipping_address   = $shippingAddress ? $shippingAddress : null;
+            $order->shipping_address = $shippingAddress ? $shippingAddress : null;
         }
 
         $order->shipping_method_id = $shippingMethod->id ?? 0;
-        $order->shipping_charge    = $shippingMethod->charge ?? 0;
+        $order->shipping_charge    = $shippingCharge;
         $order->is_cod             = $gatewayCurrency->id ? 0 : 1;
         $order->payment_status     = Status::PAYMENT_INITIATE;
         $order->subtotal           = $subtotal;
-        $order->total_amount       = getAmount($subtotal  + ($shippingMethod->charge ?? 0) - $couponAmount);
+        $order->total_amount       = getAmount($subtotal + $shippingCharge + (int) $noteCharge - $couponAmount);
         $order->save();
 
         $note =$checkoutData['note_to_seller'] ??  session('note_to_seller') ?? null;
