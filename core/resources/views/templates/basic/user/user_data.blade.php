@@ -6,71 +6,75 @@
     @endphp
 
 
-    <div class="py-60">
+    <div class="py-60 user-data-page">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-8 col-lg-7 col-xl-6">
-                    <div class="card custom--card">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">{{ __(@$content->data_values->title) }}</h5>
-                            <p class="bg-light p-3 rounded">{{ __(@$content->data_values->description) }}</p>
+                    <div class="auth-form">
+                        <div class="auth-form__head text-center">
+                            <h5 class="auth-form__title mb-2">{{ __(@$content->data_values->title) }}</h5>
+                            <p class="auth-form__desc">{{ __(@$content->data_values->description) }}</p>
+                        </div>
+                        <div class="auth-form__body">
                             <form method="POST" action="{{ route('user.data.submit') }}">
                                 @csrf
-                                <div class="row">
-                                    <div class="col-md-12">
+                                <div class="row g-3">
+                                    <div class="col-12">
                                         <div class="form-group">
-                                            <label class="form-label">@lang('Username')</label>
+                                            <label class="form--label">@lang('Username')</label>
                                             <input type="text" class="form-control form--control checkUser" name="username" value="{{ old('username') }}" required>
-                                            <small class="text-danger usernameExist"></small>
+                                            <small class="text-danger usernameExist d-block mt-1"></small>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label class="form-label">@lang('Country')</label>
+                                            <label class="form--label">@lang('Country')</label>
                                             <select name="country" class="form-control form--control select2" required>
                                                 @foreach ($countries as $key => $country)
-                                                    <option data-mobile_code="{{ $country->dial_code }}" value="{{ $country->country }}" data-code="{{ $key }}">{{ __($country->country) }}
-                                                    </option>
+                                                    <option data-mobile_code="{{ $country->dial_code }}" value="{{ $country->country }}" data-code="{{ $key }}">{{ __($country->country) }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label class="form-label">@lang('Whatsapp No')</label>
-                                            <div class="input-group">
+                                            <label class="form--label">@lang('Whatsapp No')</label>
+                                            <div class="input-group input-group--theme">
                                                 <span class="input-group-text mobile-code"></span>
                                                 <input type="hidden" name="mobile_code">
                                                 <input type="hidden" name="country_code">
-                                                <input type="number" name="mobile" value="{{ old('mobile') }}" class="form-control form--control checkUser ps-0" required>
+                                                <input type="tel" name="mobile" value="{{ old('mobile') }}" class="form-control form--control checkUser ps-0" required>
                                             </div>
-                                            <small class="text-danger mobileExist"></small>
+                                            <small class="text-danger mobileExist d-block mt-1"></small>
                                         </div>
                                     </div>
-
-                                    <div class="form-group col-sm-6">
-                                        <label class="form-label">@lang('State')</label>
-                                        <input type="text" class="form-control form--control" name="state" value="{{ old('state') }}">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form--label">@lang('State')</label>
+                                            <input type="text" class="form-control form--control" name="state" value="{{ old('state') }}">
+                                        </div>
                                     </div>
-                                    <div class="form-group col-sm-6">
-                                        <label class="form-label">@lang('City')</label>
-                                        <input type="text" class="form-control form--control" name="city" value="{{ old('city') }}">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form--label">@lang('City')</label>
+                                            <input type="text" class="form-control form--control" name="city" value="{{ old('city') }}">
+                                        </div>
                                     </div>
-                                    <div class="form-group col-sm-6">
-                                        <label class="form-label">@lang('Zip Code')</label>
-                                        <input type="text" class="form-control form--control" name="zip" value="{{ old('zip') }}">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form--label">@lang('Zip Code')</label>
+                                            <input type="text" class="form-control form--control" name="zip" value="{{ old('zip') }}">
+                                        </div>
                                     </div>
-
-                                    <div class="form-group col-sm-6">
-                                        <label class="form-label">@lang('Address')</label>
-                                        <input type="text" class="form-control form--control" name="address" value="{{ old('address') }}">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form--label">@lang('Address')</label>
+                                            <input type="text" class="form-control form--control" name="address" value="{{ old('address') }}">
+                                        </div>
                                     </div>
                                 </div>
-
-                                <div>
-                                    <button type="submit" class="btn btn--base h-45 w-100">
-                                        @lang('Submit')
-                                    </button>
+                                <div class="auth-form-btn mt-4">
+                                    <button type="submit" class="btn btn--base h-45 w-100">@lang('Submit')</button>
                                 </div>
                             </form>
                         </div>

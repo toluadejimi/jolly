@@ -5,7 +5,7 @@
     @endphp
 
     <div class="container">
-        <div class="row g-4 gy-lg-0 @if (@$content->data_values->image) justify-content-between @else justify-content-center @endif align-items-center">
+        <div class="row g-4 gy-lg-0 @if (@$content->data_values->image) justify-content-between @else justify-content-center @endif flex-wrap-reverse align-items-center">
 
             @if (@$content->data_values->image)
                 <div class="col-lg-6 col-xxl-7 d-none d-lg-block">
@@ -83,8 +83,8 @@
                                 </div>
                             @endif
 
-                            <div class="aurt-form-btn">
-                                <button class="btn btn--md btn--base h-45 w-100">@lang('Register')</button>
+                            <div class="auth-form-btn">
+                                <button class="btn btn--md btn--base h-45 w-100" type="submit">@lang('Register')</button>
                             </div>
                             <p class="mt-2 mb-0">
                                 @lang('Already have an account?') <a href="{{ route('user.login') }}" class="t-link t-link--base text--base">@lang('Login')</a>

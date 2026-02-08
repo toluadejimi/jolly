@@ -1,34 +1,31 @@
-<div class="modal custom--modal fade" id="loginAndGuestModal" tabindex="-1" role="dialog">
+<div class="modal custom--modal fade" id="loginAndGuestModal" tabindex="-1" role="dialog" aria-labelledby="loginGuestModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-body">
-                <button type="button" class="close modal-close-btn" data-bs-dismiss="modal" aria-label="Close">
+        <div class="modal-content login-guest-modal">
+            <div class="modal-header login-guest-modal__header">
+                <h5 class="modal-title" id="loginGuestModalTitle">@lang('Login or Continue as Guest')</h5>
+                <button type="button" class="modal-close-btn" data-bs-dismiss="modal" aria-label="@lang('Close')">
                     <i class="las la-times"></i>
                 </button>
-                <div class="mt-3">
-                    <ul class="nav nav-tabs user-tab" id="loginGuestTabs" role="tablist">
-
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="guest-tab" data-bs-toggle="tab" data-bs-target="#guest" type="button" role="tab" aria-controls="guest" aria-selected="false">
-                                @lang('Checkout Without Login')
-                            </button>
-                        </li>
-
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true">
-                                @lang('Continue with Login')
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-                <div class="tab-content" id="loginGuestTabContent">
-                    <div class="tab-pane fade show" id="login" role="tabpanel" aria-labelledby="login-tab">
+            </div>
+            <div class="modal-body login-guest-modal__body">
+                <ul class="nav nav-tabs login-guest-tabs" id="loginGuestTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="guest-tab" data-bs-toggle="tab" data-bs-target="#guest" type="button" role="tab" aria-controls="guest" aria-selected="true">
+                            @lang('Checkout Without Login')
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="false">
+                            @lang('Continue with Login')
+                        </button>
+                    </li>
+                </ul>
+                <div class="tab-content login-guest-tab-content" id="loginGuestTabContent">
+                    <div class="tab-pane fade" id="login" role="tabpanel" aria-labelledby="login-tab">
                         @include('Template::partials.login', ['idPrefix' => 'auth-user'])
                     </div>
-
                     @php
                         $guestUser = session('guest_user_data');
-
                         if ($guestUser && $guestUser->country_code) {
                             $mobileCode = $guestUser->country_code;
                         } else {
@@ -38,43 +35,24 @@
                         $countries = getCountries();
                         $checkoutContent = getContent('guest_checkout.content', true)?->data_values;
                     @endphp
-
                     <div class="tab-pane fade show active" id="guest" role="tabpanel" aria-labelledby="guest-tab">
-
                         @if (@$checkoutContent->description_in_checkout_form)
-                            <p class="my-3">
-                                <h5> Billing details</h5>
-{{--                                <span class=""><i class="fa-solid fa-circle-info icon"></i></span>--}}
-{{--                                <span class="text">{{ @$checkoutContent->description_in_checkout_form }}</span>--}}
-                            </p>
+                            <h5 class="login-guest-modal__section-title">@lang('Billing details')</h5>
                         @endif
-
-                        <form action="{{ route('checkout.guest.info.store') }}" method="POST">
+                        <form action="{{ route('checkout.guest.info.store') }}" method="POST" class="login-guest-form">
                             @csrf
-
                             <div class="form-group">
-                                <label for="guest-email">Enter your own email address</label>
-                                <input type="text" value="{{ @$guestUser->email }}" class="form-control form--control" id="guest-email" name="email" required>
+                                <label class="form--label" for="guest-email">@lang('Enter your email address')</label>
+                                <input type="email" value="{{ @$guestUser->email }}" class="form-control form--control" id="guest-email" name="email" required placeholder="@lang('your@email.com')">
                             </div>
-
                             <input type="hidden" name="mobile_code">
                             <input type="hidden" name="country_code">
-
                             <div class="form-group">
-                                <label for="guest-mobile">Your WhatsApp Number</label>
+                                <label class="form--label" for="guest-mobile">@lang('Your WhatsApp Number')</label>
                                 <div class="input-group">
-
-                                    <input type="number" name="mobile" value="{{ @$guestUser->mobile }}" class="form-control form--control" id="guest-email"  required>
-
-{{--                                    <select name="country" class="input-group-text" required>--}}
-{{--                                        @foreach ($countries as $key => $country)--}}
-{{--                                            <option data-mobile_code="{{ $country->dial_code }}" value="{{ $country->country }}" data-code="{{ $key }}">+{{ __($country->dial_code) }}({{ $country->country }})</option>--}}
-{{--                                        @endforeach--}}
-{{--                                    </select>--}}
-{{--                                    <input type="number" name="mobile" value="{{ @$guestUser->mobile }}" class="form-control form--control ps-0" required>--}}
+                                    <input type="tel" name="mobile" value="{{ @$guestUser->mobile }}" class="form-control form--control" id="guest-mobile" required placeholder="@lang('Phone number')">
                                 </div>
                             </div>
-
                             <button type="submit" class="btn btn--base w-100 h-45">@lang('Proceed as Guest')</button>
                         </form>
                     </div>

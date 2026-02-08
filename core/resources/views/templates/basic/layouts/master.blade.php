@@ -30,10 +30,12 @@
     @endif
 
     @auth
-        <div class="site-sidebar sidebar-nav" id="authSidebarMenu">
-            <button type="button" class="sidebar-close-btn"><i class="las la-times"></i></button>
-
-            <ul class="text--white login-user-menu">
+        <div class="site-sidebar sidebar-nav auth-sidebar" id="authSidebarMenu">
+            <div class="auth-sidebar__header">
+                <h5 class="auth-sidebar__title">@lang('My Account')</h5>
+                <button type="button" class="sidebar-close-btn auth-sidebar__close" aria-label="@lang('Close')"><i class="las la-times"></i></button>
+            </div>
+            <ul class="login-user-menu auth-sidebar__menu">
                 @include('Template::user.partials.sidebar')
             </ul>
         </div>
