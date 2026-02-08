@@ -1381,6 +1381,32 @@ label,
   color: hsl(var(--base));
 }
 
+.footer-products-link {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-product-link {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.footer-product-link:hover {
+  color: #fff;
+  opacity: 0.95;
+}
+
+.footer-product-link .footer-product-icon {
+  flex-shrink: 0;
+  display: block;
+}
+
+.footer-product-link i.footer-product-icon {
+  color: inherit;
+}
+
 .footer-copyright {
   font-size: 0.8125rem;
   padding-top: 1rem;
@@ -1502,6 +1528,151 @@ label,
 .theme-switcher-btn .theme-icon-light,
 .theme-switcher-btn .theme-icon-dark {
   font-size: 1.25rem;
+}
+
+/* ========== Mobile bottom bar – floating rounded pill (Category, Cart, Account) ========== */
+@media (max-width: 991px) {
+  .mobile-menu-icons.option-list {
+    list-style: none;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 20px;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0));
+    width: auto;
+    max-width: calc(100vw - 40px);
+    height: auto;
+    padding: 12px 16px 12px 16px !important;
+    background: #ffffff;
+    border-radius: 9999px;
+    box-shadow: 0 -1px 0 0 rgba(0, 0, 0, 0.08), 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 2px solid #e7390d;
+    display: flex !important;
+    flex-wrap: nowrap;
+    gap: 8px;
+    justify-content: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .mobile-menu-icons.option-list::-webkit-scrollbar {
+    display: none;
+  }
+  /* Separator line between page content and mobile menu */
+  .mobile-menu-icons.option-list::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    bottom: 100%;
+    margin-bottom: 10px;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+  }
+  .mobile-menu-icons.option-list > li {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 100px;
+    position: relative;
+  }
+  /* Vertical separator lines between mobile menu items */
+  .mobile-menu-icons.option-list > li:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.12);
+    display: block;
+  }
+  .mobile-menu-icons .ecommerce {
+    min-width: 0;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 9999px;
+    transition: background 0.2s ease, color 0.2s ease;
+    display: grid !important;
+    gap: 4px;
+    justify-items: center;
+  }
+  .mobile-menu-icons .ecommerce:hover,
+  .mobile-menu-icons .ecommerce:active {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  .mobile-menu-icons .ecommerce__icon {
+    fill: #1a1a1a !important;
+    color: #1a1a1a !important;
+    font-size: 1.25rem;
+  }
+  .mobile-menu-icons .ecommerce__icon img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    opacity: 0.95;
+    filter: brightness(0) saturate(100%);
+  }
+  .mobile-menu-icons .ecommerce__text {
+    color: #4a4a4a !important;
+    font-size: 0.6875rem !important;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+  }
+  .mobile-menu-icons .ecommerce__is {
+    background: #e7390d;
+    color: #fff !important;
+    font-size: 10px;
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 575px) {
+  .mobile-menu-icons.option-list {
+    bottom: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0));
+    padding: 10px 12px 10px 12px !important;
+    max-width: calc(100vw - 32px);
+  }
+  .mobile-menu-icons .ecommerce {
+    padding: 8px 10px;
+  }
+  .mobile-menu-icons .ecommerce__icon {
+    font-size: 1.125rem;
+  }
+  .mobile-menu-icons .ecommerce__icon img {
+    width: 20px;
+    height: 20px;
+  }
+  .mobile-menu-icons .ecommerce__text {
+    font-size: 0.625rem !important;
+  }
+}
+
+/* Dark theme – floating mobile bar */
+[data-theme="dark"] .mobile-menu-icons.option-list {
+  background: #2a2a2a;
+  border: 2px solid #e7390d;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+[data-theme="dark"] .mobile-menu-icons .ecommerce:hover,
+[data-theme="dark"] .mobile-menu-icons .ecommerce:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .mobile-menu-icons .ecommerce__icon {
+  fill: #e8e8e8 !important;
+  color: #e8e8e8 !important;
+}
+[data-theme="dark"] .mobile-menu-icons .ecommerce__text {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+[data-theme="dark"] .mobile-menu-icons .ecommerce__icon img {
+  filter: brightness(0) invert(1);
+}
+[data-theme="dark"] .mobile-menu-icons.option-list > li:not(:last-child)::after {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* ---- Dark theme ---- */
@@ -1644,6 +1815,13 @@ label,
 [data-theme="dark"] .footer-widget li a,
 [data-theme="dark"] .footer-copyright p {
   color: #d0d0d0 !important;
+}
+
+[data-theme="dark"] .footer-product-link {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+[data-theme="dark"] .footer-product-link:hover {
+  color: #fff !important;
 }
 
 [data-theme="dark"] input,
@@ -1993,6 +2171,38 @@ html[data-theme="dark"] .py-60 .widget .title {
   background: #e7390d !important;
   border-color: #e7390d !important;
   color: #fff !important;
+}
+
+/* Products page mobile – dark theme card styling (no red placeholders) */
+@media (max-width: 767px) {
+  [data-theme="dark"] #grid-view .grid-control {
+    background: transparent !important;
+  }
+  [data-theme="dark"] #grid-view .product-card {
+    background: #242424 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  }
+  [data-theme="dark"] #grid-view .product-card:hover {
+    border-color: rgba(231, 57, 13, 0.3) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+  [data-theme="dark"] #grid-view .product-card .product-thumb,
+  [data-theme="dark"] #grid-view .product-card .product-thumb a {
+    background: #1e1e1e !important;
+  }
+  [data-theme="dark"] #grid-view .product-card .product-thumb img {
+    background: #1e1e1e !important;
+  }
+  [data-theme="dark"] #grid-view .product-card .product-content .title a {
+    color: #e8e8e8 !important;
+  }
+  [data-theme="dark"] #grid-view .product-card .product-content {
+    background: #242424 !important;
+  }
+  [data-theme="dark"] #grid-view .product-card .product-content .price {
+    color: #ff6b4a !important;
+  }
 }
 
 /* Product details sticky sidebar – dark theme */

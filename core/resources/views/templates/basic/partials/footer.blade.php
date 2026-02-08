@@ -9,6 +9,16 @@
 <!-- Footer Section Starts Here -->
 <footer class="footer-area footer-bg ">
     <div class="container">
+        <div class="footer-products-link py-3 d-flex flex-wrap align-items-center gap-3 gap-md-4">
+            <a href="{{ route('home') }}" class="footer-product-link d-inline-flex align-items-center gap-2">
+                <i class="las la-home footer-product-icon" style="font-size: 1.25rem;"></i>
+                <span>@lang('Home')</span>
+            </a>
+            <a href="{{ route('categories') }}" class="footer-product-link d-inline-flex align-items-center gap-2">
+                <img src="{{ svg('product') }}" alt="" class="footer-product-icon" width="20" height="20">
+                <span>@lang('Products')</span>
+            </a>
+        </div>
         @if ($menus)
             <div class="footer-middle">
                 @foreach ($menus as $menu)

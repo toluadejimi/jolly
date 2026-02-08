@@ -1,7 +1,6 @@
 @props([
     'product' => $product,
     'wishlist' => null,
-    'showRating' => true,
     'showTitle' => true,
     'showCartButton' => true,
 ])
@@ -85,15 +84,6 @@
                         echo $product->formattedPrice();
                     @endphp
                 </div>
-
-                @if ($showRating && gs('product_review'))
-                    <div class="ratings-area">
-                        <span class="ratings">
-                            @php echo displayRating($product->reviews_avg_rating) @endphp
-                        </span>
-                        <span class="rating-count">({{ $product->reviews_count ?? 0 }})</span>
-                    </div>
-                @endif
             </div>
 
             @if ($product->summary)

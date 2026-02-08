@@ -19,13 +19,20 @@
 		width: 100%;
 		max-width: 324px;
 		height: 100vh;
+		height: 100dvh;
 		overflow-y: auto;
+		overflow-x: hidden;
 		transform: translateX(-100%);
-		transition: all 0.3s ease-in;
+		transition: transform 0.3s ease-in, visibility 0.3s ease-in;
+		visibility: hidden;
+		pointer-events: none;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	.category-sidebar.active {
 		transform: translateX(0);
+		visibility: visible;
+		pointer-events: auto;
 	}
 }
 
@@ -383,4 +390,210 @@
 
 .list-view-active .add-to-cart-btn {
 	width: unset;
+}
+
+/* ========== Products listing – mobile layout ========== */
+@media (max-width: 1199px) {
+	/* Remove big top space on products listing page (sidebar is off-canvas) */
+	.py-60:has(.product-shop) {
+		padding-top: 1rem !important;
+	}
+
+	.product-shop {
+		display: block;
+		gap: 0;
+	}
+
+	/* Prevent horizontal scroll from off-canvas sidebar */
+	.py-60 .product-shop {
+		overflow-x: hidden;
+	}
+
+	.products-container {
+		min-width: 0;
+		width: 100%;
+		max-width: 100%;
+	}
+
+	/* On mobile: remove category sidebar and Filter button entirely */
+	.category-sidebar {
+		display: none !important;
+	}
+
+	.py-60 .filter-in,
+	.py-60 .filter-select-item:has(.filter-in) {
+		display: none !important;
+	}
+}
+
+/* ========== Products page mobile – professional layout ========== */
+@media (max-width: 767px) {
+	.py-60:has(.product-shop) {
+		padding-top: 1.25rem !important;
+		padding-bottom: 2rem !important;
+	}
+
+	.py-60:has(.product-shop) .breadcrumb {
+		margin-bottom: 1rem !important;
+		font-size: 0.8125rem;
+	}
+
+	.product-shop .container,
+	.py-60 .container {
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+
+	/* Filter bar: clean stacked layout */
+	.filter-category-header {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 1rem;
+		margin-bottom: 1.25rem !important;
+		padding-bottom: 1rem;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+	}
+
+	.filter-category-header .filter-select-item {
+		flex-direction: row !important;
+		align-items: center !important;
+	}
+
+	.filter-category-header .filter-select-right {
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.filter-category-header .filter-select-item p.mb-0 {
+		font-size: 0.8125rem;
+		min-width: 4rem;
+	}
+
+	.filter-category-header .select-item .form--control,
+	.filter-category-header .select-item .form--select {
+		min-width: 0;
+		flex: 1;
+	}
+
+	/* Product grid: 2 columns, clean spacing (Bootstrap row/col) */
+	#grid-view {
+		gap: 1rem !important;
+		margin-top: 0 !important;
+	}
+
+	#grid-view .grid-control {
+		padding: 0 !important;
+	}
+
+	/* Product cards: polished look, no red bleed */
+	#grid-view .grid-control {
+		background: transparent !important;
+	}
+
+	#grid-view .product-card {
+		background: #fff !important;
+		border-radius: 12px;
+		overflow: hidden;
+		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+		border: 1px solid rgba(0, 0, 0, 0.06);
+		transition: box-shadow 0.2s ease, border-color 0.2s ease;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+	}
+
+	#grid-view .product-card:hover {
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+		border-color: rgba(231, 57, 13, 0.2);
+	}
+
+	#grid-view .product-card .product-thumb {
+		aspect-ratio: 1;
+		overflow: hidden;
+		background: #f0f0f0 !important;
+		position: relative;
+		flex-shrink: 0;
+	}
+
+	#grid-view .product-card .product-thumb a {
+		display: block;
+		width: 100%;
+		height: 100%;
+		background: #f0f0f0 !important;
+	}
+
+	#grid-view .product-card .product-thumb img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		background: #f0f0f0 !important;
+	}
+
+	#grid-view .product-card .product-thumb img[src*="default"],
+	#grid-view .product-card .product-thumb img:not([data-src]) {
+		background: #e8e8e8 !important;
+	}
+
+	#grid-view .product-card .product-content {
+		padding: 0.75rem !important;
+		background: #fff !important;
+		flex: 1;
+		min-height: 0;
+	}
+
+	#grid-view .product-card .product-content .title a {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		font-size: 0.875rem;
+		font-weight: 600;
+		line-height: 1.35;
+		color: #1a1a1a;
+	}
+
+	#grid-view .product-card .product-content .price {
+		font-size: 0.9375rem;
+		font-weight: 600;
+		color: #e7390d;
+		margin-top: 0.25rem;
+	}
+
+	#grid-view .product-card .add-to-cart-btn,
+	#grid-view .product-card .quickViewBtn.add-to-cart-btn {
+		margin-top: 0.5rem;
+		font-size: 0.8125rem;
+		padding: 0.5rem 0.75rem;
+		border-radius: 8px;
+		font-weight: 600;
+	}
+
+	.view-style {
+		justify-content: flex-start;
+	}
+
+	.py-60 .empty-message {
+		padding: 2.5rem 1.5rem !important;
+		border-radius: 12px;
+		background: #f8f9fa;
+	}
+}
+
+@media (max-width: 575px) {
+	.py-60 .breadcrumb {
+		flex-wrap: wrap;
+		gap: 0.25rem;
+	}
+
+	.py-60 .pagination-wrapper {
+		margin-top: 1.5rem !important;
+		padding-top: 1.25rem !important;
+	}
+
+	.py-60 .pagination .page-link {
+		padding: 0.5rem 0.75rem !important;
+		font-size: 0.8125rem;
+		border-radius: 8px;
+	}
 }

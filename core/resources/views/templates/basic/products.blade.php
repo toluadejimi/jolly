@@ -195,20 +195,20 @@
                 <div class="products-container w-100">
 
                     <div class="filter-category-header d-flex align-items-center justify-content-between flex-wrap gap-3">
-                        <div class="d-flex gap-2 align-items-center flex-grow-1 flex-md-grow-0 justify-content-between">
-                            <div class="filter-select-item d-xl-none pl-0 ">
-                                <button class="filter-in flex-shrink-0">
+                        <div class="d-flex gap-2 align-items-center flex-grow-1 flex-md-grow-0 justify-content-between min-w-0">
+                            <div class="filter-select-item d-xl-none pl-0 flex-shrink-0">
+                                <button type="button" class="filter-in" aria-label="@lang('Filter')">
                                     <i class="las la-sliders-h"></i> @lang('Filter')
                                 </button>
                             </div>
-                            <span class="small text-muted flex-shrink-0">
+                            <span class="small text-muted flex-shrink-0 text-nowrap ms-2 ms-md-0">
                                 @lang('Total')
                                 <span class="fw-semibold totalProducts">{{ $products->total() }}</span>
                                 {{ Str::plural('product', $products->total()) }} @lang('found')
                             </span>
                         </div>
 
-                        <div class="d-flex align-items-center gap-3 filter-select-right flex-grow-1">
+                        <div class="d-flex align-items-center gap-3 filter-select-right flex-grow-1 min-w-0 flex-wrap">
 
                             <div class="d-flex gap-2 justify-content-between">
                                 <div class="filter-select-item d-flex gap-1 align-items-center">
@@ -313,8 +313,39 @@
 
             $(".filter-in").on("click", (function() {
                 $(".category-sidebar").addClass("active");
-                $(".body-overlay").addClass("active")
+                $(".body-overlay").addClass("active");
             }));
+
+            $("#body-overlay, .body-overlay").on("click", function() {
+                $(".category-sidebar").removeClass("active");
+                $(".body-overlay").removeClass("active");
+            });
+
+            function isMobileView() {
+                return window.innerWidth <= 767;
+            }
+
+            function applyDefaultView() {
+                if (isMobileView()) {
+                    $(".view-grid-style").removeClass("active");
+                    $(".view-list-style").addClass("active");
+                    $("#grid-view .grid-control").addClass("list-view-active");
+                    $("#grid-view .grid-control .single_content").show();
+                } else {
+                    $(".view-list-style").removeClass("active");
+                    $(".view-grid-style").addClass("active");
+                    $("#grid-view .grid-control").removeClass("list-view-active");
+                    $("#grid-view .grid-control .single_content").hide();
+                }
+            }
+
+            $(document).ready(function() {
+                applyDefaultView();
+            });
+
+            $(window).on("resize", function() {
+                applyDefaultView();
+            });
 
             $(".view-list-style").on("click", (function() {
                 $(".view-grid-style").removeClass("active");
@@ -448,6 +479,7 @@
                         $('.totalProducts').text(response.total_products);
                         $('.page-main-content').html(response.html);
                         window.history.pushState(null, null, url);
+                        applyDefaultView();
                         lazyload();
                         scrollToTop();
 
