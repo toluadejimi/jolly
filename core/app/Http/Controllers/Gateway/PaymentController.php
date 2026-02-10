@@ -72,15 +72,15 @@ class PaymentController extends Controller {
 
                 if ($order->user_id) {
                     cartManager()->clearUserCart('user_id', $order->user_id);
-                } else {
+                } elseif ($order->guest_id && $order->guest) {
                     cartManager()->clearUserCart('session_id', $order->guest->session_id);
                 }
-
 
                 try{
 
                     $url = url('/admin/orders/order-details/' . $order->id);
-                    $user = User::where('id', $order->guest->user_id ?? $order->user_id)->first();
+                    $userId = optional($order->guest)->user_id ?? $order->user_id;
+                    $user = $userId ? User::where('id', $userId)->first() : null;
                     if($user){
                         $message = "New Order Received: $order->id".  "\n\n". "by $user->email". "\n\n". "Check order here .".$url;
                     }else{

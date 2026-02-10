@@ -35,42 +35,40 @@ class ProcessController extends Controller
 
     public function ipn(request $request)
     {
+        Log::info("Enkpay/SprintPay IPN ======> " . json_encode($request->all()));
 
+        $track = $request->trans_id ?? $request->ref ?? $request->trx ?? $request->input('trans_id');
 
-        LOG::info("payment one ======>".json_encode($request->all()));
-
-
-        $track = $request->trans_id;
-
+        if (empty($track)) {
+            $message = 'Unable to process: missing transaction reference';
+            $notify[] = ['error', $message];
+            return redirect('checkout/payment-methods')->withNotify($notify);
+        }
 
         $deposit = Deposit::where('trx', $track)->orderBy('id', 'DESC')->first();
 
-        if (!isset($deposit)) {
-
+        if (!$deposit) {
             $message = 'Unable to process';
             $notify[] = ['error', $message];
-
             return redirect('checkout/payment-methods')->withNotify($notify);
+        }
 
-        }else{
+        $query = array("ref" => $track);
+        $dataString = json_encode($query);
+        $ch = curl_init('https://web.sprintpay.online/api/verify-transaction');
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $response = json_decode($response);
+        $status = $response->message ?? null;
+        $verifiedAmount = isset($response->data->amount) ? (float) $response->data->amount : null;
+        $depositAmount = (float) $deposit->final_amount;
 
-            $query = array(
-                "ref" => $track
-            );
-
-            $dataString = json_encode($query);
-            $ch = curl_init('https://web.sprintpay.online/api/verify-transaction');
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-            $response = curl_exec($ch);
-            curl_close($ch);
-            $response = json_decode($response);
-            $status = $response->message ?? null;
-
-            if($status == "completed" && $deposit->final_amount == $response->data->amount && $deposit->status == Status::PAYMENT_INITIATE){
+        if ($status === "completed" && $verifiedAmount !== null && $depositAmount == $verifiedAmount && $deposit->status == Status::PAYMENT_INITIATE) {
 
 
 
@@ -120,32 +118,15 @@ class ProcessController extends Controller
                 session()->forget('customer_photo_back');
                 session()->forget('customer_photo_front');
 
-
                 $message = 'Transaction was successful, Ref: ' . $track;
-                    $notify[] = ['success', $message];
-                    $notifyApi[] = $message;
-                    return redirect('/user/orders')->withNotify($notify);
-            }else{
-
-                session()->forget('shipping_info');
-                $message = 'Unable to process';
-                $notify[] = ['error', $message];
-
+                $notify[] = ['success', $message];
                 return redirect('/user/orders')->withNotify($notify);
-
-
-            }
-
-
         }
 
-
+        session()->forget('shipping_info');
         $message = 'Unable to process';
         $notify[] = ['error', $message];
-
-        return back()->withNotify($notify);
-
-
+        return redirect('/user/orders')->withNotify($notify);
     }
 
 
