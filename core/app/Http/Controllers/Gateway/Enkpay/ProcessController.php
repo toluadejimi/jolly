@@ -74,7 +74,7 @@ class ProcessController extends Controller
 
         if (empty($track)) {
             Log::warning('Enkpay/SprintPay IPN: missing transaction reference');
-            return response('OK', 200);
+            return redirect()->route('user.orders.all')->withNotify([['info', 'Payment notification received. If you just paid, your order will be updated shortly.']]);
         }
 
         $deposit = Deposit::where('trx', $track)->where('status', Status::PAYMENT_INITIATE)->orderBy('id', 'DESC')->first();
@@ -149,6 +149,9 @@ class ProcessController extends Controller
                     }
                 }
 
+                $order = $deposit->order;
+                $telegramMessage = "✅ Enkpay/SprintPay payment received\nRef: {$track}\nOrder: " . ($order?->order_number ?? 'N/A') . "\nAmount: " . $depositAmount;
+                send_notification($telegramMessage);
 
                 PaymentController::userDataUpdate($deposit);
 
