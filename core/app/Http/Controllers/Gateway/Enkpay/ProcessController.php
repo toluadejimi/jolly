@@ -44,7 +44,7 @@ class ProcessController extends Controller
         }
         Log::info("Enkpay/SprintPay IPN ======> " . json_encode($all));
 
-        $possibleKeys = ['trans_id', 'ref', 'trx', 'reference', 'transaction_id', 'transaction_ref', 'payment_ref', 'order_ref', 'txn_id', 'track', 'transaction_reference', 'trans_ref', 'pay_ref'];
+        $possibleKeys = ['trans_id', 'ref', 'trx', 'reference', 'transaction_id', 'transaction_ref', 'payment_ref', 'order_ref', 'order_id', 'session_id', 'account_no', 'txn_id', 'track', 'transaction_reference', 'trans_ref', 'pay_ref'];
         $track = null;
         foreach ($possibleKeys as $key) {
             $value = $all[$key] ?? $request->input($key);
@@ -77,7 +77,14 @@ class ProcessController extends Controller
             return redirect('checkout/payment-methods')->withNotify($notify);
         }
 
-        $deposit = Deposit::where('trx', $track)->orderBy('id', 'DESC')->first();
+        $deposit = Deposit::where('trx', $track)->where('status', Status::PAYMENT_INITIATE)->orderBy('id', 'DESC')->first();
+
+        if (!$deposit) {
+            $order = Order::where('order_number', $track)->first();
+            if ($order) {
+                $deposit = Deposit::where('order_id', $order->id)->where('status', Status::PAYMENT_INITIATE)->orderBy('id', 'DESC')->first();
+            }
+        }
 
         if (!$deposit) {
             $message = 'Unable to process';
