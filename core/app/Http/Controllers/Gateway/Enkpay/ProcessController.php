@@ -35,9 +35,41 @@ class ProcessController extends Controller
 
     public function ipn(request $request)
     {
-        Log::info("Enkpay/SprintPay IPN ======> " . json_encode($request->all()));
+        $all = array_merge($request->query(), $request->post(), $request->all());
+        if (empty($all) && $request->getContent()) {
+            $decoded = json_decode($request->getContent(), true);
+            if (is_array($decoded)) {
+                $all = $decoded;
+            }
+        }
+        Log::info("Enkpay/SprintPay IPN ======> " . json_encode($all));
 
-        $track = $request->trans_id ?? $request->ref ?? $request->trx ?? $request->input('trans_id');
+        $possibleKeys = ['trans_id', 'ref', 'trx', 'reference', 'transaction_id', 'transaction_ref', 'payment_ref', 'order_ref', 'txn_id', 'track', 'transaction_reference', 'trans_ref', 'pay_ref'];
+        $track = null;
+        foreach ($possibleKeys as $key) {
+            $value = $all[$key] ?? $request->input($key);
+            if (!empty($value) && is_string($value)) {
+                $track = trim($value);
+                break;
+            }
+        }
+        if ($track === null && !empty($all['data']) && is_array($all['data'])) {
+            foreach ($possibleKeys as $key) {
+                if (!empty($all['data'][$key])) {
+                    $track = trim((string) $all['data'][$key]);
+                    break;
+                }
+            }
+        }
+        if ($track === null && !empty($all['data']) && is_object($all['data'])) {
+            $data = (array) $all['data'];
+            foreach ($possibleKeys as $key) {
+                if (!empty($data[$key])) {
+                    $track = trim((string) $data[$key]);
+                    break;
+                }
+            }
+        }
 
         if (empty($track)) {
             $message = 'Unable to process: missing transaction reference';

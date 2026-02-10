@@ -8,7 +8,7 @@ Route::get('/clear', function () {
     \Illuminate\Support\Facades\Artisan::call('optimize:clear');
 });
 
-Route::get('logger', [LogViewerController::class, 'index']);
+Route::get('logger', [LogViewerController::class, 'index'])->middleware('admin')->name('log-viewer');
 
 
 
