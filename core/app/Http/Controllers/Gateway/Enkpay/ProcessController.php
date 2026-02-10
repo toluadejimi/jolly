@@ -36,10 +36,11 @@ class ProcessController extends Controller
     public function ipn(request $request)
     {
         $all = array_merge($request->query(), $request->post(), $request->all());
-        if (empty($all) && $request->getContent()) {
-            $decoded = json_decode($request->getContent(), true);
+        $raw = $request->getContent();
+        if (!empty($raw)) {
+            $decoded = json_decode($raw, true);
             if (is_array($decoded)) {
-                $all = $decoded;
+                $all = array_merge($all, $decoded);
             }
         }
         Log::info("Enkpay/SprintPay IPN ======> " . json_encode($all));
@@ -72,9 +73,8 @@ class ProcessController extends Controller
         }
 
         if (empty($track)) {
-            $message = 'Unable to process: missing transaction reference';
-            $notify[] = ['error', $message];
-            return redirect('checkout/payment-methods')->withNotify($notify);
+            Log::warning('Enkpay/SprintPay IPN: missing transaction reference');
+            return response('OK', 200);
         }
 
         $deposit = Deposit::where('trx', $track)->where('status', Status::PAYMENT_INITIATE)->orderBy('id', 'DESC')->first();
