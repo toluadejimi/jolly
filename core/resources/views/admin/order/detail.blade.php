@@ -153,6 +153,9 @@
 
                 <div class="col-md-6">
                     @if ($order->shipping_address)
+                        @php
+                            $addr = is_object($order->shipping_address) ? $order->shipping_address : (object) ($order->shipping_address ?? []);
+                        @endphp
                         <div class="details-info-address">
 
                             <h6 class="mb-3">@lang('Shipping Details')</h6>
@@ -161,7 +164,13 @@
                                     <span class="title">@lang('Name') </span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->firstname ?? "NAME" . ' ' . $order->lastname ?? "NAME" }}
+                                        @php
+                                        $name = trim(($addr->firstname ?? '') . ' ' . ($addr->lastname ?? ''));
+                                        if (!$name && $order->user) {
+                                            $name = trim($order->user->firstname . ' ' . $order->user->lastname);
+                                        }
+                                        echo $name ?: 'N/A';
+                                    @endphp
                                     </span>
                                 </li>
 
@@ -169,7 +178,7 @@
                                     <span class="title">@lang('Address')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->shipping_address ?? "Nill" }}
+                                        {{ $addr->address ?? 'Nill' }}
                                     </span>
                                 </li>
 
@@ -177,7 +186,7 @@
                                     <span class="title">@lang('State')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->state ?? "Nill" }}
+                                        {{ $addr->state ?? 'Nill' }}
                                     </span>
                                 </li>
 
@@ -185,7 +194,7 @@
                                     <span class="title">@lang('City')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->city ?? "NILL" }}
+                                        {{ $addr->city ?? 'NILL' }}
                                     </span>
                                 </li>
 
@@ -193,7 +202,7 @@
                                     <span class="title">@lang('Zip')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->zip ?? "NILL" }}
+                                        {{ $addr->zip ?? 'NILL' }}
                                     </span>
                                 </li>
 
@@ -201,7 +210,7 @@
                                     <span class="title">@lang('Country')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->country ?? "NILL" }}
+                                        {{ $addr->country ?? 'NILL' }}
                                     </span>
                                 </li>
 
@@ -210,7 +219,7 @@
                                     <span class="title">@lang('Customer Phone')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->mobile ?? "NILL" }}
+                                        {{ $addr->mobile ?? 'NILL' }}
                                     </span>
                                 </li>
                             </ul>

@@ -150,6 +150,9 @@
 
             <div class="col-md-6">
                 @if ($order->shipping_address)
+                    @php
+                        $addr = is_object($order->shipping_address) ? $order->shipping_address : (object) ($order->shipping_address ?? []);
+                    @endphp
                     <div class="details-info-address">
                         <h6 class="mb-3">@lang('Shipping Details')</h6>
                         <ul class="info-address-list">
@@ -157,42 +160,42 @@
                                 <span class="title">@lang('Name') </span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    {{ $order_detail->firstname ?? "Name" . ' ' . $order_detail->lastname ?? "name" }}
+                                    {{ trim(($addr->firstname ?? '') . ' ' . ($addr->lastname ?? '')) ?: ($order_detail->firstname ?? '') . ' ' . ($order_detail->lastname ?? '') ?: '—' }}
                                 </span>
                             </li>
                             <li>
                                 <span class="title">@lang('Address')</span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    {{ $order->shipping_address  ?? "address"}}
+                                    {{ $addr->address ?? '—' }}
                                 </span>
                             </li>
                             <li>
                                 <span class="title">@lang('State')</span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    {{ $order->state }}
+                                    {{ $addr->state ?? '—' }}
                                 </span>
                             </li>
                             <li>
                                 <span class="title">@lang('City')</span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    {{ $order->city }}
+                                    {{ $addr->city ?? '—' }}
                                 </span>
                             </li>
                             <li>
                                 <span class="title">@lang('Zip')</span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    {{ $order->zip }}
+                                    {{ $addr->zip ?? '—' }}
                                 </span>
                             </li>
                             <li>
                                 <span class="title">@lang('Country')</span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    {{ $order->country }}
+                                    {{ $addr->country ?? '—' }}
                                 </span>
                             </li>
                         </ul>
