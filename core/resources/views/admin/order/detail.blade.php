@@ -161,7 +161,7 @@
                                     <span class="title">@lang('Name') </span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->firstname . ' ' . $order->lastname }}
+                                        {{ $order->firstname ?? "NAME" . ' ' . $order->lastname ?? "NAME" }}
                                     </span>
                                 </li>
 
@@ -169,7 +169,7 @@
                                     <span class="title">@lang('Address')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->shipping_address }}
+                                        {{ $order->shipping_address ?? "Nill" }}
                                     </span>
                                 </li>
 
@@ -177,7 +177,7 @@
                                     <span class="title">@lang('State')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->state }}
+                                        {{ $order->state ?? "Nill" }}
                                     </span>
                                 </li>
 
@@ -185,7 +185,7 @@
                                     <span class="title">@lang('City')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->city }}
+                                        {{ $order->city ?? "NILL" }}
                                     </span>
                                 </li>
 
@@ -193,7 +193,7 @@
                                     <span class="title">@lang('Zip')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->zip }}
+                                        {{ $order->zip ?? "NILL" }}
                                     </span>
                                 </li>
 
@@ -201,7 +201,7 @@
                                     <span class="title">@lang('Country')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->country }}
+                                        {{ $order->country ?? "NILL" }}
                                     </span>
                                 </li>
 
@@ -210,7 +210,7 @@
                                     <span class="title">@lang('Customer Phone')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $order->mobile }}
+                                        {{ $order->mobile ?? "NILL" }}
                                     </span>
                                 </li>
                             </ul>
