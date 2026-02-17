@@ -285,6 +285,52 @@
     <script src="{{ asset($activeTemplateTrue . 'js/xzoom/setup.js') }}"></script>
 @endpush
 
+@push('style')
+    {{-- Product grid: 2 cols ≤769px, 3 tablet, 4 desktop – CSS Grid --}}
+    <style id="products-grid-style">
+        .products-mobile-grid {
+            display: grid !important;
+            gap: 0.75rem !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+        .products-mobile-grid__col {
+            min-width: 0 !important;
+            max-width: none !important;
+            width: auto !important;
+        }
+        .products-mobile-grid__col.list-view-active {
+            grid-column: 1 / -1 !important;
+        }
+        {{-- Screens 769px and below: force 2 columns (overrides any theme mobile rule) --}}
+        @media (max-width: 769px) {
+            #grid-view,
+            .products-mobile-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+            #grid-view .grid-control,
+            .products-mobile-grid__col {
+                min-width: 0 !important;
+                max-width: none !important;
+                width: auto !important;
+                grid-column: auto !important;
+            }
+            .products-mobile-grid__col.list-view-active {
+                grid-column: 1 / -1 !important;
+            }
+        }
+        @media (min-width: 770px) {
+            .products-mobile-grid {
+                grid-template-columns: repeat(3, 1fr) !important;
+            }
+        }
+        @media (min-width: 992px) {
+            .products-mobile-grid {
+                grid-template-columns: repeat(4, 1fr) !important;
+            }
+        }
+    </style>
+@endpush
 @push('style-lib')
     <link rel="stylesheet" href="{{ asset($activeTemplateTrue . 'css/products-page.css') }}">
     <link rel="stylesheet" href="{{ asset($activeTemplateTrue . 'css/product-details.css') }}">

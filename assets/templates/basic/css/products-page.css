@@ -302,6 +302,45 @@
 	color: hsl(var(--heading-color));
 }
 
+/* Product grid: 2 cols mobile, 3 tablet, 4 desktop – CSS Grid */
+.products-mobile-grid {
+	display: grid !important;
+	gap: 0.75rem !important;
+	grid-template-columns: repeat(2, 1fr) !important;
+}
+.products-mobile-grid__col {
+	min-width: 0 !important;
+	max-width: none !important;
+	width: auto !important;
+}
+.products-mobile-grid__col.list-view-active {
+	grid-column: 1 / -1 !important;
+}
+/* 768px–769px: still 2 columns (same as mobile) */
+@media (max-width: 769px) {
+	#grid-view,
+	.products-mobile-grid {
+		display: grid !important;
+		grid-template-columns: repeat(2, 1fr) !important;
+	}
+	#grid-view .grid-control,
+	.products-mobile-grid__col {
+		min-width: 0 !important;
+		max-width: none !important;
+		width: auto !important;
+	}
+}
+@media (min-width: 770px) {
+	.products-mobile-grid {
+		grid-template-columns: repeat(3, 1fr) !important;
+	}
+}
+@media (min-width: 992px) {
+	.products-mobile-grid {
+		grid-template-columns: repeat(4, 1fr) !important;
+	}
+}
+
 .list-view-active {
 	flex: 0 0 100%;
 	max-width: 100%;
@@ -476,14 +515,25 @@
 		flex: 1;
 	}
 
-	/* Product grid: 2 columns, clean spacing (Bootstrap row/col) */
-	#grid-view {
-		gap: 1rem !important;
+	/* Product grid: 2 columns on mobile (769px and below) – CSS Grid overrides row/flex */
+	#grid-view,
+	.products-mobile-grid {
+		display: grid !important;
+		grid-template-columns: repeat(2, 1fr) !important;
+		gap: 0.75rem !important;
 		margin-top: 0 !important;
 	}
-
-	#grid-view .grid-control {
+	#grid-view .grid-control,
+	#grid-view .products-mobile-grid__col,
+	.products-mobile-grid__col {
 		padding: 0 !important;
+		min-width: 0 !important;
+		max-width: none !important;
+		width: auto !important;
+	}
+	#grid-view .grid-control.list-view-active,
+	.products-mobile-grid__col.list-view-active {
+		grid-column: 1 / -1 !important;
 	}
 
 	/* Product cards: polished look, no red bleed */
