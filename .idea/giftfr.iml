@@ -5,8 +5,9 @@
       <sourceFolder url="file://$MODULE_DIR$/core/app" isTestSource="false" packagePrefix="App\" />
       <sourceFolder url="file://$MODULE_DIR$/core/database/factories" isTestSource="false" packagePrefix="Database\Factories\" />
       <sourceFolder url="file://$MODULE_DIR$/core/database/seeders" isTestSource="false" packagePrefix="Database\Seeders\" />
-      <sourceFolder url="file://$MODULE_DIR$/core/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/core/tests" isTestSource="true" packagePrefix="Tests\" />
+      <sourceFolder url="file://$MODULE_DIR$/core/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/core/vendor/authorizenet/authorizenet" />
       <excludeFolder url="file://$MODULE_DIR$/core/vendor/barryvdh/laravel-dompdf" />
@@ -212,6 +213,50 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/tijsverkoyen/css-to-inline-styles" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/vlucas/phpdotenv" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/voku/portable-ascii" />
+      <excludeFolder url="file://$MODULE_DIR$/core/storage/app" />
+      <excludeFolder url="file://$MODULE_DIR$/core/storage/debugbar" />
+      <excludeFolder url="file://$MODULE_DIR$/core/storage/framework" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/barryvdh/laravel-debugbar" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/fakerphp/faker" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/filp/whoops" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/hamcrest/hamcrest-php" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/laravel/pint" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/laravel/sail" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/mockery/mockery" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/myclabs/deep-copy" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/nunomaduro/collision" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/phar-io/manifest" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/phar-io/version" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/php-debugbar/php-debugbar" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/phpunit/php-code-coverage" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/phpunit/php-file-iterator" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/phpunit/php-invoker" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/phpunit/php-text-template" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/phpunit/php-timer" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/phpunit/phpunit" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/rap2hpoutre/laravel-log-viewer" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/cli-parser" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/code-unit" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/code-unit-reverse-lookup" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/comparator" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/complexity" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/diff" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/environment" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/exporter" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/global-state" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/lines-of-code" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/object-enumerator" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/object-reflector" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/recursion-context" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/type" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/sebastian/version" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/spatie/backtrace" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/spatie/error-solutions" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/spatie/flare-client-php" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/spatie/ignition" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/spatie/laravel-ignition" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/symfony/yaml" />
+      <excludeFolder url="file://$MODULE_DIR$/core/vendor/theseer/tokenizer" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -66,6 +66,13 @@ class PaymentController extends Controller {
         }
 
         $hasPhysicalProduct = $this->cartManager->checkPhysicalProductExistence();
+        if ($hasPhysicalProduct) {
+            $shippingCheck = $this->validateShippingAddressForPayment($hasPhysicalProduct);
+            if (!$shippingCheck['valid']) {
+                $notify[] = ['error', $shippingCheck['message']];
+                return to_route('checkout.shipping.info')->withNotify($notify);
+            }
+        }
         $subtotal = $this->cartManager->subtotal();
         $shippingMethod = ShippingMethod::active()->where('id', @session('shipping_info')['shipping_method_id'])->first();
         $shippingCharge = $shippingMethod->charge ?? 0;
@@ -149,6 +156,11 @@ class PaymentController extends Controller {
             return to_route('cart.page')->withNotify($notify);
         }
 
+        $shippingCheck = $this->validateShippingAddressForPayment($hasPhysicalProduct);
+        if (!$shippingCheck['valid']) {
+            $notify[] = ['error', $shippingCheck['message']];
+            return to_route('checkout.shipping.info')->withNotify($notify);
+        }
 
         $noteCharge = (int) (session()->get('shipping_info')['note_charge'] ?? 0);
 
@@ -283,6 +295,55 @@ class PaymentController extends Controller {
         return $checkoutData;
     }
 
+    /**
+     * Ensure shipping address is complete for physical products before payment.
+     * Returns [valid => bool, message => string].
+     */
+    private function validateShippingAddressForPayment($hasPhysicalProduct) {
+        if (!$hasPhysicalProduct) {
+            return ['valid' => true, 'message' => null];
+        }
+
+        $checkoutData = session('shipping_info');
+        if (!$checkoutData || !is_array($checkoutData)) {
+            return ['valid' => false, 'message' => 'Please complete shipping information before payment.'];
+        }
+
+        if (!empty($checkoutData['shipping_address_id']) && auth()->check()) {
+            $saved = ShippingAddress::where('user_id', auth()->id())->find($checkoutData['shipping_address_id']);
+            if (!$saved) {
+                return ['valid' => false, 'message' => 'Selected shipping address is invalid. Please update shipping information.'];
+            }
+            $required = ['firstname', 'lastname', 'address', 'city', 'state', 'zip', 'country'];
+            foreach ($required as $key) {
+                $v = $saved->{$key} ?? '';
+                if (!is_string($v) || trim($v) === '') {
+                    return ['valid' => false, 'message' => 'Shipping address is incomplete. Please complete all required fields (name, address, city, state, zip, country).'];
+                }
+            }
+            return ['valid' => true, 'message' => null];
+        }
+
+        $required = ['firstname', 'lastname', 'address', 'city', 'state', 'zip', 'country', 'mobile'];
+        $labels = [
+            'firstname' => 'First name',
+            'lastname'  => 'Last name',
+            'address'   => 'Street address',
+            'city'      => 'City',
+            'state'     => 'State / County',
+            'zip'       => 'Postcode / ZIP',
+            'country'   => 'Country',
+            'mobile'    => 'Phone number',
+        ];
+        foreach ($required as $key) {
+            $v = $checkoutData[$key] ?? '';
+            if (!is_string($v) || trim($v) === '') {
+                return ['valid' => false, 'message' => 'Please fill in ' . ($labels[$key] ?? $key) . ' before proceeding to payment.'];
+            }
+        }
+
+        return ['valid' => true, 'message' => null];
+    }
 
     private function getShippingAddress($hasPhysicalProduct, $checkoutData) {
         $shippingAddress = null;

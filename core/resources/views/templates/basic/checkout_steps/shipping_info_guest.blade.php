@@ -80,8 +80,8 @@
 
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label>Receiver's Phone (Optional)</label>
-                            <input type="number" name="mobile" value="{{ @$shippingInformation->mobile }}" class="form-control form--control">
+                            <label>Receiver's Phone <span class="text-danger">*</span></label>
+                            <input type="text" name="mobile" value="{{ @$shippingInformation->mobile }}" class="form-control form--control" placeholder="Phone number for delivery" required>
                             <input type="hidden" name="mobile_code" id="mobile_code" value="0">
                             <input type="hidden" name="country_code" id="country_code" value="0">
                             <input type="hidden" name="email" value="{{ $guestEmail }}">

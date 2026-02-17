@@ -326,17 +326,11 @@
             }
 
             function applyDefaultView() {
-                if (isMobileView()) {
-                    $(".view-grid-style").removeClass("active");
-                    $(".view-list-style").addClass("active");
-                    $("#grid-view .grid-control").addClass("list-view-active");
-                    $("#grid-view .grid-control .single_content").show();
-                } else {
-                    $(".view-list-style").removeClass("active");
-                    $(".view-grid-style").addClass("active");
-                    $("#grid-view .grid-control").removeClass("list-view-active");
-                    $("#grid-view .grid-control .single_content").hide();
-                }
+                // Default to grid view (horizontal side-by-side) on all screen sizes
+                $(".view-list-style").removeClass("active");
+                $(".view-grid-style").addClass("active");
+                $("#grid-view .grid-control").removeClass("list-view-active");
+                $("#grid-view .grid-control .single_content").hide();
             }
 
             $(document).ready(function() {

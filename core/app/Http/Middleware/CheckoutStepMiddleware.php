@@ -24,8 +24,20 @@ class CheckoutStepMiddleware
             }
         } elseif ($module == 'delivery_method' && !@$checkoutData) {
             return to_route('checkout.shipping.info');
-        } elseif ($module == 'payment' && $hasPhysicalProduct && !@$checkoutData) {
-            return to_route('checkout.delivery.methods');
+        } elseif ($module == 'payment' && $hasPhysicalProduct) {
+            if (!@$checkoutData) {
+                return to_route('checkout.delivery.methods');
+            }
+            $required = ['firstname', 'lastname', 'address', 'city', 'state', 'zip', 'country', 'mobile'];
+            $hasSavedId = !empty($checkoutData['shipping_address_id']) && auth()->check();
+            if (!$hasSavedId) {
+                foreach ($required as $key) {
+                    $v = $checkoutData[$key] ?? '';
+                    if (!is_string($v) || trim($v) === '') {
+                        return to_route('checkout.shipping.info')->with('error', 'Please complete all shipping details (including phone) before payment.');
+                    }
+                }
+            }
         }
         return $next($request);
     }

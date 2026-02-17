@@ -77,14 +77,24 @@ class CheckoutController extends Controller
     public function storeGuestShippingInfo(Request $request)
     {
         $request->validate([
-            'firstname' => 'required|string',
-            'lastname' => 'required|string',
-            'email' => 'required|email',
-            'city' => 'required|string',
-            'state' => 'required|string',
-            'zip' => 'required|string',
-            'country' => 'required|string',
-            'address' => 'required|string',
+            'firstname' => 'required|string|max:255',
+            'lastname'  => 'required|string|max:255',
+            'email'    => 'required|email',
+            'address'  => 'required|string|max:500',
+            'city'     => 'required|string|max:255',
+            'state'    => 'required|string|max:255',
+            'zip'      => 'required|string|max:40',
+            'country'  => 'required|string|max:255',
+            'mobile'   => 'required|string|max:40',
+        ], [
+            'firstname.required' => 'Receiver first name is required.',
+            'lastname.required'  => 'Receiver last name is required.',
+            'address.required'   => 'Street address is required.',
+            'city.required'      => 'City is required.',
+            'state.required'     => 'State / County is required.',
+            'zip.required'       => 'Postcode / ZIP is required.',
+            'country.required'   => 'Country is required.',
+            'mobile.required'    => 'Receiver phone number is required for delivery.',
         ]);
 
         $note_charge = !empty($request->note_to_seller) ? 5000 : 0;
