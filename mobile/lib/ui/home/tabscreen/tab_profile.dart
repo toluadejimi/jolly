@@ -101,9 +101,8 @@ class _TabProfile extends State<TabProfile> {
                     );
                   }, context: context),
                   getSeparatorWidget(),
-                  getSettingRow("fav_fill.svg", "My Favourites", () {
+                  getSettingRow("Card.svg", "Categories", () {
                     Constant.sendToScreen(HomeScreen(selectedTab: 1), context);
-
                   }, context: context),
                   getSeparatorWidget(),
                   getSettingRow("shipping_location.svg", "Shipping Address", () {}, context: context),

@@ -240,74 +240,80 @@ class _TabHomeState extends State<TabHome> {
                         Constant.getPercentSize(screenHeight, 2.5),
                       ),
                     ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: appbarPadding),
-                      child: GridView.count(
-                        shrinkWrap: true,
-                        primary: false,
-                        crossAxisCount: 3,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        childAspectRatio: 0.85,
-                        padding: EdgeInsets.zero,
-                        children: _categories.map((cat) {
-                          return InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => ProductListScreen(categoryId: cat.id),
+                    SizedBox(
+                      height: categoryHeight,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: EdgeInsets.symmetric(horizontal: appbarPadding),
+                        itemCount: _categories.length,
+                        itemBuilder: (context, index) {
+                          final cat = _categories[index];
+                          return Padding(
+                            padding: EdgeInsets.only(right: index < _categories.length - 1 ? 12 : 0),
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => ProductListScreen(categoryId: cat.id),
+                                  ),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: SizedBox(
+                                width: categoryWidth,
+                                height: categoryHeight,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: Container(
+                                        width: categoryWidth,
+                                        decoration: BoxDecoration(
+                                          color: theme.cardTheme.color,
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(color: theme.dividerColor),
+                                          boxShadow: theme.brightness == Brightness.dark ? null : [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(alpha: 0.06),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(12),
+                                          child: _categoryImageUrl(cat) != null
+                                              ? CachedNetworkImage(
+                                                  imageUrl: _categoryImageUrl(cat)!,
+                                                  width: double.infinity,
+                                                  height: double.infinity,
+                                                  fit: BoxFit.cover,
+                                                  placeholder: (_, __) => Container(color: theme.cardTheme.color, child: const Center(child: CircularProgressIndicator(strokeWidth: 2))),
+                                                  errorWidget: (_, __, ___) => Container(color: theme.colorScheme.primary.withValues(alpha: 0.2), child: Icon(Icons.category, color: theme.colorScheme.primary, size: 32)),
+                                                )
+                                              : Container(color: theme.colorScheme.primary.withValues(alpha: 0.2), child: Icon(Icons.category, color: theme.colorScheme.primary, size: 32)),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: Constant.getPercentSize(categoryHeight, 6)),
+                                    SizedBox(
+                                      width: categoryWidth,
+                                      height: Constant.getPercentSize(categoryHeight, 18),
+                                      child: getCustomText(
+                                        cat.name,
+                                        theme.colorScheme.onSurface,
+                                        2,
+                                        TextAlign.center,
+                                        FontWeight.w600,
+                                        Constant.getPercentSize(categoryHeight, 10),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: theme.cardTheme.color,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: theme.dividerColor),
-                                boxShadow: theme.brightness == Brightness.dark ? null : [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.06),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Expanded(
-                                    flex: 3,
-                                    child: ClipRRect(
-                                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                                      child: _categoryImageUrl(cat) != null
-                                          ? CachedNetworkImage(
-                                              imageUrl: _categoryImageUrl(cat)!,
-                                              width: double.infinity,
-                                              height: double.infinity,
-                                              fit: BoxFit.cover,
-                                              placeholder: (_, __) => Container(color: theme.cardTheme.color, child: const Center(child: CircularProgressIndicator(strokeWidth: 2))),
-                                              errorWidget: (_, __, ___) => Container(color: theme.colorScheme.primary.withValues(alpha: 0.2), child: Icon(Icons.category, color: theme.colorScheme.primary, size: 32)),
-                                            )
-                                          : Container(color: theme.colorScheme.primary.withValues(alpha: 0.2), child: Icon(Icons.category, color: theme.colorScheme.primary, size: 32)),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                                    child: getCustomText(
-                                      cat.name,
-                                      theme.colorScheme.onSurface,
-                                      2,
-                                      TextAlign.center,
-                                      FontWeight.w600,
-                                      Constant.getPercentSize(screenHeight, 1.8),
-                                    ),
-                                  ),
-                                ],
                               ),
                             ),
                           );
-                        }).toList(),
+                        },
                       ),
                     ),
                     SizedBox(height: Constant.getPercentSize(screenHeight, 1.5)),
@@ -656,7 +662,7 @@ class _TabHomeState extends State<TabHome> {
       child: Container(
         padding: EdgeInsets.all(Constant.getPercentSize(h, 3.3)),
         decoration: ShapeDecoration(
-          color: theme.cardTheme.color ?? cardColor,
+          color: theme.cardTheme.color ?? theme.colorScheme.surface,
           shape: SmoothRectangleBorder(
             borderRadius: SmoothBorderRadius(
               cornerRadius: 14,
@@ -667,7 +673,7 @@ class _TabHomeState extends State<TabHome> {
               ? null
               : [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
+                    color: Colors.black.withValues(alpha: 0.06),
                     spreadRadius: 0,
                     blurRadius: 8,
                     offset: const Offset(0, 2),
@@ -676,7 +682,7 @@ class _TabHomeState extends State<TabHome> {
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: Stack(
@@ -688,6 +694,7 @@ class _TabHomeState extends State<TabHome> {
                         ? CachedNetworkImage(
                             imageUrl: imageUrl,
                             width: double.infinity,
+                            height: double.infinity,
                             fit: BoxFit.cover,
                             placeholder: (_, __) => Container(color: theme.cardTheme.color, child: const Center(child: CircularProgressIndicator(strokeWidth: 2))),
                             errorWidget: (_, __, ___) => Container(color: theme.cardTheme.color, child: Icon(Icons.card_giftcard, size: Constant.getPercentSize(h, 25), color: theme.colorScheme.primary)),
@@ -708,7 +715,7 @@ class _TabHomeState extends State<TabHome> {
                           borderRadius: BorderRadius.circular(6),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 4,
                               offset: const Offset(0, 1),
                             ),
@@ -727,25 +734,25 @@ class _TabHomeState extends State<TabHome> {
                 ],
               ),
             ),
-            SizedBox(height: Constant.getPercentSize(h, 4)),
+            SizedBox(height: Constant.getPercentSize(h, 3)),
             getCustomText(
               p.name,
               theme.colorScheme.onSurface,
               2,
               TextAlign.start,
               FontWeight.bold,
-              Constant.getPercentSize(h, 5.5),
+              Constant.getPercentSize(h, 5),
             ),
-            SizedBox(height: Constant.getPercentSize(h, 2.5)),
+            SizedBox(height: Constant.getPercentSize(h, 2)),
             getCustomText(
               formatNiara(price),
               theme.colorScheme.onSurfaceVariant,
               1,
               TextAlign.start,
               FontWeight.w400,
-              Constant.getPercentSize(h, 5.5),
+              Constant.getPercentSize(h, 5),
             ),
-            SizedBox(height: Constant.getPercentSize(h, 3)),
+            SizedBox(height: Constant.getPercentSize(h, 2.5)),
             SizedBox(
               width: double.infinity,
               child: Material(

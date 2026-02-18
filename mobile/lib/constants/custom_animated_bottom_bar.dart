@@ -132,13 +132,16 @@ class _ItemWidget extends StatelessWidget {
           child: Container(
             width: width,
             color: backgroundColor,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: Constant.getPercentSize(containerSize, 80),
-                  height: Constant.getPercentSize(containerSize, 80),
+            child: SizedBox(
+              height: containerHeight,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: Constant.getPercentSize(containerSize, 70),
+                    height: Constant.getPercentSize(containerSize, 70),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     boxShadow: [
@@ -167,22 +170,27 @@ class _ItemWidget extends StatelessWidget {
                               BlendMode.srcIn,
                             )
                           : null,
-                      height: (item.iconSize! * 1.2),
+                      height: (item.iconSize! * 1.1),
                     ),
                   ),
                 ),
                 if (item.title != null && item.title!.isNotEmpty) ...[
-                  SizedBox(height: Constant.getPercentSize(containerSize, 8)),
-                  Text(
-                    item.title!,
-                    style: TextStyle(
-                      fontSize: Constant.getPercentSize(containerSize, 22),
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                      color: isSelected ? item.activeColor : Theme.of(context).colorScheme.onSurfaceVariant,
+                  SizedBox(height: Constant.getPercentSize(containerSize, 4)),
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        item.title!,
+                        style: TextStyle(
+                          fontSize: Constant.getPercentSize(containerSize, 18),
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          color: isSelected ? item.activeColor : Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
                   ),
                 ],
               ],

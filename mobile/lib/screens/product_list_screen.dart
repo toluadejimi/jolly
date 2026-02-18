@@ -2,9 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/cart_item.dart';
+import '../models/category.dart';
 import '../models/product.dart';
+import '../providers/cart_provider.dart';
 import '../services/api_service.dart';
 import '../utils/format_utils.dart';
+import 'checkout_screen.dart';
 import 'product_detail_screen.dart';
 
 enum ProductSort { def, priceLowHigh, priceHighLow }
@@ -20,19 +24,31 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   List<ProductItem> _allProducts = [];
+  List<CategoryItem> _categories = [];
   bool _loading = true;
   String? _error;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   ProductSort _sort = ProductSort.def;
+  int? _selectedCategoryId;
 
   @override
   void initState() {
     super.initState();
+    _selectedCategoryId = widget.categoryId;
+    _loadCategories();
     _loadAll();
     _searchController.addListener(() {
       setState(() => _searchQuery = _searchController.text.trim());
     });
+  }
+
+  Future<void> _loadCategories() async {
+    final api = context.read<ApiService>();
+    final res = await api.getCategories();
+    if (mounted && res.success && res.data != null) {
+      setState(() => _categories = res.data!);
+    }
   }
 
   @override
@@ -80,11 +96,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
     List<ProductItem> all = [];
     int page = 1;
     int? lastPage;
+    final categoryId = _selectedCategoryId ?? widget.categoryId;
     do {
       final res = await api.getProducts(
         page: page,
         perPage: 100,
-        categoryId: widget.categoryId,
+        categoryId: categoryId,
       );
       if (!mounted) return;
       if (!res.success || res.data == null) {
@@ -99,7 +116,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       all = [...all, ...data.products];
       lastPage = data.pagination.lastPage;
       page++;
-    } while (page <= lastPage!);
+    } while (page <= lastPage);
     if (!mounted) return;
     setState(() {
       _loading = false;
@@ -113,50 +130,86 @@ class _ProductListScreenState extends State<ProductListScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.categoryId != null ? 'Products' : 'All Products'),
+        title: Text(_selectedCategoryId != null || widget.categoryId != null ? 'Products' : 'All Products'),
       ),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Search products',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search products',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                        ),
+                        onChanged: (_) => setState(() {}),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
                     ),
-                    onChanged: (_) => setState(() {}),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                DropdownButton<ProductSort>(
-                  value: _sort,
-                  items: const [
-                    DropdownMenuItem(
-                      value: ProductSort.def,
-                      child: Text('Default'),
-                    ),
-                    DropdownMenuItem(
-                      value: ProductSort.priceLowHigh,
-                      child: Text('Price: Low to High'),
-                    ),
-                    DropdownMenuItem(
-                      value: ProductSort.priceHighLow,
-                      child: Text('Price: High to Low'),
+                    const SizedBox(width: 8),
+                    DropdownButton<ProductSort>(
+                      value: _sort,
+                      items: const [
+                        DropdownMenuItem(
+                          value: ProductSort.def,
+                          child: Text('Default'),
+                        ),
+                        DropdownMenuItem(
+                          value: ProductSort.priceLowHigh,
+                          child: Text('Price: Low to High'),
+                        ),
+                        DropdownMenuItem(
+                          value: ProductSort.priceHighLow,
+                          child: Text('Price: High to Low'),
+                        ),
+                      ],
+                      onChanged: (v) => setState(() => _sort = v ?? ProductSort.def),
                     ),
                   ],
-                  onChanged: (v) => setState(() => _sort = v ?? ProductSort.def),
                 ),
+                if (_categories.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text('Category:', style: theme.textTheme.bodySmall),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: DropdownButton<int?>(
+                          value: _selectedCategoryId,
+                          isExpanded: true,
+                          hint: const Text('All'),
+                          items: [
+                            const DropdownMenuItem<int?>(
+                              value: null,
+                              child: Text('All categories'),
+                            ),
+                            ..._categories.map((c) => DropdownMenuItem<int?>(
+                                  value: c.id,
+                                  child: Text(c.name, overflow: TextOverflow.ellipsis),
+                                )),
+                          ],
+                          onChanged: (v) {
+                            setState(() {
+                              _selectedCategoryId = v;
+                              _loadAll();
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -271,6 +324,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             p.name,
@@ -287,6 +341,51 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               color: theme.colorScheme.primary,
                               fontWeight: FontWeight.w600,
                             ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProductDetailScreen(productId: p.id),
+                                  ),
+                                ),
+                                child: Text('View', style: theme.textTheme.labelSmall),
+                              ),
+                              const SizedBox(width: 6),
+                              FilledButton(
+                                style: FilledButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                onPressed: () {
+                                  context.read<CartProvider>().add(CartItem(
+                                    productId: p.id,
+                                    variantId: null,
+                                    name: p.name,
+                                    price: price,
+                                    imageUrl: p.thumbUrl ?? p.imageUrl,
+                                    currency: p.currency,
+                                    quantity: 1,
+                                  ));
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const CheckoutScreen(),
+                                    ),
+                                  );
+                                },
+                                child: Text('Buy now', style: theme.textTheme.labelSmall),
+                              ),
+                            ],
                           ),
                         ],
                       ),

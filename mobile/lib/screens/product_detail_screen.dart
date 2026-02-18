@@ -7,6 +7,7 @@ import '../models/cart_item.dart';
 import '../models/product.dart';
 import '../providers/cart_provider.dart';
 import '../services/api_service.dart';
+import '../ui/home/home_screen.dart';
 import '../utils/format_utils.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -35,8 +36,42 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Product'),
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
+        backgroundColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.primary,
+        foregroundColor: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary,
+        actions: [
+          Consumer<CartProvider>(
+            builder: (context, cart, _) {
+              return IconButton(
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(Icons.shopping_cart_outlined, color: theme.appBarTheme.foregroundColor),
+                    if (cart.count > 0)
+                      Positioned(
+                        right: -4,
+                        top: -4,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                          constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                          child: Text(
+                            cart.count > 99 ? '99+' : '${cart.count}',
+                            style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => HomeScreen(selectedTab: 2)),
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: FutureBuilder<ApiResponse<ProductDetail>>(
         future: _productFuture,

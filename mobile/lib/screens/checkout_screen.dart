@@ -251,38 +251,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       appBar: AppBar(
         title: const Text('Checkout'),
       ),
-      body: _hasApiKey ? _body(theme) : _apiKeyMessage(theme),
-    );
-  }
-
-  Widget _apiKeyMessage(ThemeData theme) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.lock_outline, size: 64, color: theme.colorScheme.primary),
-            const SizedBox(height: 16),
-            Text(
-              'API key required',
-              style: theme.textTheme.titleLarge,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'To checkout, add your API key from the website dashboard (API Keys) in the app config.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Back to cart'),
-            ),
-          ],
-        ),
-      ),
+      body: _body(theme),
     );
   }
 
@@ -321,6 +290,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (!_hasApiKey) ...[
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'To place an order you need an API key from the website dashboard (API Keys).',
+              style: theme.textTheme.bodySmall,
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         Text(
           "Receiver's details",
           style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),

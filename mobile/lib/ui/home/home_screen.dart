@@ -2,12 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:giftfr/constants/constant.dart';
 import 'package:giftfr/constants/size_config.dart';
-import 'package:giftfr/constants/color_data.dart';
 import 'package:giftfr/ui/home/tabscreen/tab_cart.dart';
-import 'package:giftfr/ui/home/tabscreen/tab_favourite.dart';
+import 'package:giftfr/ui/home/tabscreen/tab_category.dart';
 import 'package:giftfr/ui/home/tabscreen/tab_home.dart';
 import 'package:giftfr/ui/home/tabscreen/tab_profile.dart';
-// import 'package:giftfr/ui/home/tabscreen/tab_favourite.dart';
 // import 'package:giftfr/ui/home/tabscreen/tab_home.dart';
 // import 'package:giftfr/ui/home/tabscreen/tab_profile.dart';
 
@@ -31,7 +29,7 @@ class _HomeScreen extends State<HomeScreen> {
 
   List<Widget> listImages = [
     const TabHome(),
-    const TabFavourite(),
+    const TabCategory(),
     const TabCart(),
     const TabProfile(),
   ];
@@ -51,7 +49,7 @@ class _HomeScreen extends State<HomeScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     double screenHeight = SizeConfig.safeBlockVertical! * 100;
-    double bottomHeight = Constant.getPercentSize(screenHeight, 8.5);
+    double bottomHeight = Constant.getPercentSize(screenHeight, 10);
     double iconHeight = Constant.getPercentSize(bottomHeight, 28);
     return WillPopScope(
         child: Scaffold(
@@ -77,12 +75,12 @@ class _HomeScreen extends State<HomeScreen> {
               ),
 
               BottomNavyBarItem(
-                title: 'Search',
+                title: 'Category',
                 activeColor: theme.colorScheme.primary,
                 inactiveColor: _inactiveColor,
                 textAlign: TextAlign.center,
                 iconSize: iconHeight,
-                imageName: "fav_fill.svg",
+                imageName: "Card.svg",
               ),
 
               // BottomNavyBarItem(
@@ -104,7 +102,7 @@ class _HomeScreen extends State<HomeScreen> {
               ),
 
               BottomNavyBarItem(
-                title: 'All Pets',
+                title: 'Profile',
                 activeColor: theme.colorScheme.primary,
                 inactiveColor: _inactiveColor,
                 textAlign: TextAlign.center,
