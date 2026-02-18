@@ -94,7 +94,6 @@ class CheckoutController extends Controller
             'state.required'     => 'State / County is required.',
             'zip.required'       => 'Postcode / ZIP is required.',
             'country.required'   => 'Country is required.',
-            'mobile.required'    => 'Receiver phone number is required for delivery.',
         ]);
 
         $note_charge = !empty($request->note_to_seller) ? 5000 : 0;
