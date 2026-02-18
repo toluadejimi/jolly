@@ -11,7 +11,7 @@ class ApiService {
   ApiService({String? apiKey}) : _apiKey = apiKey ?? ApiConfig.apiKey;
 
   final String? _apiKey;
-  String get baseUrl => ApiConfig.baseUrl.replaceAll(RegExp(r'/$'), '');
+  String get baseUrl => ApiConfig.baseUrl.trim().replaceAll(RegExp(r'/$'), '');
 
   Map<String, String> get _publicHeaders => {
         'Accept': 'application/json',

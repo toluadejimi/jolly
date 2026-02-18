@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'config/api_config.dart';
-import 'screens/home_screen.dart';
+import 'constants/color_data.dart';
 import 'services/api_service.dart';
+import 'ui/intro/splash_screen.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await ApiConfig.loadFromPrefs();
+void main() {
   runApp(const MyApp());
 }
 
@@ -19,12 +17,10 @@ class MyApp extends StatelessWidget {
     return Provider<ApiService>(
       create: (_) => ApiService(),
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Gift Store',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
-        home: const HomeScreen(),
+        theme: ThemeData(primaryColor: primaryColor),
+        home: const SplashScreen(),
       ),
     );
   }

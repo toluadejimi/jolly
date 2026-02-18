@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'product_list_screen.dart';
-import 'settings_screen.dart';
 import 'track_order_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -13,17 +12,6 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Gift Store'),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const SettingsScreen(),
-              ),
-            ),
-          ),
-        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(24),
