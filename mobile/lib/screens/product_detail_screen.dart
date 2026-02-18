@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../models/api_response.dart';
@@ -14,8 +17,12 @@ import '../utils/format_utils.dart';
 import '../utils/color_utils.dart';
 import '../widgets/product_badge_ribbon.dart';
 import '../data/checkout_data.dart';
-import 'checkout_screen.dart';
 import '../widgets/searchable_dropdown.dart';
+import '../widgets/sprintpay_payment_sheet.dart';
+
+/// Neon orange theme for Buy Now and payment CTAs.
+const Color _neonOrange = Color(0xFFFF6B35);
+const double _buttonRadius = 16;
 
 /// Strip simple HTML tags and normalize whitespace for description text.
 String stripHtmlToPlainText(String? html) {
@@ -137,7 +144,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 }
 
-class _ProductDetailBody extends StatelessWidget {
+class _ProductDetailBody extends StatefulWidget {
   const _ProductDetailBody({
     required this.product,
     required this.quantity,
@@ -153,23 +160,78 @@ class _ProductDetailBody extends StatelessWidget {
   final ValueChanged<ProductVariant?> onVariantSelected;
 
   @override
+  State<_ProductDetailBody> createState() => _ProductDetailBodyState();
+}
+
+class _ProductDetailBodyState extends State<_ProductDetailBody> {
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _formSectionKey = GlobalKey();
+  bool _showReceiverForm = false;
+  bool _variantError = false;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onBuyNowTap() {
+    final hasVariants = widget.product.variants.isNotEmpty;
+    if (hasVariants && widget.selectedVariant == null) {
+      setState(() => _variantError = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select an option before continuing.'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    setState(() {
+      _variantError = false;
+      _showReceiverForm = true;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _formSectionKey.currentContext;
+      if (ctx != null && mounted) {
+        Scrollable.ensureVisible(
+          ctx,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+          alignment: 0.1,
+        );
+      }
+    });
+  }
+
+  void _onVariantSelected(ProductVariant? v) {
+    if (_variantError) setState(() => _variantError = false);
+    widget.onVariantSelected(v);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final product = widget.product;
+    final quantity = widget.quantity;
+    final selectedVariant = widget.selectedVariant;
     final hasVariants = product.variants.isNotEmpty;
     final price = selectedVariant != null
-        ? (selectedVariant!.salePrice < selectedVariant!.regularPrice
-            ? selectedVariant!.salePrice
-            : selectedVariant!.regularPrice)
+        ? (selectedVariant.salePrice < selectedVariant.regularPrice
+            ? selectedVariant.salePrice
+            : selectedVariant.regularPrice)
         : product.salePrice < product.regularPrice
             ? product.salePrice
             : product.regularPrice;
     final canAddToCart = !hasVariants || selectedVariant != null;
-    // When a variant with images is selected, show its images in the gallery
-    final galleryUrls = selectedVariant != null && selectedVariant!.displayImageUrls.isNotEmpty
-        ? selectedVariant!.displayImageUrls
+    final galleryUrls = selectedVariant != null && selectedVariant.displayImageUrls.isNotEmpty
+        ? selectedVariant.displayImageUrls
         : product.displayImageUrls;
+    final isLoggedIn = context.read<AuthProvider>().isLoggedIn;
 
     return SingleChildScrollView(
+      controller: _scrollController,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -214,7 +276,6 @@ class _ProductDetailBody extends StatelessWidget {
                     ),
                   ),
                 ],
-                // Description
                 if (product.description != null && product.description!.trim().isNotEmpty) ...[
                   const SizedBox(height: 20),
                   Text(
@@ -232,7 +293,6 @@ class _ProductDetailBody extends StatelessWidget {
                     ),
                   ),
                 ],
-                // Variant selector – professional layout
                 if (hasVariants) ...[
                   const SizedBox(height: 24),
                   Text(
@@ -242,13 +302,31 @@ class _ProductDetailBody extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _VariantSelector(
-                    variants: product.variants,
-                    selectedVariant: selectedVariant,
-                    onVariantSelected: onVariantSelected,
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: _variantError
+                          ? Border.all(color: theme.colorScheme.error, width: 2)
+                          : null,
+                    ),
+                    child: _VariantSelector(
+                      variants: product.variants,
+                      selectedVariant: selectedVariant,
+                      onVariantSelected: _onVariantSelected,
+                    ),
                   ),
+                  if (_variantError) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      'Please select an option before continuing.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.error,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ],
-                // Quantity
                 const SizedBox(height: 24),
                 Text(
                   'Quantity',
@@ -261,7 +339,7 @@ class _ProductDetailBody extends StatelessWidget {
                   children: [
                     IconButton.filled(
                       onPressed: quantity > 1
-                          ? () => onQuantityChanged(quantity - 1)
+                          ? () => widget.onQuantityChanged(quantity - 1)
                           : null,
                       icon: const Icon(Icons.remove),
                     ),
@@ -274,14 +352,30 @@ class _ProductDetailBody extends StatelessWidget {
                     ),
                     IconButton.filled(
                       onPressed: quantity < 99
-                          ? () => onQuantityChanged(quantity + 1)
+                          ? () => widget.onQuantityChanged(quantity + 1)
                           : null,
                       icon: const Icon(Icons.add),
                     ),
                   ],
                 ),
-                const SizedBox(height: 28),
-                // Add to cart
+                const SizedBox(height: 20),
+                if (isLoggedIn)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: FilledButton(
+                      onPressed: _onBuyNowTap,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _neonOrange,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(_buttonRadius),
+                        ),
+                      ),
+                      child: const Text('Buy Now'),
+                    ),
+                  ),
+                if (isLoggedIn) const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
@@ -318,14 +412,21 @@ class _ProductDetailBody extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Receiver's details + extras (same field order as web), only when logged in
-                if (context.read<AuthProvider>().isLoggedIn) ...[
-                  const SizedBox(height: 32),
-                  _ProductCheckoutForm(
-                    product: product,
-                    quantity: quantity,
-                    selectedVariant: selectedVariant,
-                    price: price,
+                if (isLoggedIn) ...[
+                  const SizedBox(height: 24),
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 350),
+                    curve: Curves.easeInOut,
+                    alignment: Alignment.topCenter,
+                    child: _showReceiverForm
+                        ? _ReceiverFormSection(
+                            key: _formSectionKey,
+                            product: product,
+                            quantity: quantity,
+                            selectedVariant: selectedVariant,
+                            price: price,
+                          )
+                        : const SizedBox.shrink(),
                   ),
                 ],
               ],
@@ -576,9 +677,11 @@ class _VariantSelector extends StatelessWidget {
   }
 }
 
-/// Checkout form on product detail: Receiver's details (same field order as web) + conditional extras + note fee.
-class _ProductCheckoutForm extends StatefulWidget {
-  const _ProductCheckoutForm({
+/// Receiver form section: same field arrangement as checkout. Used when Buy Now is clicked.
+/// Continue to Pay triggers direct SprintPay (create order + payment sheet), no checkout navigation.
+class _ReceiverFormSection extends StatefulWidget {
+  const _ReceiverFormSection({
+    super.key,
     required this.product,
     required this.quantity,
     required this.selectedVariant,
@@ -591,10 +694,10 @@ class _ProductCheckoutForm extends StatefulWidget {
   final double price;
 
   @override
-  State<_ProductCheckoutForm> createState() => _ProductCheckoutFormState();
+  State<_ReceiverFormSection> createState() => _ReceiverFormSectionState();
 }
 
-class _ProductCheckoutFormState extends State<_ProductCheckoutForm> {
+class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
   final _formKey = GlobalKey<FormState>();
   final _firstname = TextEditingController();
   final _lastname = TextEditingController();
@@ -616,6 +719,20 @@ class _ProductCheckoutFormState extends State<_ProductCheckoutForm> {
   String? _countryError;
   String? _stateError;
   bool _loading = false;
+  bool _userContactPrefilled = false;
+  XFile? _frontPhoto;
+  XFile? _backPhoto;
+  static final _imagePicker = ImagePicker();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_userContactPrefilled && mounted) {
+      _userContactPrefilled = true;
+      final email = context.read<AuthProvider>().userEmail;
+      if (email != null && email.isNotEmpty) _email.text = email;
+    }
+  }
 
   @override
   void initState() {
@@ -656,14 +773,28 @@ class _ProductCheckoutFormState extends State<_ProductCheckoutForm> {
     }
   }
 
+  bool get _isVariantValid =>
+      widget.product.variants.isEmpty || widget.selectedVariant != null;
+
   Future<void> _continueToPayment() async {
+    if (!_isVariantValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select an option before continuing.'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _countryError = null);
     if (_selectedCountry == null) {
       setState(() => _countryError = 'Required');
       return;
     }
-    if ((_selectedCountry!.code == 'US' || _selectedCountry!.code == 'CA') && _selectedState == null) {
+    if ((_selectedCountry!.code == 'US' || _selectedCountry!.code == 'CA') &&
+        _selectedState == null) {
       setState(() => _stateError = 'Required');
       return;
     }
@@ -673,54 +804,137 @@ class _ProductCheckoutFormState extends State<_ProductCheckoutForm> {
       );
       return;
     }
-    if (widget.product.customisedShortTest && _customisedShortTest.text.trim().isEmpty) {
+    if (widget.product.customisedShortTest &&
+        _customisedShortTest.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter customized short text (max 40 characters)')),
+        const SnackBar(
+            content: Text('Please enter customized short text (max 40 characters)')),
       );
       return;
     }
+    if (widget.product.customerPhoto && (_frontPhoto == null || _backPhoto == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please upload both front and back product photos')),
+      );
+      return;
+    }
+    if (_loading) return;
     setState(() => _loading = true);
+    final api = context.read<ApiService>();
+    String? frontPath;
+    String? backPath;
+    if (widget.product.customerPhoto && _frontPhoto != null && _backPhoto != null) {
+      final uploadRes = await api.uploadCustomerPhotos(
+        frontPath: _frontPhoto!.path,
+        backPath: _backPhoto!.path,
+      );
+      if (!uploadRes.success || uploadRes.data == null) {
+        setState(() => _loading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(uploadRes.error ?? 'Photo upload failed'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+      frontPath = uploadRes.data!.frontPath;
+      backPath = uploadRes.data!.backPath;
+    }
+    final shipRes = await api.getShippingMethods();
+    if (!mounted) {
+      setState(() => _loading = false);
+      return;
+    }
+    if (!shipRes.success || shipRes.data == null || shipRes.data!.isEmpty) {
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(shipRes.error ?? 'Could not load delivery options'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
     final noteText = _noteToSeller.text.trim();
-    final noteCharge = (widget.product.note && noteText.isNotEmpty) ? 5000 : 0;
+    final noteCharge =
+        (widget.product.note && noteText.isNotEmpty) ? 5000 : 0;
     final extras = CheckoutExtras(
       noteToSeller: noteText.isEmpty ? null : noteText,
       noteCharge: noteCharge,
-      customisedTest: _customisedTest.text.trim().isEmpty ? null : _customisedTest.text.trim(),
-      customisedShortTest: _customisedShortTest.text.trim().isEmpty ? null : _customisedShortTest.text.trim(),
+      customisedTest: _customisedTest.text.trim().isEmpty
+          ? null
+          : _customisedTest.text.trim(),
+      customisedShortTest: _customisedShortTest.text.trim().isEmpty
+          ? null
+          : _customisedShortTest.text.trim(),
     );
-    final prefilled = <String, dynamic>{
-      'firstname': _firstname.text.trim(),
-      'lastname': _lastname.text.trim(),
-      'email': _email.text.trim(),
-      'mobile': _mobile.text.trim(),
-      'address': _address.text.trim(),
-      'apt': _apt.text.trim(),
-      'city': _city.text.trim(),
-      'state': _selectedState?.name ?? _state.text.trim(),
-      'zip': _zip.text.trim(),
-      'country': _selectedCountry!.name,
-    };
-    context.read<CartProvider>().add(CartItem(
-          productId: widget.product.id,
-          variantId: widget.selectedVariant?.id,
-          name: widget.product.name,
-          price: widget.price,
-          imageUrl: widget.selectedVariant?.imageUrl ?? widget.product.thumbUrl ?? widget.product.imageUrl,
-          currency: widget.product.currency,
-          quantity: widget.quantity,
-          hasCustomerPhoto: widget.product.customerPhoto,
-          hasCustomisedTest: widget.product.customisedTest,
-          hasCustomisedShortTest: widget.product.customisedShortTest,
-          hasNote: widget.product.note,
-        ));
-    if (!mounted) return;
+    final address = ShippingAddressInput(
+      firstname: _firstname.text.trim(),
+      lastname: _lastname.text.trim(),
+      mobile: _mobile.text.trim(),
+      email: _email.text.trim().isEmpty ? null : _email.text.trim(),
+      country: _selectedCountry!.name,
+      city: _city.text.trim(),
+      state: _selectedState?.name ??
+          (_state.text.trim().isEmpty ? null : _state.text.trim()),
+      zip: _zip.text.trim().isEmpty ? null : _zip.text.trim(),
+      address: _address.text.trim(),
+      apt: _apt.text.trim().isEmpty ? null : _apt.text.trim(),
+    );
+    final item = CartItem(
+      productId: widget.product.id,
+      variantId: widget.selectedVariant?.id,
+      name: widget.product.name,
+      price: widget.price,
+      imageUrl: widget.selectedVariant?.imageUrl ??
+          widget.product.thumbUrl ??
+          widget.product.imageUrl,
+      currency: widget.product.currency,
+      quantity: widget.quantity,
+      hasCustomerPhoto: widget.product.customerPhoto,
+      hasCustomisedTest: widget.product.customisedTest,
+      hasCustomisedShortTest: widget.product.customisedShortTest,
+      hasNote: widget.product.note,
+    );
+    final orderRes = await api.createOrder(
+      items: [item],
+      shippingAddress: address,
+      shippingMethodId: shipRes.data!.first.id,
+      noteToSeller: extras.noteToSeller,
+      noteCharge: extras.noteCharge,
+      customisedTest: extras.customisedTest,
+      customisedShortTest: extras.customisedShortTest,
+      frontPhoto: frontPath,
+      backPhoto: backPath,
+    );
+    if (!mounted) {
+      setState(() => _loading = false);
+      return;
+    }
     setState(() => _loading = false);
-    Navigator.push(
+    if (!orderRes.success || orderRes.data == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(orderRes.error ?? 'Failed to create order'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    final orderData = orderRes.data!;
+    await showSprintPayDirectFlow(
       context,
-      MaterialPageRoute(
-        builder: (_) => const CheckoutScreen(),
-        settings: RouteSettings(arguments: {'prefilled': prefilled, 'extras': extras}),
-      ),
+      amount: orderData.totalAmount,
+      ref: orderData.orderNumber,
+      email: _email.text.trim(),
+      orderNumber: orderData.orderNumber,
+      onOrderSuccess: () {},
     );
   }
 
@@ -737,6 +951,32 @@ class _ProductCheckoutFormState extends State<_ProductCheckoutForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Divider(height: 32, color: theme.dividerColor),
+          Text(
+            'Your contact',
+            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _email,
+            decoration: const InputDecoration(
+              labelText: 'Email *',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.emailAddress,
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _mobile,
+            decoration: const InputDecoration(
+              labelText: 'WhatsApp / Phone *',
+              hintText: 'Your WhatsApp or phone number',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.phone,
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          ),
+          const SizedBox(height: 24),
           Text(
             "Receiver's Details",
             style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -831,25 +1071,6 @@ class _ProductCheckoutFormState extends State<_ProductCheckoutForm> {
             ),
             validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
           ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _mobile,
-            decoration: const InputDecoration(
-              labelText: "Receiver's phone (optional)",
-              border: OutlineInputBorder(),
-            ),
-            keyboardType: TextInputType.phone,
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _email,
-            decoration: const InputDecoration(
-              labelText: 'Email',
-              border: OutlineInputBorder(),
-            ),
-            keyboardType: TextInputType.emailAddress,
-            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
-          ),
           if (p.customerPhoto) ...[
             const SizedBox(height: 24),
             Text(
@@ -858,9 +1079,65 @@ class _ProductCheckoutFormState extends State<_ProductCheckoutForm> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Front and back picture upload is available on the website.',
+              'JPG or PNG, max 2MB each.',
               style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text('Front', style: theme.textTheme.labelMedium),
+                      const SizedBox(height: 4),
+                      OutlinedButton.icon(
+                        onPressed: () async {
+                          final x = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+                          if (x != null && mounted) setState(() => _frontPhoto = x);
+                        },
+                        icon: const Icon(Icons.add_photo_alternate_outlined, size: 20),
+                        label: Text(_frontPhoto == null ? 'Add front' : 'Change'),
+                      ),
+                      if (_frontPhoto != null) ...[
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(File(_frontPhoto!.path), height: 80, width: double.infinity, fit: BoxFit.cover),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text('Back', style: theme.textTheme.labelMedium),
+                      const SizedBox(height: 4),
+                      OutlinedButton.icon(
+                        onPressed: () async {
+                          final x = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+                          if (x != null && mounted) setState(() => _backPhoto = x);
+                        },
+                        icon: const Icon(Icons.add_photo_alternate_outlined, size: 20),
+                        label: Text(_backPhoto == null ? 'Add back' : 'Change'),
+                      ),
+                      if (_backPhoto != null) ...[
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(File(_backPhoto!.path), height: 80, width: double.infinity, fit: BoxFit.cover),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
           ],
           if (p.customisedTest) ...[
             const SizedBox(height: 24),
@@ -925,11 +1202,16 @@ class _ProductCheckoutFormState extends State<_ProductCheckoutForm> {
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
+            height: 52,
             child: FilledButton(
-              onPressed: _loading ? null : _continueToPayment,
+              onPressed: (_loading || !_isVariantValid) ? null : _continueToPayment,
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: theme.colorScheme.primary,
+                backgroundColor: _neonOrange,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(_buttonRadius),
+                ),
               ),
               child: _loading
                   ? const SizedBox(
@@ -937,7 +1219,7 @@ class _ProductCheckoutFormState extends State<_ProductCheckoutForm> {
                       width: 24,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('Continue to Payment'),
+                  : const Text('Continue to Pay'),
             ),
           ),
         ],

@@ -19,6 +19,37 @@ use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
+    /**
+     * Upload customer product photos (front/back). Returns storage paths to pass to orders store.
+     */
+    public function uploadCustomerPhotos(Request $request): JsonResponse
+    {
+        $request->validate([
+            'front_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'back_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ], [
+            'front_picture.image' => 'Front picture must be an image (JPG, PNG).',
+            'front_picture.max' => 'Front picture must not exceed 2MB.',
+            'back_picture.image' => 'Back picture must be an image (JPG, PNG).',
+            'back_picture.max' => 'Back picture must not exceed 2MB.',
+        ]);
+
+        $data = [];
+        if ($request->hasFile('front_picture')) {
+            $data['front_path'] = $request->file('front_picture')->store('temp_photos', 'public');
+        }
+        if ($request->hasFile('back_picture')) {
+            $data['back_path'] = $request->file('back_picture')->store('temp_photos', 'public');
+        }
+
+        return response()->json([
+            'remark' => 'photos_uploaded',
+            'status' => 'success',
+            'message' => ['success' => ['Photos uploaded.']],
+            'data' => $data,
+        ]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -124,6 +155,8 @@ class OrderController extends Controller
             'note_charge' => 'nullable|numeric|min:0',
             'customised_test' => 'nullable|string|max:5000',
             'customised_short_test' => 'nullable|string|max:5000',
+            'front_photo' => 'nullable|string|max:500',
+            'back_photo' => 'nullable|string|max:500',
         ]);
 
         $shippingMethod = ShippingMethod::active()->find($validated['shipping_method_id']);
@@ -243,6 +276,8 @@ class OrderController extends Controller
         $noteToSeller = $validated['note_to_seller'] ?? null;
         $customisedTest = $validated['customised_test'] ?? null;
         $customisedShortTest = $validated['customised_short_test'] ?? null;
+        $frontPhoto = $validated['front_photo'] ?? null;
+        $backPhoto = $validated['back_photo'] ?? null;
 
         foreach ($cartLike as $cartItem) {
             $prices = $cartItem->product->prices($cartItem->productVariant);
@@ -258,6 +293,8 @@ class OrderController extends Controller
             $detail->note = $noteToSeller;
             $detail->customised_test = $customisedTest;
             $detail->customised_short_test = $customisedShortTest;
+            $detail->front_photo = $frontPhoto;
+            $detail->back_photo = $backPhoto;
             $detail->save();
             $this->updateStock($cartItem, $order->id);
         }

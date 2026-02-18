@@ -4,5 +4,5 @@ class SprintPayConfig {
   SprintPayConfig._();
 
   static const String baseUrl = 'https://web.sprintpay.online';
-  static const String paynowKey = '499744636474227373';
+  static const String paynowKey = '948746y7444747656f4645454556f646444';
 }

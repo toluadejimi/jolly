@@ -166,8 +166,50 @@ class ApiService {
     return _parseListResponse(res, 'payment_methods', PaymentMethodItem.fromJson);
   }
 
+  /// POST /api/upload-customer-photos (requires API key). Upload front/back product photos. Returns paths to pass to createOrder.
+  Future<ApiResponse<UploadCustomerPhotosResult>> uploadCustomerPhotos({
+    required String? frontPath,
+    required String? backPath,
+  }) async {
+    if ((frontPath == null || frontPath.isEmpty) && (backPath == null || backPath.isEmpty)) {
+      return ApiResponse.success(UploadCustomerPhotosResult(frontPath: null, backPath: null));
+    }
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/api/upload-customer-photos'),
+    );
+    request.headers.addAll(_authHeaders);
+    request.headers.remove('Content-Type');
+    try {
+      if (frontPath != null && frontPath.isNotEmpty) {
+        request.files.add(await http.MultipartFile.fromPath('front_picture', frontPath));
+      }
+      if (backPath != null && backPath.isNotEmpty) {
+        request.files.add(await http.MultipartFile.fromPath('back_picture', backPath));
+      }
+    } catch (e) {
+      return ApiResponse.error('Failed to read image: $e');
+    }
+    final streamed = await request.send();
+    final res = await http.Response.fromStream(streamed);
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if (res.statusCode == 401) return ApiResponse.error('API key required.');
+    if ((body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Upload failed');
+    }
+    final data = body['data'] as Map<String, dynamic>? ?? {};
+    return ApiResponse.success(UploadCustomerPhotosResult(
+      frontPath: data['front_path'] as String?,
+      backPath: data['back_path'] as String?,
+    ));
+  }
+
   /// POST /api/orders (requires API key). Creates order from cart items.
   /// [noteCharge] is added to total when product has note and user enters note (e.g. 5000).
+  /// [frontPhoto] and [backPhoto] are storage paths from uploadCustomerPhotos (when product has customer_photo).
   Future<ApiResponse<CreateOrderResult>> createOrder({
     required List<CartItem> items,
     required ShippingAddressInput shippingAddress,
@@ -177,6 +219,8 @@ class ApiService {
     int noteCharge = 0,
     String? customisedTest,
     String? customisedShortTest,
+    String? frontPhoto,
+    String? backPhoto,
   }) async {
     final body = <String, dynamic>{
       'items': items.map((i) => {
@@ -191,6 +235,8 @@ class ApiService {
       if (noteCharge > 0) 'note_charge': noteCharge,
       if (customisedTest != null && customisedTest.isNotEmpty) 'customised_test': customisedTest,
       if (customisedShortTest != null && customisedShortTest.isNotEmpty) 'customised_short_test': customisedShortTest,
+      if (frontPhoto != null && frontPhoto.isNotEmpty) 'front_photo': frontPhoto,
+      if (backPhoto != null && backPhoto.isNotEmpty) 'back_photo': backPhoto,
     };
     final res = await http.post(
       Uri.parse('$baseUrl/api/orders'),

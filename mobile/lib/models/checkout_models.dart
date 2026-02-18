@@ -93,11 +93,22 @@ class CheckoutExtras {
     this.noteCharge = 0,
     this.customisedTest,
     this.customisedShortTest,
+    this.frontPhotoPath,
+    this.backPhotoPath,
   });
   final String? noteToSeller;
   final int noteCharge;
   final String? customisedTest;
   final String? customisedShortTest;
+  final String? frontPhotoPath;
+  final String? backPhotoPath;
+}
+
+/// Result of upload-customer-photos API (paths to pass to createOrder).
+class UploadCustomerPhotosResult {
+  const UploadCustomerPhotosResult({this.frontPath, this.backPath});
+  final String? frontPath;
+  final String? backPath;
 }
 
 /// Response after creating an order.

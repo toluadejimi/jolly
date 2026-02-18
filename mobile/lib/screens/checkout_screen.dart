@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -95,6 +98,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _noteToSeller = TextEditingController();
 
   CheckoutExtras? _extras;
+  XFile? _frontPhoto;
+  XFile? _backPhoto;
+  static final _imagePicker = ImagePicker();
 
   List<CountryEntry> _countries = [];
   List<StateEntry> _states = [];
@@ -292,11 +298,40 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       );
       return;
     }
+    if (cart.items.any((i) => i.hasCustomerPhoto) && (_frontPhoto == null || _backPhoto == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please upload both front and back product photos')),
+      );
+      return;
+    }
     setState(() {
       _loading = true;
       _error = null;
     });
     final api = context.read<ApiService>();
+    String? frontPath;
+    String? backPath;
+    if (cart.items.any((i) => i.hasCustomerPhoto) && _frontPhoto != null && _backPhoto != null) {
+      final uploadRes = await api.uploadCustomerPhotos(
+        frontPath: _frontPhoto!.path,
+        backPath: _backPhoto!.path,
+      );
+      if (!uploadRes.success || uploadRes.data == null) {
+        setState(() => _loading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(uploadRes.error ?? 'Photo upload failed'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+      frontPath = uploadRes.data!.frontPath;
+      backPath = uploadRes.data!.backPath;
+    }
     // 1) Load shipping methods and use first
     final shipRes = await api.getShippingMethods();
     if (!mounted) return;
@@ -338,6 +373,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       noteCharge: effectiveExtras.noteCharge,
       customisedTest: effectiveExtras.customisedTest,
       customisedShortTest: effectiveExtras.customisedShortTest,
+      frontPhoto: frontPath,
+      backPhoto: backPath,
     );
     if (!mounted) return;
     if (!orderRes.success || orderRes.data == null) {
@@ -381,10 +418,40 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       setState(() => _error = 'Your cart is empty');
       return;
     }
+    if (cart.items.any((i) => i.hasCustomerPhoto) && (_frontPhoto == null || _backPhoto == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please upload both front and back product photos')),
+      );
+      return;
+    }
     setState(() {
       _loading = true;
       _error = null;
     });
+    final api = context.read<ApiService>();
+    String? frontPath;
+    String? backPath;
+    if (cart.items.any((i) => i.hasCustomerPhoto) && _frontPhoto != null && _backPhoto != null) {
+      final uploadRes = await api.uploadCustomerPhotos(
+        frontPath: _frontPhoto!.path,
+        backPath: _backPhoto!.path,
+      );
+      if (!uploadRes.success || uploadRes.data == null) {
+        setState(() => _loading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(uploadRes.error ?? 'Photo upload failed'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+      frontPath = uploadRes.data!.frontPath;
+      backPath = uploadRes.data!.backPath;
+    }
     final address = ShippingAddressInput(
       firstname: _firstname.text.trim(),
       lastname: _lastname.text.trim(),
@@ -403,7 +470,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       customisedTest: _customisedTest.text.trim().isEmpty ? null : _customisedTest.text.trim(),
       customisedShortTest: _customisedShortTest.text.trim().isEmpty ? null : _customisedShortTest.text.trim(),
     );
-    final api = context.read<ApiService>();
     final res = await api.createOrder(
       items: cart.items,
       shippingAddress: address,
@@ -412,6 +478,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       noteCharge: effectiveExtras.noteCharge,
       customisedTest: effectiveExtras.customisedTest,
       customisedShortTest: effectiveExtras.customisedShortTest,
+      frontPhoto: frontPath,
+      backPhoto: backPath,
     );
     if (!mounted) return;
     setState(() {
@@ -635,9 +703,65 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Front and back picture upload is available on the website.',
+          'JPG or PNG, max 2MB each.',
           style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
+        const SizedBox(height: 12),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text('Front', style: theme.textTheme.labelMedium),
+                  const SizedBox(height: 4),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      final x = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+                      if (x != null && mounted) setState(() => _frontPhoto = x);
+                    },
+                    icon: const Icon(Icons.add_photo_alternate_outlined, size: 20),
+                    label: Text(_frontPhoto == null ? 'Add front' : 'Change'),
+                  ),
+                  if (_frontPhoto != null) ...[
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.file(File(_frontPhoto!.path), height: 80, width: double.infinity, fit: BoxFit.cover),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text('Back', style: theme.textTheme.labelMedium),
+                  const SizedBox(height: 4),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      final x = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+                      if (x != null && mounted) setState(() => _backPhoto = x);
+                    },
+                    icon: const Icon(Icons.add_photo_alternate_outlined, size: 20),
+                    label: Text(_backPhoto == null ? 'Add back' : 'Change'),
+                  ),
+                  if (_backPhoto != null) ...[
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.file(File(_backPhoto!.path), height: 80, width: double.infinity, fit: BoxFit.cover),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
       ]);
     }
     if (showCustomisedTest) {
@@ -716,39 +840,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Your contact',
-          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _email,
-          decoration: const InputDecoration(
-            labelText: 'Email *',
-            border: OutlineInputBorder(),
-          ),
-          keyboardType: TextInputType.emailAddress,
-          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _mobile,
-          decoration: const InputDecoration(
-            labelText: 'WhatsApp / Phone *',
-            border: OutlineInputBorder(),
-          ),
-          keyboardType: TextInputType.phone,
-          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
-        ),
-        const SizedBox(height: 24),
-        Text(
-          "Receiver's details",
+          "Receiver's Details",
           style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
+        SearchableDropdown<CountryEntry>(
+          items: _countries,
+          label: 'Country / Region *',
+          displayString: (c) => c.name,
+          value: _selectedCountry,
+          onChanged: _onCountryChanged,
+          hint: 'Search country...',
+          errorText: _countryError,
+        ),
+        const SizedBox(height: 12),
         TextFormField(
           controller: _firstname,
           decoration: const InputDecoration(
-            labelText: "First name",
+            labelText: "Receiver's First name",
             border: OutlineInputBorder(),
           ),
           textCapitalization: TextCapitalization.words,
@@ -758,7 +867,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         TextFormField(
           controller: _lastname,
           decoration: const InputDecoration(
-            labelText: "Last name",
+            labelText: "Receiver's Last name",
             border: OutlineInputBorder(),
           ),
           textCapitalization: TextCapitalization.words,
@@ -768,7 +877,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         TextFormField(
           controller: _address,
           decoration: const InputDecoration(
-            labelText: "Street address",
+            labelText: 'Street address',
+            hintText: 'House number and street name',
             border: OutlineInputBorder(),
           ),
           validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
@@ -777,60 +887,69 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         TextFormField(
           controller: _apt,
           decoration: const InputDecoration(
-            labelText: "Apartment, suite, unit (optional)",
+            labelText: 'Apartment, suite, unit (optional)',
+            hintText: 'House number, apartment, suite, unit, flat etc',
             border: OutlineInputBorder(),
           ),
         ),
         const SizedBox(height: 12),
-        TextFormField(
-          controller: _city,
-          decoration: const InputDecoration(
-            labelText: "Town / City",
-            border: OutlineInputBorder(),
-          ),
-          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
-        ),
-        const SizedBox(height: 12),
-        SearchableDropdown<CountryEntry>(
-          items: _countries,
-          label: 'Country *',
-          displayString: (c) => c.name,
-          value: _selectedCountry,
-          onChanged: _onCountryChanged,
-          hint: 'Search country...',
-          errorText: _countryError,
-        ),
-        if (showStateDropdown) ...[
-          const SizedBox(height: 12),
+        if (showStateDropdown)
           SearchableDropdown<StateEntry>(
             items: _states,
-            label: _selectedCountry!.code == 'US' ? 'State *' : 'Province / Territory *',
+            label: _selectedCountry!.code == 'US' ? 'State / County *' : 'Province / Territory *',
             displayString: (s) => s.name,
             value: _selectedState,
             onChanged: (v) => setState(() {
               _selectedState = v;
               _stateError = null;
             }),
-            hint: 'Search...',
+            hint: 'Select',
             errorText: _stateError,
-          ),
-        ] else if (_selectedCountry != null) ...[
-          const SizedBox(height: 12),
+          )
+        else if (_selectedCountry != null)
           TextFormField(
             controller: _state,
             decoration: const InputDecoration(
-              labelText: "State / County (optional)",
+              labelText: 'State / County',
               border: OutlineInputBorder(),
             ),
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
           ),
-        ],
+        if (showStateDropdown || _selectedCountry != null) const SizedBox(height: 12),
+        TextFormField(
+          controller: _city,
+          decoration: const InputDecoration(
+            labelText: 'Town / City',
+            border: OutlineInputBorder(),
+          ),
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+        ),
         const SizedBox(height: 12),
         TextFormField(
           controller: _zip,
           decoration: const InputDecoration(
-            labelText: "Postcode / ZIP",
+            labelText: 'Postcode / ZIP',
             border: OutlineInputBorder(),
           ),
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _mobile,
+          decoration: const InputDecoration(
+            labelText: "Receiver's phone (optional)",
+            border: OutlineInputBorder(),
+          ),
+          keyboardType: TextInputType.phone,
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _email,
+          decoration: const InputDecoration(
+            labelText: 'Email (optional)',
+            border: OutlineInputBorder(),
+          ),
+          keyboardType: TextInputType.emailAddress,
         ),
         ..._buildExtraOptionSections(theme),
         const SizedBox(height: 24),
