@@ -281,6 +281,39 @@ class OrderController extends Controller
         return back()->withNotify($notify);
     }
 
+    public function updateEstimatedDelivery(Request $request, $id)
+    {
+        $order = Order::isValidOrder()->findOrFail($id);
+        if ($order->status == Status::ORDER_DELIVERED || $order->status == Status::ORDER_CANCELED) {
+            $notify[] = ['error', 'Cannot set estimated delivery for delivered or canceled orders.'];
+            return back()->withNotify($notify);
+        }
+
+        $request->validate([
+            'estimated_delivery_date' => 'nullable|date|after_or_equal:today',
+            'estimated_delivery_time' => 'nullable|string|max:20',
+            'tracking_url' => 'nullable|string|url|max:500',
+        ]);
+
+        if ($request->filled('estimated_delivery_date')) {
+            $date = $request->estimated_delivery_date;
+            $time = preg_replace('/\s+/', '', $request->estimated_delivery_time ?? '12:00');
+            if (!preg_match('/^\d{1,2}(:\d{2})?$/', $time)) {
+                $time = '12:00';
+            }
+            if (strpos($time, ':') === false) {
+                $time .= ':00';
+            }
+            $order->estimated_delivery_at = $date . ' ' . $time . ':00';
+        }
+
+        $order->tracking_url = $request->tracking_url ? trim($request->tracking_url) : null;
+        $order->save();
+
+        $notify[] = ['success', 'Estimated delivery and tracking link updated. Customer will see them on their order page.'];
+        return back()->withNotify($notify);
+    }
+
     private function sendOrderMail($order)
     {
         $shortCode = [

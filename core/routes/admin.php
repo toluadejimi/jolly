@@ -272,6 +272,7 @@ Route::middleware('admin')->group(function () {
         Route::get('unpid', 'unpaidOrders')->name('unpaid');
         Route::get('order-details/{id}', 'orderDetails')->name('details');
         Route::get('order-pay/{id}', 'orderPay')->name('pay');
+        Route::post('estimated-delivery/{id}', 'updateEstimatedDelivery')->name('estimated.delivery');
 
         Route::post('return/{id}', 'return')->name('return');
     });

@@ -1,4 +1,4 @@
-@php use App\Models\OrderDetail; @endphp
+@php use App\Models\OrderDetail; use App\Constants\Status; @endphp
 @extends('admin.layouts.app')
 
 @section('panel')
@@ -148,6 +148,62 @@
 
                             </ul>
                         </div>
+                    @endif
+
+                    @if ($order->payment_status == Status::PAYMENT_SUCCESS && $order->status != Status::ORDER_DELIVERED && $order->status != Status::ORDER_CANCELED)
+                        <div class="details-info-list mt-3">
+                            <h6 class="mb-3">@lang('Estimated Delivery & Tracking')</h6>
+                            @if ($order->estimated_delivery_at)
+                                <p class="mb-2">
+                                    <strong>@lang('Date & time'):</strong>
+                                    {{ $order->estimated_delivery_at->format('l, F j, Y') }}
+                                    {{ $order->estimated_delivery_at->format('g:i A') }}
+                                </p>
+                            @endif
+                            @if ($order->tracking_url)
+                                <p class="mb-2">
+                                    <strong>@lang('Tracking'):</strong>
+                                    <a href="{{ $order->tracking_url }}" target="_blank" rel="noopener noreferrer">{{ $order->tracking_url }}</a>
+                                </p>
+                            @endif
+                            <form action="{{ route('admin.order.estimated.delivery', $order->id) }}" method="POST" class="row g-2">
+                                @csrf
+                                <div class="col-12">
+                                    <label class="form-label">@lang('Delivery Date')</label>
+                                    <input type="date" name="estimated_delivery_date" class="form-control" value="{{ $order->estimated_delivery_at ? $order->estimated_delivery_at->format('Y-m-d') : '' }}" min="{{ date('Y-m-d') }}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">@lang('Delivery Time') (e.g. 14:00)</label>
+                                    <input type="text" name="estimated_delivery_time" class="form-control" placeholder="14:00" value="{{ $order->estimated_delivery_at ? $order->estimated_delivery_at->format('H:i') : '' }}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">@lang('Tracking URL')</label>
+                                    <input type="url" name="tracking_url" class="form-control" placeholder="https://tracking.carrier.com/..." value="{{ $order->tracking_url ?? '' }}">
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn--primary btn-sm">@lang('Save')</button>
+                                </div>
+                            </form>
+                        </div>
+                    @else
+                        @if ($order->estimated_delivery_at || $order->tracking_url)
+                            <div class="details-info-list mt-3">
+                                <h6 class="mb-3">@lang('Estimated Delivery & Tracking')</h6>
+                                @if ($order->estimated_delivery_at)
+                                    <p class="mb-2">
+                                        <strong>@lang('Date & time'):</strong>
+                                        {{ $order->estimated_delivery_at->format('l, F j, Y') }}
+                                        {{ $order->estimated_delivery_at->format('g:i A') }}
+                                    </p>
+                                @endif
+                                @if ($order->tracking_url)
+                                    <p class="mb-0">
+                                        <strong>@lang('Tracking'):</strong>
+                                        <a href="{{ $order->tracking_url }}" target="_blank" rel="noopener noreferrer">{{ $order->tracking_url }}</a>
+                                    </p>
+                                @endif
+                            </div>
+                        @endif
                     @endif
                 </div>
 

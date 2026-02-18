@@ -10,7 +10,8 @@ class Order extends Model {
 
     protected $casts = [
         'shipping_address' => 'object',
-        'guest_user_info' => 'object'
+        'guest_user_info' => 'object',
+        'estimated_delivery_at' => 'datetime',
     ];
 
     public function appliedCoupon() {

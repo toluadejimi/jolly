@@ -143,6 +143,28 @@
                         </ul>
                     </div>
                 @endif
+
+                @if ($order->estimated_delivery_at)
+                    <div class="details-info-list mt-3">
+                        <h6 class="mb-3">@lang('Estimated Delivery')</h6>
+                        <p class="mb-0 text--primary fw-semibold">
+                            <i class="las la-clock"></i>
+                            {{ $order->estimated_delivery_at->format('l, F j, Y') }}
+                            {{ $order->estimated_delivery_at->format('g:i A') }}
+                        </p>
+                    </div>
+                @endif
+
+                @if ($order->tracking_url)
+                    <div class="details-info-list mt-3">
+                        <h6 class="mb-3">@lang('Track Order')</h6>
+                        <p class="mb-0">
+                            <a href="{{ $order->tracking_url }}" target="_blank" rel="noopener noreferrer" class="btn btn--primary btn-sm">
+                                <i class="las la-external-link-alt"></i> @lang('Track your order')
+                            </a>
+                        </p>
+                    </div>
+                @endif
             </div>
 
 
