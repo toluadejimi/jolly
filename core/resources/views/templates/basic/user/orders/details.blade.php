@@ -155,14 +155,21 @@
                     </div>
                 @endif
 
-                @if ($order->tracking_url)
+                @if ($order->tracking_number || $order->tracking_url)
                     <div class="details-info-list mt-3">
                         <h6 class="mb-3">@lang('Track Order')</h6>
-                        <p class="mb-0">
-                            <a href="{{ $order->tracking_url }}" target="_blank" rel="noopener noreferrer" class="btn btn--primary btn-sm">
-                                <i class="las la-external-link-alt"></i> @lang('Track your order')
-                            </a>
-                        </p>
+                        @if ($order->tracking_number)
+                            <p class="mb-2">
+                                <strong>@lang('Tracking Number'):</strong> {{ $order->tracking_number }}
+                            </p>
+                        @endif
+                        @if ($order->tracking_url)
+                            <p class="mb-0">
+                                <a href="{{ $order->tracking_url }}" target="_blank" rel="noopener noreferrer" class="btn btn--primary btn-sm">
+                                    <i class="las la-external-link-alt"></i> @lang('Track your order')
+                                </a>
+                            </p>
+                        @endif
                     </div>
                 @endif
             </div>

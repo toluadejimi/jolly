@@ -24,6 +24,10 @@
                                 <strong>@lang('Estimated delivery'):</strong>
                                 <span id="tracking-estimated-delivery-value"></span>
                             </div>
+                            <div id="tracking-number-wrap" class="mb-2 d-none">
+                                <strong>@lang('Tracking Number'):</strong>
+                                <span id="tracking-number-value"></span>
+                            </div>
                             <div id="tracking-url-wrap" class="d-none">
                                 <a id="tracking-url-link" href="#" target="_blank" rel="noopener noreferrer" class="btn btn--primary btn-sm">
                                     <i class="las la-external-link-alt"></i> @lang('Track your order')
@@ -91,6 +95,7 @@
                 $.get(`{{ route('track.order', '') }}/${orderNumber}`, function(response) {
                     var $info = $('#order-tracking-info');
                     $('#tracking-estimated-delivery').addClass('d-none');
+                    $('#tracking-number-wrap').addClass('d-none');
                     $('#tracking-url-wrap').addClass('d-none');
 
                     if (response.success) {
@@ -98,6 +103,10 @@
                         if (response.estimated_delivery_at) {
                             $('#tracking-estimated-delivery-value').text(response.estimated_delivery_at);
                             $('#tracking-estimated-delivery').removeClass('d-none');
+                        }
+                        if (response.tracking_number) {
+                            $('#tracking-number-value').text(response.tracking_number);
+                            $('#tracking-number-wrap').removeClass('d-none');
                         }
                         if (response.tracking_url) {
                             $('#tracking-url-link').attr('href', response.tracking_url);

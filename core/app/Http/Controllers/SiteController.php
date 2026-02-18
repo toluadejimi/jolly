@@ -296,6 +296,7 @@ class SiteController extends Controller {
         }
 
         $payload['tracking_url'] = $orderData->tracking_url ?: null;
+        $payload['tracking_number'] = $orderData->tracking_number ?: null;
 
         return response()->json($payload);
     }
