@@ -85,7 +85,6 @@ class CheckoutController extends Controller
             'state'    => 'required|string|max:255',
             'zip'      => 'required|string|max:40',
             'country'  => 'required|string|max:255',
-            'mobile'   => 'required|string|max:40',
         ], [
             'firstname.required' => 'Receiver first name is required.',
             'lastname.required'  => 'Receiver last name is required.',
