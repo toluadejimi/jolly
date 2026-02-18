@@ -12,9 +12,14 @@ class ProductItem {
     this.brand,
     this.imageUrl,
     this.thumbUrl,
+    this.badge,
   });
 
   factory ProductItem.fromJson(Map<String, dynamic> json) {
+    final badgeRaw = json['badge'] ?? json['product_badge'] ?? json['tag'];
+    final badge = badgeRaw is String && badgeRaw.trim().isNotEmpty
+        ? badgeRaw.trim()
+        : null;
     return ProductItem(
       id: json['id'] as int,
       name: json['name'] as String,
@@ -30,6 +35,7 @@ class ProductItem {
           : null,
       imageUrl: json['image_url'] as String?,
       thumbUrl: json['thumb_url'] as String?,
+      badge: badge,
     );
   }
 
@@ -45,6 +51,7 @@ class ProductItem {
   final ProductBrand? brand;
   final String? imageUrl;
   final String? thumbUrl;
+  final String? badge;
 
   String get displayPrice => salePrice < regularPrice
       ? '$currency $salePrice'

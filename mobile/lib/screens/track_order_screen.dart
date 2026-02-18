@@ -6,7 +6,9 @@ import '../models/order_tracking.dart';
 import '../services/api_service.dart';
 
 class TrackOrderScreen extends StatefulWidget {
-  const TrackOrderScreen({super.key});
+  const TrackOrderScreen({super.key, this.orderNumber});
+
+  final String? orderNumber;
 
   @override
   State<TrackOrderScreen> createState() => _TrackOrderScreenState();
@@ -16,6 +18,15 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
   final _controller = TextEditingController();
   OrderTrackingResult? _result;
   bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.orderNumber != null && widget.orderNumber!.isNotEmpty) {
+      _controller.text = widget.orderNumber!;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _track());
+    }
+  }
 
   @override
   void dispose() {

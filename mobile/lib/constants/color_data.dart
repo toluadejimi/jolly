@@ -1,13 +1,15 @@
 // ignore: file_names
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 
-Color primaryColor = "#146C62".toColor();
-Color backgroundColor = "#F9F9F9".toColor();
-Color fontBlack = "#000000".toColor();
-Color greyFont = "#616161".toColor();
-Color cardColor = Colors.white;
+// Neon orange primary. Prefer Theme.of(context).colorScheme.primary in new code.
+Color primaryColor = AppTheme.neonOrange;
+// Light mode defaults (for static/legacy use; dark mode should use theme)
+Color backgroundColor = const Color(0xFFF8F9FB);
+Color fontBlack = const Color(0xFF111111);
+Color greyFont = const Color(0xFF555555);
+Color cardColor = const Color(0xFFF8F9FB);
 Color shadowColor = Colors.black12;
-
 
 extension ColorExtension on String {
   toColor() {

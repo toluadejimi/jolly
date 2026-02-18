@@ -27,7 +27,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreen extends State<HomeScreen> {
   int currentPos = 0;
-  final Color _activeColor = primaryColor;
   final Color _inactiveColor = Colors.transparent;
 
   List<Widget> listImages = [
@@ -49,6 +48,8 @@ class _HomeScreen extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     double screenHeight = SizeConfig.safeBlockVertical! * 100;
     double bottomHeight = Constant.getPercentSize(screenHeight, 8.5);
     double iconHeight = Constant.getPercentSize(bottomHeight, 28);
@@ -57,8 +58,9 @@ class _HomeScreen extends State<HomeScreen> {
           body: listImages[currentPos],
           bottomNavigationBar: CustomAnimatedBottomBar(
             containerHeight: bottomHeight,
-            backgroundColor: backgroundColor,
+            backgroundColor: theme.scaffoldBackgroundColor,
             selectedIndex: currentPos,
+            isDark: isDark,
             showElevation: true,
             itemCornerRadius: 24,
             curve: Curves.easeIn,
@@ -67,7 +69,7 @@ class _HomeScreen extends State<HomeScreen> {
             items: <BottomNavyBarItem>[
               BottomNavyBarItem(
                 title: 'Home',
-                activeColor: _activeColor,
+                activeColor: theme.colorScheme.primary,
                 inactiveColor: _inactiveColor,
                 textAlign: TextAlign.center,
                 iconSize: iconHeight,
@@ -76,7 +78,7 @@ class _HomeScreen extends State<HomeScreen> {
 
               BottomNavyBarItem(
                 title: 'Search',
-                activeColor: _activeColor,
+                activeColor: theme.colorScheme.primary,
                 inactiveColor: _inactiveColor,
                 textAlign: TextAlign.center,
                 iconSize: iconHeight,
@@ -94,7 +96,7 @@ class _HomeScreen extends State<HomeScreen> {
 
               BottomNavyBarItem(
                 title: 'Cart',
-                activeColor: _activeColor,
+                activeColor: theme.colorScheme.primary,
                 inactiveColor: _inactiveColor,
                 textAlign: TextAlign.center,
                 iconSize: iconHeight,
@@ -103,7 +105,7 @@ class _HomeScreen extends State<HomeScreen> {
 
               BottomNavyBarItem(
                 title: 'All Pets',
-                activeColor: _activeColor,
+                activeColor: theme.colorScheme.primary,
                 inactiveColor: _inactiveColor,
                 textAlign: TextAlign.center,
                 iconSize: iconHeight,

@@ -15,12 +15,13 @@ class CustomAnimatedBottomBar extends StatelessWidget {
       this.backgroundColor,
       this.itemCornerRadius = 50,
       this.containerHeight = 56,
-      this.animationDuration = const Duration(milliseconds: 270),
+      this.animationDuration = const Duration(milliseconds: 300),
       this.mainAxisAlignment = MainAxisAlignment.spaceBetween,
       required this.items,
       required this.onItemSelected,
-      this.curve = Curves.linear,
-      this.totalItemCount = 1})
+      this.curve = Curves.easeInOut,
+      this.totalItemCount = 1,
+      this.isDark = false})
       : assert(items.length >= 2 && items.length <= 5),
         super(key: key);
 
@@ -35,6 +36,7 @@ class CustomAnimatedBottomBar extends StatelessWidget {
   final double itemCornerRadius;
   final double containerHeight;
   final Curve curve;
+  final bool isDark;
   int totalItemCount;
 
   @override
@@ -73,6 +75,7 @@ class CustomAnimatedBottomBar extends StatelessWidget {
                   animationDuration: animationDuration,
                   curve: curve,
                   totalItem: totalItemCount,
+                  isDark: isDark,
                 ),
               );
             }).toList(),
@@ -93,6 +96,7 @@ class _ItemWidget extends StatelessWidget {
   final Duration animationDuration;
   final Curve curve;
   final int totalItem;
+  final bool isDark;
 
   const _ItemWidget({
     Key? key,
@@ -105,6 +109,7 @@ class _ItemWidget extends StatelessWidget {
     required this.iconSize,
     required this.totalItem,
     this.curve = Curves.linear,
+    this.isDark = false,
   }) : super(key: key);
 
   @override
@@ -134,28 +139,52 @@ class _ItemWidget extends StatelessWidget {
                 Container(
                   width: Constant.getPercentSize(containerSize, 80),
                   height: Constant.getPercentSize(containerSize, 80),
-                  // width: Constant.getPercentSize(width, 39),
                   decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      if (isSelected && isDark)
                         BoxShadow(
-                            color: isSelected
-                                ? shadowColor.withOpacity(0.06)
-                                // ? primaryColor.withOpacity(0.1)
-                                : Colors.transparent,
-                            blurRadius: 3,
-                            spreadRadius: 2,
-                            offset: const Offset(0, 6))
-                      ],
-                      color:
-                          isSelected ? item.activeColor : Colors.transparent),
+                          color: item.activeColor.withOpacity(0.45),
+                          blurRadius: 10,
+                          spreadRadius: 1,
+                        ),
+                      if (isSelected && !isDark)
+                        BoxShadow(
+                          color: shadowColor.withOpacity(0.08),
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                          offset: const Offset(0, 2),
+                        ),
+                    ],
+                    color: isSelected ? item.activeColor : Colors.transparent,
+                  ),
                   child: Center(
-                      child: SvgPicture.asset(
-                    Constant.assetImagePath + item.imageName!,
-                    color: isSelected ? Colors.white : null,
-                    height: (item.iconSize! * 1.2),
-                  )),
+                    child: SvgPicture.asset(
+                      Constant.assetImagePath + item.imageName!,
+                      colorFilter: isSelected
+                          ? ColorFilter.mode(
+                              isDark ? Colors.black : Colors.white,
+                              BlendMode.srcIn,
+                            )
+                          : null,
+                      height: (item.iconSize! * 1.2),
+                    ),
+                  ),
                 ),
+                if (item.title != null && item.title!.isNotEmpty) ...[
+                  SizedBox(height: Constant.getPercentSize(containerSize, 8)),
+                  Text(
+                    item.title!,
+                    style: TextStyle(
+                      fontSize: Constant.getPercentSize(containerSize, 22),
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      color: isSelected ? item.activeColor : Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ],
             ),
           ),

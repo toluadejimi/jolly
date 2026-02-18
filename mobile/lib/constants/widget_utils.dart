@@ -121,31 +121,35 @@ Widget getCustomText(String text, Color color, int maxLine, TextAlign textAlign,
 }
 
 Widget getLeadingIcon(BuildContext context, Function function) {
+  final theme = Theme.of(context);
   double toolbarHeight = Constant.getHeightPercentSize(4);
-  // double toolbarHeight = Constant.getToolbarHeight(context);
   return InkWell(
-      onTap: () {
-        function();
-      },
-      child: SvgPicture.asset(
-        Constant.assetImagePath + "back.svg",
-        height: toolbarHeight,
-        // height: Constant.getPercentSize(toolbarHeight, 30),
-        fit: BoxFit.cover,
-        width: toolbarHeight,
-      )
-
-      );
+    onTap: () => function(),
+    child: SvgPicture.asset(
+      Constant.assetImagePath + "back.svg",
+      height: toolbarHeight,
+      fit: BoxFit.cover,
+      width: toolbarHeight,
+      colorFilter: ColorFilter.mode(
+        theme.colorScheme.onPrimary,
+        BlendMode.srcIn,
+      ),
+    ),
+  );
 }
 
 Widget getEmptyWidget(String image, String title, String description,
     String btnTxt, Function function,
-    {bool withButton = true}) {
+    {bool withButton = true, BuildContext? context}) {
+  final theme = context != null ? Theme.of(context) : null;
+  final bgColor = theme?.scaffoldBackgroundColor ?? backgroundColor;
+  final textColor = theme?.colorScheme.onSurface ?? fontBlack;
+  final primary = theme?.colorScheme.primary ?? primaryColor;
   double screenHeight = SizeConfig.safeBlockVertical! * 100;
   double width = Constant.getWidthPercentSize(45);
   double height = Constant.getPercentSize(screenHeight, 8.2);
   return Container(
-    color: backgroundColor,
+    color: bgColor,
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -154,12 +158,12 @@ Widget getEmptyWidget(String image, String title, String description,
         SizedBox(
           height: Constant.getPercentSize(screenHeight, 3.2),
         ),
-        getCustomTextWithoutMaxLine(title, fontBlack, TextAlign.center,
+        getCustomTextWithoutMaxLine(title, textColor, TextAlign.center,
             FontWeight.bold, Constant.getPercentSize(screenHeight, 3.4)),
         getSpace(Constant.getPercentSize(screenHeight, 1.2)),
         getCustomTextWithoutMaxLine(
           description,
-          fontBlack,
+          theme?.colorScheme.onSurfaceVariant ?? greyFont,
           TextAlign.center,
           FontWeight.w400,
           Constant.getPercentSize(screenHeight, 2.4),
@@ -167,20 +171,16 @@ Widget getEmptyWidget(String image, String title, String description,
         getSpace(Constant.getPercentSize(screenHeight, 3)),
         (withButton)
             ? InkWell(
-                onTap: () {
-                  function();
-
-                },
+                onTap: () => function(),
                 child: Container(
                     margin: EdgeInsets.only(
                         top: Constant.getPercentSize(height, 4)),
                     width: width,
                     height: height,
                     decoration: ShapeDecoration(
-                      color: Colors.white,
-
+                      color: theme?.cardTheme.color ?? cardColor,
                       shape: SmoothRectangleBorder(
-                        side: BorderSide(color: primaryColor, width: 1.5),
+                        side: BorderSide(color: primary, width: 1.5),
                         borderRadius: SmoothBorderRadius(
                           cornerRadius: Constant.getPercentSize(height, 25),
                           cornerSmoothing: 0.8,
@@ -190,10 +190,10 @@ Widget getEmptyWidget(String image, String title, String description,
                     child: Center(
                       child: getCustomTextWithoutMaxLine(
                           btnTxt,
-                          primaryColor,
+                          primary,
                           TextAlign.center,
                           FontWeight.w700,
-                          Constant.getPercentSize(width,9)),
+                          Constant.getPercentSize(width, 9)),
                     )),
               )
             : getSpace(0)
@@ -291,13 +291,15 @@ Widget getDefaultTextFiledWithoutIconWidget(
   );
 }
 
-Widget getSettingRow(String image, String title, Function function) {
+Widget getSettingRow(String image, String title, Function function,
+    {BuildContext? context}) {
+  final theme = context != null ? Theme.of(context) : null;
+  final textColor = theme?.colorScheme.onSurface ?? fontBlack;
+  final primary = theme?.colorScheme.primary ?? primaryColor;
   double iconSize = Constant.getHeightPercentSize(5);
   double subIconSize = Constant.getPercentSize(iconSize, 54);
   return InkWell(
-    onTap: () {
-      function();
-    },
+    onTap: () => function(),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -306,7 +308,7 @@ Widget getSettingRow(String image, String title, Function function) {
           width: iconSize,
           height: iconSize,
           decoration: getButtonShapeDecoration(
-            primaryColor.withOpacity(0.070),
+            primary.withOpacity(0.12),
             corner: Constant.getPercentSize(iconSize, 25),
             withCustomCorner: true,
           ),
@@ -316,7 +318,7 @@ Widget getSettingRow(String image, String title, Function function) {
         ),
         getHorSpace(Constant.getPercentSize(getAppBarPadding(), 75)),
         Expanded(
-          child: getCustomText(title, fontBlack, 1, TextAlign.start,
+          child: getCustomText(title, textColor, 1, TextAlign.start,
               FontWeight.w600, Constant.getPercentSize(iconSize, 45)),
           flex: 1,
         ),
@@ -332,11 +334,12 @@ Widget getDefaultHeader(BuildContext context, String title, Function function,
     Function? filterFun,
     bool isShowBack = true,
     bool isShowSearch = true}) {
+  final theme = Theme.of(context);
   double size = Constant.getHeightPercentSize(6);
   double appbarPadding = getAppBarPadding();
   double toolbarHeight = Constant.getToolbarHeight(context);
   return Container(
-    color: primaryColor,
+    color: theme.colorScheme.primary,
     child: Column(
       children: [
         Container(
@@ -355,8 +358,14 @@ Widget getDefaultHeader(BuildContext context, String title, Function function,
                 visible: isShowBack,
               ),
               Center(
-                child: getCustomText(title, Colors.white, 1, TextAlign.center,
-                    FontWeight.bold, Constant.getPercentSize(size, 50)),
+                child: getCustomText(
+                  title,
+                  theme.colorScheme.onPrimary,
+                  1,
+                  TextAlign.center,
+                  FontWeight.bold,
+                  Constant.getPercentSize(size, 50),
+                ),
               )
               // Image.asset(Constant.assetImagePath + "back11.png",
               //     height: Constant.getPercentSize(toolbarHeight, 90),
@@ -379,7 +388,7 @@ Widget getDefaultHeader(BuildContext context, String title, Function function,
                 padding: EdgeInsets.symmetric(
                     horizontal: Constant.getWidthPercentSize(3)),
                 decoration: ShapeDecoration(
-                    color: Colors.white,
+                    color: theme.colorScheme.surface,
                     shape: SmoothRectangleBorder(
                         borderRadius: SmoothBorderRadius(
                             cornerRadius: getCorners(),
@@ -400,18 +409,15 @@ Widget getDefaultHeader(BuildContext context, String title, Function function,
                                 fontFamily: Constant.fontsFamily,
                                 fontSize: getEdtTextSize(),
                                 fontWeight: FontWeight.w400,
-                                color: Colors.black54)),
+                                color: theme.colorScheme.onSurfaceVariant)),
                         style: TextStyle(
                             fontFamily: Constant.fontsFamily,
                             fontSize: getEdtTextSize(),
                             fontWeight: FontWeight.w400,
-                            color: Colors.black),
+                            color: theme.colorScheme.onSurface),
                         textAlign: TextAlign.start,
                         maxLines: 1,
                       ),
-
-                      // getCustomText("Search...", Colors.black54, 1,
-                      //     TextAlign.start, FontWeight.w400, getEdtTextSize()),
                       flex: 1,
                     ),
                     (withFilter)

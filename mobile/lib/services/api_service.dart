@@ -4,10 +4,12 @@ import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
 import '../models/category.dart';
+import '../models/checkout_models.dart';
 import '../models/order_tracking.dart';
 import '../models/product.dart';
 import '../models/slider.dart';
 import '../models/api_response.dart';
+import '../models/cart_item.dart';
 
 class ApiService {
   ApiService({String? apiKey}) : _apiKey = apiKey ?? ApiConfig.apiKey;
@@ -96,6 +98,120 @@ class ApiService {
     return ApiResponse.success(
       list.map((e) => SliderItem.fromJson(e as Map<String, dynamic>)).toList(),
     );
+  }
+
+  /// GET /api/shipping-methods (requires API key)
+  Future<ApiResponse<List<ShippingMethodItem>>> getShippingMethods() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/shipping-methods'),
+      headers: _authHeaders,
+    );
+    return _parseListResponse(res, 'shipping_methods', ShippingMethodItem.fromJson);
+  }
+
+  /// GET /api/payment-methods (requires API key)
+  Future<ApiResponse<List<PaymentMethodItem>>> getPaymentMethods() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/payment-methods'),
+      headers: _authHeaders,
+    );
+    return _parseListResponse(res, 'payment_methods', PaymentMethodItem.fromJson);
+  }
+
+  /// POST /api/orders (requires API key). Creates order from cart items.
+  Future<ApiResponse<CreateOrderResult>> createOrder({
+    required List<CartItem> items,
+    required ShippingAddressInput shippingAddress,
+    required int shippingMethodId,
+    String? couponCode,
+  }) async {
+    final body = <String, dynamic>{
+      'items': items.map((i) => {
+            'product_id': i.productId,
+            'quantity': i.quantity,
+            if (i.variantId != null) 'product_variant_id': i.variantId,
+          }).toList(),
+      'shipping_address': shippingAddress.toJson(),
+      'shipping_method_id': shippingMethodId,
+      if (couponCode != null && couponCode.isNotEmpty) 'coupon_code': couponCode,
+    };
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/orders'),
+      headers: _authHeaders,
+      body: jsonEncode(body),
+    );
+    return _parseCreateOrder(res);
+  }
+
+  /// POST /api/payment/initiate (requires API key). Returns payment_url to open in browser.
+  Future<ApiResponse<PaymentInitiateResult>> initiatePayment({
+    required int orderId,
+    required dynamic gateway,
+    String? currency,
+  }) async {
+    final body = <String, dynamic>{
+      'order_id': orderId,
+      'gateway': gateway is int ? gateway : gateway.toString(),
+      if (currency != null) 'currency': currency,
+    };
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/payment/initiate'),
+      headers: _authHeaders,
+      body: jsonEncode(body),
+    );
+    return _parsePaymentInitiate(res);
+  }
+
+  static ApiResponse<List<T>> _parseListResponse<T>(
+    http.Response res,
+    String dataKey,
+    T Function(Map<String, dynamic>) fromJson,
+  ) {
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if (res.statusCode == 401) {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'API key required for checkout.');
+    }
+    if ((body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Request failed');
+    }
+    final data = body['data'] as Map<String, dynamic>?;
+    final list = (data?[dataKey] as List<dynamic>?) ?? [];
+    return ApiResponse.success(
+      list.map((e) => fromJson(e as Map<String, dynamic>)).toList(),
+    );
+  }
+
+  static ApiResponse<CreateOrderResult> _parseCreateOrder(http.Response res) {
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if (res.statusCode == 401) {
+      return ApiResponse.error('API key required for checkout.');
+    }
+    if (res.statusCode == 422 || (body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Failed to create order');
+    }
+    return ApiResponse.success(CreateOrderResult.fromJson(body));
+  }
+
+  static ApiResponse<PaymentInitiateResult> _parsePaymentInitiate(http.Response res) {
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if (res.statusCode == 401) {
+      return ApiResponse.error('API key required for checkout.');
+    }
+    if (res.statusCode != 200 || (body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Payment initiation failed');
+    }
+    return ApiResponse.success(PaymentInitiateResult.fromJson(body));
   }
 
   /// GET /api/order-tracking/{orderNumber} (no auth)
