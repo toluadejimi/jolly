@@ -9,6 +9,7 @@ class CartItem {
     this.imageUrl,
     this.currency = '',
     this.quantity = 1,
+    this.countryFilter,
     this.hasCustomerPhoto = false,
     this.hasCustomisedTest = false,
     this.hasCustomisedShortTest = false,
@@ -22,6 +23,8 @@ class CartItem {
   final String? imageUrl;
   final String currency;
   int quantity;
+  /// 'usa_only', 'usa_canada', or null/'all' for receiver country dropdown.
+  final String? countryFilter;
   final bool hasCustomerPhoto;
   final bool hasCustomisedTest;
   final bool hasCustomisedShortTest;
@@ -39,6 +42,7 @@ class CartItem {
       imageUrl: imageUrl,
       currency: currency,
       quantity: quantity ?? this.quantity,
+      countryFilter: countryFilter,
       hasCustomerPhoto: hasCustomerPhoto,
       hasCustomisedTest: hasCustomisedTest,
       hasCustomisedShortTest: hasCustomisedShortTest,

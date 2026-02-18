@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../config/api_config.dart';
 import '../data/checkout_data.dart';
+import '../models/cart_item.dart';
 import '../models/checkout_models.dart';
 import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
@@ -123,8 +124,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _loadCountryData();
   }
 
+  /// Effective country filter from cart: usa_only > usa_canada > all.
+  static String? _effectiveCountryFilter(List<CartItem> items) {
+    if (items.isEmpty) return null;
+    if (items.any((i) => i.countryFilter == 'usa_only')) return 'usa_only';
+    if (items.any((i) => i.countryFilter == 'usa_canada')) return 'usa_canada';
+    return null;
+  }
+
   Future<void> _loadCountryData() async {
-    final list = await CheckoutData.getCountries();
+    final filter = _effectiveCountryFilter(context.read<CartProvider>().items);
+    final list = await CheckoutData.getCountriesFiltered(filter);
     if (!mounted) return;
     setState(() => _countries = list);
     _applyRouteArguments();

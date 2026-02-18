@@ -34,6 +34,19 @@ class CheckoutData {
     return _countries!;
   }
 
+  /// Returns countries filtered by product category rule.
+  /// [countryFilter] 'usa_only' = US only; 'usa_canada' = US + Canada; null or 'all' = all countries.
+  static Future<List<CountryEntry>> getCountriesFiltered(String? countryFilter) async {
+    final all = await getCountries();
+    if (countryFilter == 'usa_only') {
+      return all.where((c) => c.code == 'US').toList();
+    }
+    if (countryFilter == 'usa_canada') {
+      return all.where((c) => c.code == 'US' || c.code == 'CA').toList();
+    }
+    return all;
+  }
+
   static Future<List<StateEntry>> getUsStates() async {
     if (_usStates != null) return _usStates!['']!;
     final str = await rootBundle.loadString('assets/data/usastates.json');

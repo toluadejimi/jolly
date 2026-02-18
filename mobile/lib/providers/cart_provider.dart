@@ -25,6 +25,7 @@ class CartProvider extends ChangeNotifier {
         imageUrl: item.imageUrl,
         currency: item.currency,
         quantity: item.quantity,
+        countryFilter: item.countryFilter,
         hasCustomerPhoto: item.hasCustomerPhoto,
         hasCustomisedTest: item.hasCustomisedTest,
         hasCustomisedShortTest: item.hasCustomisedShortTest,

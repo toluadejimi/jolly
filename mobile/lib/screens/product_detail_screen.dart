@@ -389,6 +389,7 @@ class _ProductDetailBodyState extends State<_ProductDetailBody> {
                                   imageUrl: selectedVariant?.imageUrl ?? product.thumbUrl ?? product.imageUrl,
                                   currency: product.currency,
                                   quantity: quantity,
+                                  countryFilter: product.countryFilter,
                                   hasCustomerPhoto: product.customerPhoto,
                                   hasCustomisedTest: product.customisedTest,
                                   hasCustomisedShortTest: product.customisedShortTest,
@@ -737,7 +738,7 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
   @override
   void initState() {
     super.initState();
-    CheckoutData.getCountries().then((list) {
+    CheckoutData.getCountriesFiltered(widget.product.countryFilter).then((list) {
       if (mounted) setState(() => _countries = list);
     });
   }
@@ -896,6 +897,7 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
           widget.product.imageUrl,
       currency: widget.product.currency,
       quantity: widget.quantity,
+      countryFilter: widget.product.countryFilter,
       hasCustomerPhoto: widget.product.customerPhoto,
       hasCustomisedTest: widget.product.customisedTest,
       hasCustomisedShortTest: widget.product.customisedShortTest,

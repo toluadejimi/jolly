@@ -189,38 +189,32 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                // Tracking link – show link if URL present, else label
-                if (r.trackingUrl != null && r.trackingUrl!.isNotEmpty)
-                  InkWell(
-                    onTap: () async {
-                      final uri = Uri.tryParse(r.trackingUrl!);
-                      if (uri != null && await canLaunchUrl(uri)) {
-                        await launchUrl(uri, mode: LaunchMode.externalApplication);
-                      }
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(Icons.open_in_new, size: 18, color: theme.colorScheme.primary),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: RichText(
-                              text: TextSpan(
-                                style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface),
-                                children: [
-                                  TextSpan(text: 'Tracking: ', style: TextStyle(fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
-                                  TextSpan(text: r.trackingUrl!, style: TextStyle(color: theme.colorScheme.primary, decoration: TextDecoration.underline)),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                // Tracking – show URL text and a button when URL present
+                if (r.trackingUrl != null && r.trackingUrl!.isNotEmpty) ...[
+                  RichText(
+                    text: TextSpan(
+                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface),
+                      children: [
+                        TextSpan(text: 'Tracking: ', style: TextStyle(fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                        TextSpan(text: r.trackingUrl!, style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
+                      ],
                     ),
-                  )
-                else
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () async {
+                        final uri = Uri.tryParse(r.trackingUrl!);
+                        if (uri != null && await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      },
+                      icon: const Icon(Icons.open_in_new, size: 20),
+                      label: const Text('Track your order'),
+                    ),
+                  ),
+                ] else
                   RichText(
                     text: TextSpan(
                       style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface),

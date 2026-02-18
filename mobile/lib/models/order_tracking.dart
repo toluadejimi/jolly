@@ -32,12 +32,12 @@ class OrderTrackingResult {
       }
     }
     return OrderTrackingResult(
-      success: json['success'] as bool? ?? false,
+      success: _boolFromJson(json['success']) ?? false,
       error: json['error'] as String?,
       orderNumber: json['order_number'] as String?,
       paymentStatus: json['payment_status'],
       status: statusInt,
-      isCod: json['is_cod'] as bool?,
+      isCod: _boolFromJson(json['is_cod']),
       estimatedDeliveryAt: _stringFromJson(json['estimated_delivery_at']),
       trackingUrl: _stringFromJson(json['tracking_url']),
       trackingNumber: _stringFromJson(json['tracking_number']),
@@ -63,4 +63,12 @@ String? _stringFromJson(dynamic value) {
   if (value == null) return null;
   if (value is String) return value.isEmpty ? null : value;
   return value.toString();
+}
+
+bool? _boolFromJson(dynamic value) {
+  if (value == null) return null;
+  if (value is bool) return value;
+  if (value is int) return value != 0;
+  if (value is num) return value.toInt() != 0;
+  return null;
 }

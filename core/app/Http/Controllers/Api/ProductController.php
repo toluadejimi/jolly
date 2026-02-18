@@ -13,7 +13,7 @@ class ProductController extends Controller
     {
         $query = Product::query()
             ->published()
-            ->with(['brand:id,name,slug', 'displayImage'])
+            ->with(['brand:id,name,slug', 'displayImage', 'categories'])
             ->withCount('productVariants')
             ->when($request->has('category_id'), fn ($q) => $q->whereHas('categories', fn ($c) => $c->where('category_id', $request->category_id)))
             ->when($request->has('brand_id'), fn ($q) => $q->where('brand_id', $request->brand_id))
@@ -26,6 +26,7 @@ class ProductController extends Controller
             $prices = $product->prices(null);
             return [
                 'id' => $product->id,
+                'country_filter' => self::countryFilterFromProduct($product),
                 'name' => $product->name,
                 'slug' => $product->slug,
                 'sku' => $product->sku,
@@ -72,6 +73,7 @@ class ProductController extends Controller
                 'brand:id,name,slug',
                 'displayImage',
                 'galleryImages',
+                'categories',
                 'productVariants' => fn ($q) => $q->published()->with(['displayImage', 'galleryImages']),
             ])
             ->find($id);
@@ -160,9 +162,29 @@ class ProductController extends Controller
                     'customised_test' => (int) ($product->customised_test ?? 0),
                     'customised_short_test' => (string) ($product->customised_short_test ?? '0'),
                     'note' => (int) ($product->note ?? 0),
+                    'country_filter' => self::countryFilterFromProduct($product),
                     'variants' => $variantsPayload,
                 ],
             ],
         ]);
+    }
+
+    /**
+     * Country filter for checkout/receiver form: usa_only (US only), usa_canada (US+CA), or all.
+     * Matches web product_details and CheckoutController (category IDs 4,5,7,9,11 = USA; 6 = USA+Canada).
+     */
+    private static function countryFilterFromProduct(Product $product): string
+    {
+        if ($product->categories->isEmpty()) {
+            return 'all';
+        }
+        $categoryId = (int) $product->categories->first()->pivot->category_id;
+        if (in_array($categoryId, [4, 5, 7, 9, 11], true)) {
+            return 'usa_only';
+        }
+        if ($categoryId === 6) {
+            return 'usa_canada';
+        }
+        return 'all';
     }
 }

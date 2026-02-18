@@ -18,6 +18,7 @@ class ProductItem {
     this.usaExpressDelivery = false,
     this.usaDelivery = false,
     this.allCountriesDelivery = false,
+    this.countryFilter,
     this.customerPhoto = false,
     this.customisedTest = false,
     this.customisedShortTest = false,
@@ -51,6 +52,7 @@ class ProductItem {
       usaExpressDelivery: json['usa_express_delivery'] as bool? ?? false,
       usaDelivery: json['usa_delivery'] as bool? ?? false,
       allCountriesDelivery: json['all_countries_delivery'] as bool? ?? false,
+      countryFilter: json['country_filter'] as String?,
       customerPhoto: ProductDetail._parseBool(json['customer_photo']),
       customisedTest: ProductDetail._parseBool(json['customised_test']),
       customisedShortTest: ProductDetail._parseBool(json['customised_short_test']),
@@ -76,6 +78,8 @@ class ProductItem {
   final bool usaExpressDelivery;
   final bool usaDelivery;
   final bool allCountriesDelivery;
+  /// 'usa_only', 'usa_canada', or null/'all' for country dropdown filter.
+  final String? countryFilter;
   final bool customerPhoto;
   final bool customisedTest;
   final bool customisedShortTest;
@@ -180,6 +184,7 @@ class ProductDetail {
     this.usaExpressDelivery = false,
     this.usaDelivery = false,
     this.allCountriesDelivery = false,
+    this.countryFilter,
     this.customerPhoto = false,
     this.customisedTest = false,
     this.customisedShortTest = false,
@@ -218,6 +223,7 @@ class ProductDetail {
       usaExpressDelivery: json['usa_express_delivery'] as bool? ?? false,
       usaDelivery: json['usa_delivery'] as bool? ?? false,
       allCountriesDelivery: json['all_countries_delivery'] as bool? ?? false,
+      countryFilter: json['country_filter'] as String?,
       customerPhoto: _parseBool(json['customer_photo']),
       customisedTest: _parseBool(json['customised_test']),
       customisedShortTest: _parseBool(json['customised_short_test']),
@@ -253,6 +259,8 @@ class ProductDetail {
   final bool usaExpressDelivery;
   final bool usaDelivery;
   final bool allCountriesDelivery;
+  /// 'usa_only', 'usa_canada', or null/'all' for country dropdown filter.
+  final String? countryFilter;
   final bool customerPhoto;
   final bool customisedTest;
   final bool customisedShortTest;
