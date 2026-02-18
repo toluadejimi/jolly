@@ -149,8 +149,11 @@
                         <h6 class="mb-3">@lang('Estimated Delivery')</h6>
                         <p class="mb-0 text--primary fw-semibold">
                             <i class="las la-clock"></i>
-                            {{ $order->estimated_delivery_at->format('l, F j, Y') }}
-                            {{ $order->estimated_delivery_at->format('g:i A') }}
+                            @if ($order->estimated_delivery_end_at && $order->estimated_delivery_end_at->format('Y-m-d') != $order->estimated_delivery_at->format('Y-m-d'))
+                                {{ $order->estimated_delivery_at->format('M j, Y') }} – {{ $order->estimated_delivery_end_at->format('M j, Y') }}
+                            @else
+                                {{ $order->estimated_delivery_at->format('l, F j, Y') }}
+                            @endif
                         </p>
                     </div>
                 @endif

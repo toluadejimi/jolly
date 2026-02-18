@@ -290,7 +290,11 @@ class SiteController extends Controller {
         ];
 
         if ($orderData->estimated_delivery_at) {
-            $payload['estimated_delivery_at'] = $orderData->estimated_delivery_at->format('l, F j, Y \a\t g:i A');
+            if ($orderData->estimated_delivery_end_at && $orderData->estimated_delivery_end_at->format('Y-m-d') != $orderData->estimated_delivery_at->format('Y-m-d')) {
+                $payload['estimated_delivery_at'] = $orderData->estimated_delivery_at->format('M j, Y') . ' – ' . $orderData->estimated_delivery_end_at->format('M j, Y');
+            } else {
+                $payload['estimated_delivery_at'] = $orderData->estimated_delivery_at->format('l, F j, Y');
+            }
         } else {
             $payload['estimated_delivery_at'] = null;
         }

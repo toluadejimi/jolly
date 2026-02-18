@@ -291,12 +291,19 @@ class OrderController extends Controller
 
         $request->validate([
             'estimated_delivery_date' => 'nullable|date|after_or_equal:today',
+            'estimated_delivery_end_date' => 'nullable|date|after_or_equal:estimated_delivery_date',
             'tracking_number' => 'nullable|string|max:100',
             'tracking_url' => 'nullable|string|url|max:500',
         ]);
 
         if ($request->filled('estimated_delivery_date')) {
             $order->estimated_delivery_at = $request->estimated_delivery_date . ' 12:00:00';
+            $order->estimated_delivery_end_at = $request->filled('estimated_delivery_end_date')
+                ? $request->estimated_delivery_end_date . ' 23:59:59'
+                : null;
+        } else {
+            $order->estimated_delivery_at = null;
+            $order->estimated_delivery_end_at = null;
         }
 
         $order->tracking_number = $request->tracking_number ? trim($request->tracking_number) : null;

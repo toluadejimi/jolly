@@ -12,6 +12,7 @@ class Order extends Model {
         'shipping_address' => 'object',
         'guest_user_info' => 'object',
         'estimated_delivery_at' => 'datetime',
+        'estimated_delivery_end_at' => 'datetime',
     ];
 
     public function appliedCoupon() {

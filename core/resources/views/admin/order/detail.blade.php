@@ -155,9 +155,12 @@
                             <h6 class="mb-3">@lang('Estimated Delivery & Tracking')</h6>
                             @if ($order->estimated_delivery_at)
                                 <p class="mb-2">
-                                    <strong>@lang('Date & time'):</strong>
-                                    {{ $order->estimated_delivery_at->format('l, F j, Y') }}
-                                    {{ $order->estimated_delivery_at->format('g:i A') }}
+                                    <strong>@lang('Estimated delivery'):</strong>
+                                    @if ($order->estimated_delivery_end_at && $order->estimated_delivery_end_at->format('Y-m-d') != $order->estimated_delivery_at->format('Y-m-d'))
+                                        {{ $order->estimated_delivery_at->format('M j, Y') }} – {{ $order->estimated_delivery_end_at->format('M j, Y') }}
+                                    @else
+                                        {{ $order->estimated_delivery_at->format('l, F j, Y') }}
+                                    @endif
                                 </p>
                             @endif
                             @if ($order->tracking_number)
@@ -173,9 +176,13 @@
                             @endif
                             <form action="{{ route('admin.order.estimated.delivery', $order->id) }}" method="POST" class="row g-2">
                                 @csrf
-                                <div class="col-12">
-                                    <label class="form-label">@lang('Delivery Date')</label>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">@lang('Delivery date from')</label>
                                     <input type="date" name="estimated_delivery_date" class="form-control" value="{{ $order->estimated_delivery_at ? $order->estimated_delivery_at->format('Y-m-d') : '' }}" min="{{ date('Y-m-d') }}">
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">@lang('Delivery date to')</label>
+                                    <input type="date" name="estimated_delivery_end_date" class="form-control" value="{{ $order->estimated_delivery_end_at ? $order->estimated_delivery_end_at->format('Y-m-d') : '' }}" min="{{ $order->estimated_delivery_at ? $order->estimated_delivery_at->format('Y-m-d') : date('Y-m-d') }}">
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">@lang('Tracking Number')</label>
@@ -196,9 +203,12 @@
                                 <h6 class="mb-3">@lang('Estimated Delivery & Tracking')</h6>
                                 @if ($order->estimated_delivery_at)
                                     <p class="mb-2">
-                                        <strong>@lang('Date & time'):</strong>
-                                        {{ $order->estimated_delivery_at->format('l, F j, Y') }}
-                                        {{ $order->estimated_delivery_at->format('g:i A') }}
+                                        <strong>@lang('Estimated delivery'):</strong>
+                                        @if ($order->estimated_delivery_end_at && $order->estimated_delivery_end_at->format('Y-m-d') != $order->estimated_delivery_at->format('Y-m-d'))
+                                            {{ $order->estimated_delivery_at->format('M j, Y') }} – {{ $order->estimated_delivery_end_at->format('M j, Y') }}
+                                        @else
+                                            {{ $order->estimated_delivery_at->format('l, F j, Y') }}
+                                        @endif
                                     </p>
                                 @endif
                                 @if ($order->tracking_number)
