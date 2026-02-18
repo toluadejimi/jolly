@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
+import '../models/category.dart';
 import '../models/order_tracking.dart';
 import '../models/product.dart';
+import '../models/slider.dart';
 import '../models/api_response.dart';
 
 class ApiService {
@@ -54,6 +56,46 @@ class ApiService {
       headers: _publicHeaders,
     );
     return _parseProductDetail(res);
+  }
+
+  /// GET /api/categories
+  Future<ApiResponse<List<CategoryItem>>> getCategories() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/categories'),
+      headers: _publicHeaders,
+    );
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if ((body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Request failed');
+    }
+    final data = body['data'] as Map<String, dynamic>?;
+    final list = (data?['categories'] as List<dynamic>?) ?? [];
+    return ApiResponse.success(
+      list.map((e) => CategoryItem.fromJson(e as Map<String, dynamic>)).toList(),
+    );
+  }
+
+  /// GET /api/sliders
+  Future<ApiResponse<List<SliderItem>>> getSliders() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/sliders'),
+      headers: _publicHeaders,
+    );
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if ((body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Request failed');
+    }
+    final data = body['data'] as Map<String, dynamic>?;
+    final list = (data?['sliders'] as List<dynamic>?) ?? [];
+    return ApiResponse.success(
+      list.map((e) => SliderItem.fromJson(e as Map<String, dynamic>)).toList(),
+    );
   }
 
   /// GET /api/order-tracking/{orderNumber} (no auth)

@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['throttle:60,1'])->group(function () {
+    Route::get('categories', [App\Http\Controllers\Api\CategoryController::class, 'index'])->name('categories.index');
+    Route::get('sliders', [App\Http\Controllers\Api\SliderController::class, 'index'])->name('sliders.index');
     Route::get('products', [App\Http\Controllers\Api\ProductController::class, 'index'])->name('products.index');
     Route::get('products/{id}', [App\Http\Controllers\Api\ProductController::class, 'show'])->name('products.show');
     Route::get('order-tracking/{orderNumber}', [App\Http\Controllers\Api\OrderTrackingController::class, 'show'])->name('order.tracking');

@@ -34,6 +34,8 @@ class ProductController extends Controller
                 'in_stock' => $product->in_stock ?? 0,
                 'track_inventory' => (bool) $product->track_inventory,
                 'brand' => $product->brand ? ['id' => $product->brand->id, 'name' => $product->brand->name] : null,
+                'image_url' => $product->mainImage(false),
+                'thumb_url' => $product->mainImage(true),
             ];
         });
 
@@ -83,6 +85,8 @@ class ProductController extends Controller
                     'in_stock' => $product->in_stock ?? 0,
                     'track_inventory' => (bool) $product->track_inventory,
                     'brand' => $product->brand ? ['id' => $product->brand->id, 'name' => $product->brand->name] : null,
+                    'image_url' => $product->mainImage(false),
+                    'thumb_url' => $product->mainImage(true),
                     'variants' => $product->productVariants->map(fn ($v) => [
                         'id' => $v->id,
                         'regular_price' => (float) $v->regular_price,

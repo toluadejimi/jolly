@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -6,7 +7,9 @@ import '../services/api_service.dart';
 import 'product_detail_screen.dart';
 
 class ProductListScreen extends StatefulWidget {
-  const ProductListScreen({super.key});
+  const ProductListScreen({super.key, this.categoryId});
+
+  final int? categoryId;
 
   @override
   State<ProductListScreen> createState() => _ProductListScreenState();
@@ -33,7 +36,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       _error = null;
     });
     final api = context.read<ApiService>();
-    final res = await api.getProducts(page: _page, perPage: 15);
+    final res = await api.getProducts(page: _page, perPage: 15, categoryId: widget.categoryId);
     if (!mounted) return;
     setState(() {
       _loading = false;
@@ -95,9 +98,22 @@ class _ProductListScreenState extends State<ProductListScreen> {
             );
           }
           final p = _products[index];
+          final imageUrl = p.thumbUrl ?? p.imageUrl;
           return Card(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: ListTile(
+              leading: SizedBox(
+                width: 56,
+                height: 56,
+                child: imageUrl != null && imageUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))),
+                        errorWidget: (_, __, ___) => const Icon(Icons.card_giftcard),
+                      )
+                    : const Icon(Icons.card_giftcard),
+              ),
               title: Text(p.name),
               subtitle: Text(p.displayPrice),
               trailing: const Icon(Icons.chevron_right),

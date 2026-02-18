@@ -10,6 +10,8 @@ class ProductItem {
     this.inStock = 0,
     this.trackInventory = false,
     this.brand,
+    this.imageUrl,
+    this.thumbUrl,
   });
 
   factory ProductItem.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,8 @@ class ProductItem {
       brand: json['brand'] != null
           ? ProductBrand.fromJson(json['brand'] as Map<String, dynamic>)
           : null,
+      imageUrl: json['image_url'] as String?,
+      thumbUrl: json['thumb_url'] as String?,
     );
   }
 
@@ -39,6 +43,8 @@ class ProductItem {
   final int inStock;
   final bool trackInventory;
   final ProductBrand? brand;
+  final String? imageUrl;
+  final String? thumbUrl;
 
   String get displayPrice => salePrice < regularPrice
       ? '$currency $salePrice'
@@ -113,6 +119,8 @@ class ProductDetail {
     this.trackInventory = false,
     this.brand,
     this.variants = const [],
+    this.imageUrl,
+    this.thumbUrl,
   });
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
@@ -133,6 +141,8 @@ class ProductDetail {
       variants: v
           .map((e) => ProductVariant.fromJson(e as Map<String, dynamic>))
           .toList(),
+      imageUrl: json['image_url'] as String?,
+      thumbUrl: json['thumb_url'] as String?,
     );
   }
 
@@ -147,6 +157,8 @@ class ProductDetail {
   final bool trackInventory;
   final ProductBrand? brand;
   final List<ProductVariant> variants;
+  final String? imageUrl;
+  final String? thumbUrl;
 
   String get displayPrice => salePrice < regularPrice
       ? '$currency $salePrice'
