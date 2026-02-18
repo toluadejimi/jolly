@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['throttle:60,1'])->group(function () {
     Route::get('products', [App\Http\Controllers\Api\ProductController::class, 'index'])->name('products.index');
     Route::get('products/{id}', [App\Http\Controllers\Api\ProductController::class, 'show'])->name('products.show');
+    Route::get('order-tracking/{orderNumber}', [App\Http\Controllers\Api\OrderTrackingController::class, 'show'])->name('order.tracking');
 
     Route::middleware('api.key')->group(function () {
         Route::get('payment-methods', [App\Http\Controllers\Api\PaymentController::class, 'methods'])->name('payment.methods');
