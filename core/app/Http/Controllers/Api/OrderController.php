@@ -117,8 +117,13 @@ class OrderController extends Controller
             'shipping_address.state' => 'nullable|string|max:255',
             'shipping_address.zip' => 'nullable|string|max:40',
             'shipping_address.address' => 'required|string',
+            'shipping_address.apt' => 'nullable|string|max:255',
             'shipping_method_id' => 'required|integer',
             'coupon_code' => 'nullable|string|max:40',
+            'note_to_seller' => 'nullable|string|max:250',
+            'note_charge' => 'nullable|numeric|min:0',
+            'customised_test' => 'nullable|string|max:5000',
+            'customised_short_test' => 'nullable|string|max:5000',
         ]);
 
         $shippingMethod = ShippingMethod::active()->find($validated['shipping_method_id']);
@@ -209,7 +214,8 @@ class OrderController extends Controller
         }
 
         $shippingCharge = $shippingMethod->charge ?? 0;
-        $totalAmount = getAmount($subtotal + $shippingCharge - $couponAmount);
+        $noteCharge = (int) ($validated['note_charge'] ?? 0);
+        $totalAmount = getAmount($subtotal + $shippingCharge + $noteCharge - $couponAmount);
 
         $order = new Order();
         $order->order_number = $this->getOrderNumber();
@@ -234,6 +240,10 @@ class OrderController extends Controller
             $applied->save();
         }
 
+        $noteToSeller = $validated['note_to_seller'] ?? null;
+        $customisedTest = $validated['customised_test'] ?? null;
+        $customisedShortTest = $validated['customised_short_test'] ?? null;
+
         foreach ($cartLike as $cartItem) {
             $prices = $cartItem->product->prices($cartItem->productVariant);
             $salePrice = $prices->sale_price ?? $prices->regular_price ?? $cartItem->product->regular_price;
@@ -245,6 +255,9 @@ class OrderController extends Controller
             $detail->quantity = $cartItem->quantity;
             $detail->price = $salePrice;
             $detail->discount = $regularPrice - $salePrice;
+            $detail->note = $noteToSeller;
+            $detail->customised_test = $customisedTest;
+            $detail->customised_short_test = $customisedShortTest;
             $detail->save();
             $this->updateStock($cartItem, $order->id);
         }

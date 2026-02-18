@@ -168,6 +168,10 @@ class ProductDetail {
     this.usaExpressDelivery = false,
     this.usaDelivery = false,
     this.allCountriesDelivery = false,
+    this.customerPhoto = false,
+    this.customisedTest = false,
+    this.customisedShortTest = false,
+    this.note = false,
   });
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
@@ -202,7 +206,19 @@ class ProductDetail {
       usaExpressDelivery: json['usa_express_delivery'] as bool? ?? false,
       usaDelivery: json['usa_delivery'] as bool? ?? false,
       allCountriesDelivery: json['all_countries_delivery'] as bool? ?? false,
+      customerPhoto: _parseBool(json['customer_photo']),
+      customisedTest: _parseBool(json['customised_test']),
+      customisedShortTest: _parseBool(json['customised_short_test']),
+      note: _parseBool(json['note']),
     );
+  }
+
+  static bool _parseBool(dynamic v) {
+    if (v == null) return false;
+    if (v is bool) return v;
+    if (v is int) return v == 1;
+    if (v is String) return v == '1' || v.toLowerCase() == 'true';
+    return false;
   }
 
   final int id;
@@ -225,6 +241,10 @@ class ProductDetail {
   final bool usaExpressDelivery;
   final bool usaDelivery;
   final bool allCountriesDelivery;
+  final bool customerPhoto;
+  final bool customisedTest;
+  final bool customisedShortTest;
+  final bool note;
 
   /// All image URLs to show: gallery if present, else main image.
   List<String> get displayImageUrls {

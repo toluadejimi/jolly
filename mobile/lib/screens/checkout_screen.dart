@@ -10,6 +10,7 @@ import '../providers/cart_provider.dart';
 import '../services/api_service.dart';
 import '../utils/format_utils.dart';
 import '../widgets/searchable_dropdown.dart';
+import '../widgets/sprintpay_payment_sheet.dart';
 import '../ui/login/login_screen.dart';
 import 'track_order_screen.dart';
 
@@ -84,10 +85,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _email = TextEditingController();
   final _mobile = TextEditingController();
   final _address = TextEditingController();
+  final _apt = TextEditingController();
   final _city = TextEditingController();
   final _state = TextEditingController();
   final _zip = TextEditingController();
   final _country = TextEditingController();
+
+  CheckoutExtras? _extras;
 
   List<CountryEntry> _countries = [];
   List<StateEntry> _states = [];
@@ -112,7 +116,43 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Future<void> _loadCountryData() async {
     final list = await CheckoutData.getCountries();
-    if (mounted) setState(() => _countries = list);
+    if (!mounted) return;
+    setState(() => _countries = list);
+    _applyRouteArguments();
+    if (_selectedCountry != null && (_selectedCountry!.code == 'US' || _selectedCountry!.code == 'CA')) {
+      final stateList = await CheckoutData.getStatesForCountry(_selectedCountry!.code);
+      if (mounted) setState(() => _states = stateList);
+    }
+  }
+
+  void _applyRouteArguments() {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is! Map<String, dynamic>) return;
+    final prefilled = args['prefilled'] as Map<String, dynamic>?;
+    if (prefilled != null) {
+      if (prefilled['firstname'] is String) _firstname.text = prefilled['firstname'] as String;
+      if (prefilled['lastname'] is String) _lastname.text = prefilled['lastname'] as String;
+      if (prefilled['email'] is String) _email.text = prefilled['email'] as String;
+      if (prefilled['mobile'] is String) _mobile.text = prefilled['mobile'] as String;
+      if (prefilled['address'] is String) _address.text = prefilled['address'] as String;
+      if (prefilled['apt'] is String) _apt.text = prefilled['apt'] as String;
+      if (prefilled['city'] is String) _city.text = prefilled['city'] as String;
+      if (prefilled['state'] is String) _state.text = prefilled['state'] as String;
+      if (prefilled['zip'] is String) _zip.text = prefilled['zip'] as String;
+      final countryName = prefilled['country'] as String?;
+      if (countryName != null && countryName.isNotEmpty && _countries.isNotEmpty) {
+        CountryEntry? c;
+        for (final e in _countries) {
+          if (e.name == countryName) { c = e; break; }
+        }
+        if (c != null) {
+          _selectedCountry = c;
+          _country.text = c.name;
+        }
+      }
+    }
+    final extras = args['extras'] as CheckoutExtras?;
+    if (extras != null) _extras = extras;
   }
 
   Future<void> _onCountryChanged(CountryEntry? c) async {
@@ -136,6 +176,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _email.dispose();
     _mobile.dispose();
     _address.dispose();
+    _apt.dispose();
     _city.dispose();
     _state.dispose();
     _zip.dispose();
@@ -260,11 +301,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       state: _selectedState?.name ?? (_state.text.trim().isEmpty ? null : _state.text.trim()),
       zip: _zip.text.trim().isEmpty ? null : _zip.text.trim(),
       address: _address.text.trim(),
+      apt: _apt.text.trim().isEmpty ? null : _apt.text.trim(),
     );
+    final extras = _extras;
     final orderRes = await api.createOrder(
       items: cart.items,
       shippingAddress: address,
       shippingMethodId: _selectedShipping!.id,
+      noteToSeller: extras?.noteToSeller,
+      noteCharge: extras?.noteCharge ?? 0,
+      customisedTest: extras?.customisedTest,
+      customisedShortTest: extras?.customisedShortTest,
     );
     if (!mounted) return;
     if (!orderRes.success || orderRes.data == null) {
@@ -317,11 +364,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
     final data = payRes.data!;
     if (data.paymentUrl != null && data.paymentUrl!.isNotEmpty) {
+      final usedSheet = await showSprintPayPaymentFlow(
+        context,
+        paymentUrl: data.paymentUrl!,
+        orderNumber: data.orderNumber,
+        onOrderSuccess: () => context.read<CartProvider>().clear(),
+      );
+      if (!mounted) return;
+      if (usedSheet) return;
       final uri = Uri.tryParse(data.paymentUrl!);
       if (uri != null && await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
-      if (!mounted) return;
       context.read<CartProvider>().clear();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -399,12 +453,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       state: _selectedState?.name ?? (_state.text.trim().isEmpty ? null : _state.text.trim()),
       zip: _zip.text.trim().isEmpty ? null : _zip.text.trim(),
       address: _address.text.trim(),
+      apt: _apt.text.trim().isEmpty ? null : _apt.text.trim(),
     );
+    final extras = _extras;
     final api = context.read<ApiService>();
     final res = await api.createOrder(
       items: cart.items,
       shippingAddress: address,
       shippingMethodId: _selectedShipping!.id,
+      noteToSeller: extras?.noteToSeller,
+      noteCharge: extras?.noteCharge ?? 0,
+      customisedTest: extras?.customisedTest,
+      customisedShortTest: extras?.customisedShortTest,
     );
     if (!mounted) return;
     setState(() {
@@ -469,11 +529,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
     final data = res.data!;
     if (data.paymentUrl != null && data.paymentUrl!.isNotEmpty) {
+      final usedSheet = await showSprintPayPaymentFlow(
+        context,
+        paymentUrl: data.paymentUrl!,
+        orderNumber: data.orderNumber,
+        onOrderSuccess: () => context.read<CartProvider>().clear(),
+      );
+      if (!mounted) return;
+      if (usedSheet) return;
       final uri = Uri.tryParse(data.paymentUrl!);
       if (uri != null && await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
-      if (!mounted) return;
       context.read<CartProvider>().clear();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -481,7 +548,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      if (!mounted) return;
       final orderNum = data.orderNumber;
       Navigator.of(context).popUntil((r) => r.isFirst);
       Navigator.push(
@@ -669,6 +735,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             border: OutlineInputBorder(),
           ),
           validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _apt,
+          decoration: const InputDecoration(
+            labelText: "Apartment, suite, unit (optional)",
+            border: OutlineInputBorder(),
+          ),
         ),
         const SizedBox(height: 12),
         TextFormField(

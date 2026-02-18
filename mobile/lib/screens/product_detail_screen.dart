@@ -4,13 +4,18 @@ import 'package:provider/provider.dart';
 
 import '../models/api_response.dart';
 import '../models/cart_item.dart';
+import '../models/checkout_models.dart';
 import '../models/product.dart';
+import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
 import '../services/api_service.dart';
 import '../ui/home/home_screen.dart';
 import '../utils/format_utils.dart';
 import '../utils/color_utils.dart';
 import '../widgets/product_badge_ribbon.dart';
+import '../data/checkout_data.dart';
+import 'checkout_screen.dart';
+import '../widgets/searchable_dropdown.dart';
 
 /// Strip simple HTML tags and normalize whitespace for description text.
 String stripHtmlToPlainText(String? html) {
@@ -309,6 +314,16 @@ class _ProductDetailBody extends StatelessWidget {
                     ),
                   ),
                 ),
+                // Receiver's details + extras (same field order as web), only when logged in
+                if (context.read<AuthProvider>().isLoggedIn) ...[
+                  const SizedBox(height: 32),
+                  _ProductCheckoutForm(
+                    product: product,
+                    quantity: quantity,
+                    selectedVariant: selectedVariant,
+                    price: price,
+                  ),
+                ],
               ],
             ),
           ),
@@ -553,6 +568,372 @@ class _VariantSelector extends StatelessWidget {
           }).toList(),
         );
       },
+    );
+  }
+}
+
+/// Checkout form on product detail: Receiver's details (same field order as web) + conditional extras + note fee.
+class _ProductCheckoutForm extends StatefulWidget {
+  const _ProductCheckoutForm({
+    required this.product,
+    required this.quantity,
+    required this.selectedVariant,
+    required this.price,
+  });
+
+  final ProductDetail product;
+  final int quantity;
+  final ProductVariant? selectedVariant;
+  final double price;
+
+  @override
+  State<_ProductCheckoutForm> createState() => _ProductCheckoutFormState();
+}
+
+class _ProductCheckoutFormState extends State<_ProductCheckoutForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _firstname = TextEditingController();
+  final _lastname = TextEditingController();
+  final _address = TextEditingController();
+  final _apt = TextEditingController();
+  final _city = TextEditingController();
+  final _state = TextEditingController();
+  final _zip = TextEditingController();
+  final _mobile = TextEditingController();
+  final _email = TextEditingController();
+  final _customisedTest = TextEditingController();
+  final _customisedShortTest = TextEditingController();
+  final _noteToSeller = TextEditingController();
+
+  List<CountryEntry> _countries = [];
+  List<StateEntry> _states = [];
+  CountryEntry? _selectedCountry;
+  StateEntry? _selectedState;
+  String? _countryError;
+  String? _stateError;
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    CheckoutData.getCountries().then((list) {
+      if (mounted) setState(() => _countries = list);
+    });
+  }
+
+  @override
+  void dispose() {
+    _firstname.dispose();
+    _lastname.dispose();
+    _address.dispose();
+    _apt.dispose();
+    _city.dispose();
+    _state.dispose();
+    _zip.dispose();
+    _mobile.dispose();
+    _email.dispose();
+    _customisedTest.dispose();
+    _customisedShortTest.dispose();
+    _noteToSeller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onCountryChanged(CountryEntry? c) async {
+    setState(() {
+      _selectedCountry = c;
+      _selectedState = null;
+      _countryError = null;
+      _stateError = null;
+      _states = [];
+    });
+    if (c != null && (c.code == 'US' || c.code == 'CA')) {
+      final list = await CheckoutData.getStatesForCountry(c.code);
+      if (mounted) setState(() => _states = list);
+    }
+  }
+
+  Future<void> _continueToPayment() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() => _countryError = null);
+    if (_selectedCountry == null) {
+      setState(() => _countryError = 'Required');
+      return;
+    }
+    if ((_selectedCountry!.code == 'US' || _selectedCountry!.code == 'CA') && _selectedState == null) {
+      setState(() => _stateError = 'Required');
+      return;
+    }
+    if (widget.product.customisedTest && _customisedTest.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter customized text')),
+      );
+      return;
+    }
+    if (widget.product.customisedShortTest && _customisedShortTest.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter customized short text (max 40 characters)')),
+      );
+      return;
+    }
+    setState(() => _loading = true);
+    final noteText = _noteToSeller.text.trim();
+    final noteCharge = (widget.product.note && noteText.isNotEmpty) ? 5000 : 0;
+    final extras = CheckoutExtras(
+      noteToSeller: noteText.isEmpty ? null : noteText,
+      noteCharge: noteCharge,
+      customisedTest: _customisedTest.text.trim().isEmpty ? null : _customisedTest.text.trim(),
+      customisedShortTest: _customisedShortTest.text.trim().isEmpty ? null : _customisedShortTest.text.trim(),
+    );
+    final prefilled = <String, dynamic>{
+      'firstname': _firstname.text.trim(),
+      'lastname': _lastname.text.trim(),
+      'email': _email.text.trim(),
+      'mobile': _mobile.text.trim(),
+      'address': _address.text.trim(),
+      'apt': _apt.text.trim(),
+      'city': _city.text.trim(),
+      'state': _selectedState?.name ?? _state.text.trim(),
+      'zip': _zip.text.trim(),
+      'country': _selectedCountry!.name,
+    };
+    context.read<CartProvider>().add(CartItem(
+          productId: widget.product.id,
+          variantId: widget.selectedVariant?.id,
+          name: widget.product.name,
+          price: widget.price,
+          imageUrl: widget.selectedVariant?.imageUrl ?? widget.product.thumbUrl ?? widget.product.imageUrl,
+          currency: widget.product.currency,
+          quantity: widget.quantity,
+        ));
+    if (!mounted) return;
+    setState(() => _loading = false);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const CheckoutScreen(),
+        settings: RouteSettings(arguments: {'prefilled': prefilled, 'extras': extras}),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final p = widget.product;
+    final showStateDropdown = _selectedCountry != null &&
+        (_selectedCountry!.code == 'US' || _selectedCountry!.code == 'CA');
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Divider(height: 32, color: theme.dividerColor),
+          Text(
+            "Receiver's Details",
+            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          SearchableDropdown<CountryEntry>(
+            items: _countries,
+            label: 'Country / Region *',
+            displayString: (c) => c.name,
+            value: _selectedCountry,
+            onChanged: _onCountryChanged,
+            hint: 'Search country...',
+            errorText: _countryError,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _firstname,
+            decoration: const InputDecoration(
+              labelText: "Receiver's First name",
+              border: OutlineInputBorder(),
+            ),
+            textCapitalization: TextCapitalization.words,
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _lastname,
+            decoration: const InputDecoration(
+              labelText: "Receiver's Last name",
+              border: OutlineInputBorder(),
+            ),
+            textCapitalization: TextCapitalization.words,
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _address,
+            decoration: const InputDecoration(
+              labelText: 'Street address',
+              hintText: 'House number and street name',
+              border: OutlineInputBorder(),
+            ),
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _apt,
+            decoration: const InputDecoration(
+              labelText: 'Apartment, suite, unit (optional)',
+              hintText: 'House number, apartment, suite, unit, flat etc',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (showStateDropdown)
+            SearchableDropdown<StateEntry>(
+              items: _states,
+              label: _selectedCountry!.code == 'US' ? 'State / County *' : 'Province / Territory *',
+              displayString: (s) => s.name,
+              value: _selectedState,
+              onChanged: (v) => setState(() {
+                _selectedState = v;
+                _stateError = null;
+              }),
+              hint: 'Select',
+              errorText: _stateError,
+            )
+          else if (_selectedCountry != null)
+            TextFormField(
+              controller: _state,
+              decoration: const InputDecoration(
+                labelText: 'State / County',
+                border: OutlineInputBorder(),
+              ),
+              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+            ),
+          if (showStateDropdown || _selectedCountry != null) const SizedBox(height: 12),
+          TextFormField(
+            controller: _city,
+            decoration: const InputDecoration(
+              labelText: 'Town / City',
+              border: OutlineInputBorder(),
+            ),
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _zip,
+            decoration: const InputDecoration(
+              labelText: 'Postcode / ZIP',
+              border: OutlineInputBorder(),
+            ),
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _mobile,
+            decoration: const InputDecoration(
+              labelText: "Receiver's phone (optional)",
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.phone,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _email,
+            decoration: const InputDecoration(
+              labelText: 'Email',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.emailAddress,
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          ),
+          if (p.customerPhoto) ...[
+            const SizedBox(height: 24),
+            Text(
+              'Upload Customized Product Photo',
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Front and back picture upload is available on the website.',
+              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+          ],
+          if (p.customisedTest) ...[
+            const SizedBox(height: 24),
+            Text(
+              'Customized Text',
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _customisedTest,
+              decoration: const InputDecoration(
+                hintText: 'Enter your note here...',
+                border: OutlineInputBorder(),
+                alignLabelWithHint: true,
+              ),
+              maxLines: 4,
+              maxLength: 5000,
+            ),
+          ],
+          if (p.customisedShortTest) ...[
+            const SizedBox(height: 24),
+            Text(
+              'Customized Short Text (40)',
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _customisedShortTest,
+              decoration: const InputDecoration(
+                hintText: 'Enter your short note here...',
+                border: OutlineInputBorder(),
+              ),
+              maxLength: 40,
+            ),
+          ],
+          if (p.note) ...[
+            const SizedBox(height: 24),
+            Text(
+              'Note to Seller',
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _noteToSeller,
+              decoration: const InputDecoration(
+                hintText: 'Enter your note here...',
+                border: OutlineInputBorder(),
+                alignLabelWithHint: true,
+              ),
+              maxLines: 3,
+              maxLength: 250,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Note: Additional fee of ₦5,000 will be added.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: _loading ? null : _continueToPayment,
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: theme.colorScheme.primary,
+              ),
+              child: _loading
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Continue to Payment'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

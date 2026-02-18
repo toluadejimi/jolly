@@ -167,11 +167,16 @@ class ApiService {
   }
 
   /// POST /api/orders (requires API key). Creates order from cart items.
+  /// [noteCharge] is added to total when product has note and user enters note (e.g. 5000).
   Future<ApiResponse<CreateOrderResult>> createOrder({
     required List<CartItem> items,
     required ShippingAddressInput shippingAddress,
     required int shippingMethodId,
     String? couponCode,
+    String? noteToSeller,
+    int noteCharge = 0,
+    String? customisedTest,
+    String? customisedShortTest,
   }) async {
     final body = <String, dynamic>{
       'items': items.map((i) => {
@@ -182,6 +187,10 @@ class ApiService {
       'shipping_address': shippingAddress.toJson(),
       'shipping_method_id': shippingMethodId,
       if (couponCode != null && couponCode.isNotEmpty) 'coupon_code': couponCode,
+      if (noteToSeller != null && noteToSeller.isNotEmpty) 'note_to_seller': noteToSeller,
+      if (noteCharge > 0) 'note_charge': noteCharge,
+      if (customisedTest != null && customisedTest.isNotEmpty) 'customised_test': customisedTest,
+      if (customisedShortTest != null && customisedShortTest.isNotEmpty) 'customised_short_test': customisedShortTest,
     };
     final res = await http.post(
       Uri.parse('$baseUrl/api/orders'),
@@ -331,6 +340,30 @@ class ApiService {
     final order = data?['order'] as Map<String, dynamic>?;
     if (order == null) return ApiResponse.error('No order');
     return ApiResponse.success(UserOrderDetail.fromJson(order));
+  }
+
+  /// POST /api/change-password (requires API key).
+  Future<ApiResponse<void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/change-password'),
+      headers: _authHeaders,
+      body: jsonEncode({
+        'current_password': currentPassword,
+        'password': newPassword,
+        'password_confirmation': newPassword,
+      }),
+    );
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if ((body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Failed to change password');
+    }
+    return ApiResponse.success(null);
   }
 
   /// GET /api/order-tracking/{orderNumber} (no auth)

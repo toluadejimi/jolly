@@ -58,6 +58,7 @@ class ShippingAddressInput {
     this.email,
     this.state,
     this.zip,
+    this.apt,
   });
 
   Map<String, dynamic> toJson() => {
@@ -70,6 +71,7 @@ class ShippingAddressInput {
         'state': state ?? '',
         'zip': zip ?? '',
         'address': address,
+        if (apt != null && apt!.isNotEmpty) 'apt': apt,
       };
 
   final String firstname;
@@ -81,6 +83,21 @@ class ShippingAddressInput {
   final String? state;
   final String? zip;
   final String address;
+  final String? apt;
+}
+
+/// Optional checkout extras (note to seller, customised text, note charge) from product-detail buy-now.
+class CheckoutExtras {
+  const CheckoutExtras({
+    this.noteToSeller,
+    this.noteCharge = 0,
+    this.customisedTest,
+    this.customisedShortTest,
+  });
+  final String? noteToSeller;
+  final int noteCharge;
+  final String? customisedTest;
+  final String? customisedShortTest;
 }
 
 /// Response after creating an order.

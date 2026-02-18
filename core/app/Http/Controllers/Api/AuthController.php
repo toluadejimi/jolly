@@ -145,6 +145,41 @@ class AuthController extends Controller
         ], 201);
     }
 
+    /**
+     * POST /api/change-password (requires API key).
+     * Body: current_password, password, password_confirmation
+     */
+    public function changePassword(Request $request): JsonResponse
+    {
+        $passwordRule = Password::min(6);
+        if (gs('secure_password')) {
+            $passwordRule = $passwordRule->mixedCase()->numbers()->symbols();
+        }
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'password' => ['required', 'confirmed', $passwordRule],
+        ]);
+
+        $user = $request->user();
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'remark' => 'invalid_password',
+                'status' => 'error',
+                'message' => ['error' => ['Current password is incorrect.']],
+            ], 422);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return response()->json([
+            'remark' => 'password_changed',
+            'status' => 'success',
+            'message' => ['success' => ['Password changed successfully.']],
+        ]);
+    }
+
     private function getOrCreateApiKey(User $user): ?string
     {
         $plain = ApiKey::generateKey();

@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../models/checkout_models.dart';
 import '../utils/format_utils.dart';
-import 'track_order_screen.dart';
+import '../screens/track_order_screen.dart';
 
 /// Fetches payment URL with mode=api. If response status is true, shows bottom sheet
 /// with account details and "I have paid"; polls verify_url until success/completed.
@@ -77,10 +77,10 @@ class _SprintPayPaymentSheetState extends State<_SprintPayPaymentSheet> {
           final json = jsonDecode(res.body) as Map<String, dynamic>?;
           final status = json?['status']?.toString().toLowerCase();
           if (status == 'success' || status == 'completed') {
-            Navigator.of(context).pop();
+            final nav = Navigator.of(context);
+            nav.pop();
             widget.onOrderSuccess();
-            if (!mounted) return;
-            Navigator.of(context).pushAndRemoveUntil(
+            nav.pushAndRemoveUntil(
               MaterialPageRoute(
                 builder: (context) => TrackOrderScreen(
                   orderNumber: widget.orderNumber,
