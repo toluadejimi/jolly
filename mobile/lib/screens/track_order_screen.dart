@@ -6,9 +6,11 @@ import '../models/order_tracking.dart';
 import '../services/api_service.dart';
 
 class TrackOrderScreen extends StatefulWidget {
-  const TrackOrderScreen({super.key, this.orderNumber});
+  const TrackOrderScreen({super.key, this.orderNumber, this.paymentSuccessMessage});
 
   final String? orderNumber;
+  /// When set, show a success message (e.g. after SprintPay payment verified).
+  final String? paymentSuccessMessage;
 
   @override
   State<TrackOrderScreen> createState() => _TrackOrderScreenState();
@@ -25,6 +27,19 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
     if (widget.orderNumber != null && widget.orderNumber!.isNotEmpty) {
       _controller.text = widget.orderNumber!;
       WidgetsBinding.instance.addPostFrameCallback((_) => _track());
+    }
+    if (widget.paymentSuccessMessage != null && widget.paymentSuccessMessage!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(widget.paymentSuccessMessage!),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      });
     }
   }
 

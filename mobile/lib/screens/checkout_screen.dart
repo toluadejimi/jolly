@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../config/api_config.dart';
 import '../data/checkout_data.dart';
 import '../models/checkout_models.dart';
+import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
 import '../services/api_service.dart';
 import '../utils/format_utils.dart';
@@ -16,8 +17,17 @@ import 'track_order_screen.dart';
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
 
-  /// Call this when user taps checkout: asks guest or login, then navigates.
+  /// Call this when user taps checkout. If logged in, go straight to checkout;
+  /// otherwise ask guest or login.
   static void showCheckoutChoice(BuildContext context) {
+    final isLoggedIn = context.read<AuthProvider>().isLoggedIn;
+    if (isLoggedIn) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CheckoutScreen()),
+      );
+      return;
+    }
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

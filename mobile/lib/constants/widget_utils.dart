@@ -20,12 +20,14 @@ double getAppBarPadding() {
   return appbarPadding;
 }
 
-Widget getBackgroundWidget(Widget widget) {
+Widget getBackgroundWidget(Widget widget, {String title = 'Shopping', Color? headerColor}) {
   double screenWidth = SizeConfig.safeBlockHorizontal! * 100;
   double screenHeight = SizeConfig.safeBlockVertical! * 100;
 
   double size = Constant.getPercentSize(getTopViewHeight(), 16);
   double imgSize = Constant.getPercentSize(getTopViewHeight(), 14);
+  final showTitle = title.isNotEmpty;
+  final topColor = headerColor ?? primaryColor;
   double topHeight = Constant.getPercentSize(getTopViewHeight(), 63);
   double getRemainSize = screenHeight - topHeight;
 
@@ -39,7 +41,7 @@ Widget getBackgroundWidget(Widget widget) {
           height: getTopViewHeight(),
           padding: EdgeInsets.only(bottom: getTopViewHeight() / 4),
           decoration: ShapeDecoration(
-              color: primaryColor,
+              color: topColor,
               shape: SmoothRectangleBorder(
                   borderRadius: SmoothBorderRadius.only(
                       bottomLeft: SmoothRadius(
@@ -50,15 +52,12 @@ Widget getBackgroundWidget(Widget widget) {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              getSvgImage("logo_img.svg", imgSize),
-              // Image.asset(
-              //   Constant.assetImagePath + "logo_img.png",
-              //   height: imgSize,
-              //   width: imgSize,
-              // ),
-              getHorSpace(Constant.getPercentSize(screenWidth, 3)),
-              getCustomText("Shopping", Colors.white, 1, TextAlign.start,
-                  FontWeight.bold, Constant.getPercentSize(imgSize, 65))
+              getSvgImage("logo_img.svg", showTitle ? imgSize : (imgSize * 1.2)),
+              if (showTitle) ...[
+                getHorSpace(Constant.getPercentSize(screenWidth, 3)),
+                getCustomText(title, Colors.white, 1, TextAlign.start,
+                    FontWeight.bold, Constant.getPercentSize(imgSize, 65)),
+              ],
             ],
           ),
         ),

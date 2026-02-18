@@ -8,6 +8,7 @@ import '../models/checkout_models.dart';
 import '../models/order_tracking.dart';
 import '../models/product.dart';
 import '../models/slider.dart';
+import '../models/user_dashboard.dart';
 import '../models/api_response.dart';
 import '../models/auth_data.dart';
 import '../models/cart_item.dart';
@@ -259,6 +260,77 @@ class ApiService {
       return ApiResponse.error(err ?? 'Payment initiation failed');
     }
     return ApiResponse.success(PaymentInitiateResult.fromJson(body));
+  }
+
+  /// GET /api/dashboard (requires API key). Order counts + latest orders.
+  Future<ApiResponse<DashboardData>> getDashboard() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/dashboard'),
+      headers: _authHeaders,
+    );
+    return _parseDashboard(res);
+  }
+
+  /// GET /api/orders (requires API key). Optional status: pending, processing, dispatched, delivered, canceled.
+  Future<ApiResponse<OrdersListData>> getOrders({int page = 1, String? status}) async {
+    final q = <String, String>{'page': '$page', 'per_page': '15'};
+    if (status != null && status.isNotEmpty) q['status'] = status;
+    final uri = Uri.parse('$baseUrl/api/orders').replace(queryParameters: q);
+    final res = await http.get(uri, headers: _authHeaders);
+    return _parseOrdersList(res);
+  }
+
+  /// GET /api/orders/{id} (requires API key). id can be order id or order_number.
+  Future<ApiResponse<UserOrderDetail>> getOrderDetail(dynamic idOrNumber) async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/orders/$idOrNumber'),
+      headers: _authHeaders,
+    );
+    return _parseOrderDetail(res);
+  }
+
+  static ApiResponse<DashboardData> _parseDashboard(http.Response res) {
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if (res.statusCode == 401) return ApiResponse.error('Please log in to view dashboard.');
+    if ((body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Request failed');
+    }
+    final data = body['data'] as Map<String, dynamic>?;
+    if (data == null) return ApiResponse.error('No data');
+    return ApiResponse.success(DashboardData.fromJson(data));
+  }
+
+  static ApiResponse<OrdersListData> _parseOrdersList(http.Response res) {
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if (res.statusCode == 401) return ApiResponse.error('Please log in to view orders.');
+    if ((body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Request failed');
+    }
+    final data = body['data'] as Map<String, dynamic>?;
+    if (data == null) return ApiResponse.error('No data');
+    return ApiResponse.success(OrdersListData.fromJson(data));
+  }
+
+  static ApiResponse<UserOrderDetail> _parseOrderDetail(http.Response res) {
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if (res.statusCode == 401) return ApiResponse.error('Please log in to view order.');
+    if (res.statusCode == 404) return ApiResponse.error('Order not found.');
+    if ((body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Request failed');
+    }
+    final data = body['data'] as Map<String, dynamic>?;
+    final order = data?['order'] as Map<String, dynamic>?;
+    if (order == null) return ApiResponse.error('No order');
+    return ApiResponse.success(UserOrderDetail.fromJson(order));
   }
 
   /// GET /api/order-tracking/{orderNumber} (no auth)

@@ -7,12 +7,18 @@ import 'package:giftfr/providers/theme_provider.dart';
 import 'package:giftfr/ui/home/home_screen.dart';
 import 'package:giftfr/ui/login/login_screen.dart';
 import 'package:giftfr/screens/track_order_screen.dart';
+import 'package:giftfr/screens/orders_list_screen.dart';
+import 'package:giftfr/screens/order_detail_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../../constants/constant.dart';
 import '../../../constants/pref_data.dart';
 import '../../../constants/widget_utils.dart';
+import '../../../models/api_response.dart';
+import '../../../models/user_dashboard.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../services/api_service.dart';
+import '../../../utils/format_utils.dart';
 
 class TabProfile extends StatefulWidget {
   const TabProfile({Key? key}) : super(key: key);
@@ -128,42 +134,45 @@ class _TabProfileState extends State<TabProfile> {
       builder: (context, snap) {
         final name = snap.data?['name'] ?? '';
         final email = snap.data?['email'] ?? '';
-        return Column(
-          children: [
-            Container(
-              width: imgHeight,
-              height: imgHeight,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
-                image: DecorationImage(
-                  image: AssetImage(Constant.assetImagePath + "banner.png"),
-                  fit: BoxFit.cover,
+        return SingleChildScrollView(
+          padding: EdgeInsets.only(bottom: appBarPadding * 2),
+          child: Column(
+            children: [
+              Container(
+                width: imgHeight,
+                height: imgHeight,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+                  image: DecorationImage(
+                    image: AssetImage(Constant.assetImagePath + "banner.png"),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
-            ),
-            getSpace(appBarPadding),
-            getCustomText(
-              name.isNotEmpty ? name : "Account",
-              theme.colorScheme.onSurface,
-              1,
-              TextAlign.center,
-              FontWeight.bold,
-              Constant.getPercentSize(screenHeight, 2.7),
-            ),
-            getSpace(Constant.getPercentSize(appBarPadding, 50)),
-            if (email.isNotEmpty)
+              getSpace(appBarPadding),
               getCustomText(
-                email,
-                theme.colorScheme.onSurfaceVariant,
+                name.isNotEmpty ? name : "Account",
+                theme.colorScheme.onSurface,
                 1,
                 TextAlign.center,
-                FontWeight.w400,
-                Constant.getPercentSize(screenHeight, 2.2),
+                FontWeight.bold,
+                Constant.getPercentSize(screenHeight, 2.7),
               ),
-            if (email.isNotEmpty) getSpace(appBarPadding),
-            Expanded(
-              child: Container(
+              getSpace(Constant.getPercentSize(appBarPadding, 50)),
+              if (email.isNotEmpty)
+                getCustomText(
+                  email,
+                  theme.colorScheme.onSurfaceVariant,
+                  1,
+                  TextAlign.center,
+                  FontWeight.w400,
+                  Constant.getPercentSize(screenHeight, 2.2),
+                ),
+              if (email.isNotEmpty) getSpace(appBarPadding),
+              _DashboardSection(),
+              getSpace(appBarPadding),
+              Container(
                 margin: EdgeInsets.all(getAppBarPadding()),
                 padding: EdgeInsets.only(left: appBarPadding, right: appBarPadding),
                 decoration: ShapeDecoration(
@@ -182,15 +191,17 @@ class _TabProfileState extends State<TabProfile> {
                     )
                   ],
                 ),
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  primary: true,
-                  shrinkWrap: true,
+                child: Column(
                   children: [
                     getSpace(appBarPadding),
                     getSettingRow("User.svg", "My Profile", () {}, context: context),
                     getSeparatorWidget(context),
-                    getSettingRow("Bag.svg", "My Orders", () {}, context: context),
+                    getSettingRow("Bag.svg", "My Orders", () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const OrdersListScreen()),
+                      );
+                    }, context: context),
                     getSeparatorWidget(context),
                     getSettingRow("Document.svg", "Track Order", () {
                       Navigator.push(
@@ -214,24 +225,25 @@ class _TabProfileState extends State<TabProfile> {
                   ],
                 ),
               ),
-            ),
-            getButton(
-              theme.colorScheme.primary,
-              true,
-              "Logout",
-              theme.colorScheme.onPrimary,
-              () async {
-                await context.read<AuthProvider>().logout();
-                if (!context.mounted) return;
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (route) => false,
-                );
-              },
-              FontWeight.w700,
-              EdgeInsets.all(appBarPadding),
-            ),
-          ],
+              getSpace(appBarPadding),
+              getButton(
+                theme.colorScheme.primary,
+                true,
+                "Logout",
+                theme.colorScheme.onPrimary,
+                () async {
+                  await context.read<AuthProvider>().logout();
+                  if (!context.mounted) return;
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    (route) => false,
+                  );
+                },
+                FontWeight.w700,
+                EdgeInsets.all(appBarPadding),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -244,6 +256,135 @@ class _TabProfileState extends State<TabProfile> {
       child: Divider(
         height: 1,
         color: theme.dividerColor,
+      ),
+    );
+  }
+}
+
+class _DashboardSection extends StatefulWidget {
+  @override
+  State<_DashboardSection> createState() => _DashboardSectionState();
+}
+
+class _DashboardSectionState extends State<_DashboardSection> {
+  ApiResponse<DashboardData>? _dashboard;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final api = context.read<ApiService>();
+    final res = await api.getDashboard();
+    if (mounted) setState(() => _dashboard = res);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final res = _dashboard;
+    if (res == null) return const SizedBox(height: 24);
+    if (!res.success || res.data == null) return const SizedBox.shrink();
+    final data = res.data!;
+    final c = data.orderCounts;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: getAppBarPadding()),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          getCustomText(
+            'Dashboard',
+            theme.colorScheme.onSurface,
+            1,
+            TextAlign.start,
+            FontWeight.bold,
+            Constant.getPercentSize(SizeConfig.safeBlockVertical! * 100, 2.2),
+          ),
+          getSpace(Constant.getPercentSize(SizeConfig.safeBlockVertical! * 100, 1.5)),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _CountChip(label: 'All Orders', count: c.total, onTap: () => _openOrders(context, null)),
+              _CountChip(label: 'Pending', count: c.pending, onTap: () => _openOrders(context, 'pending')),
+              _CountChip(label: 'Processing', count: c.processing, onTap: () => _openOrders(context, 'processing')),
+              _CountChip(label: 'Dispatched', count: c.dispatched, onTap: () => _openOrders(context, 'dispatched')),
+              _CountChip(label: 'Delivered', count: c.delivered, onTap: () => _openOrders(context, 'delivered')),
+              _CountChip(label: 'Canceled', count: c.canceled, onTap: () => _openOrders(context, 'canceled')),
+            ],
+          ),
+          if (data.latestOrders.isNotEmpty) ...[
+            getSpace(Constant.getPercentSize(SizeConfig.safeBlockVertical! * 100, 2)),
+            getCustomText(
+              'Latest Orders',
+              theme.colorScheme.onSurface,
+              1,
+              TextAlign.start,
+              FontWeight.w600,
+              Constant.getPercentSize(SizeConfig.safeBlockVertical! * 100, 2)),
+            getSpace(8),
+            ...data.latestOrders.map((order) => Card(
+                  margin: const EdgeInsets.only(bottom: 6),
+                  child: ListTile(
+                    title: Text(order.orderNumber, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    subtitle: Text('${order.statusDisplay} · ${formatNiara(order.totalAmount)}'),
+                    trailing: const Icon(Icons.chevron_right, size: 20),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => OrderDetailScreen(orderId: order.id),
+                        ),
+                      );
+                    },
+                  ),
+                )),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _openOrders(BuildContext context, String? status) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OrdersListScreen(statusFilter: status),
+      ),
+    );
+  }
+}
+
+class _CountChip extends StatelessWidget {
+  const _CountChip({required this.label, required this.count, required this.onTap});
+
+  final String label;
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Material(
+      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('$count', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+              const SizedBox(width: 6),
+              Text(label, style: theme.textTheme.bodySmall),
+            ],
+          ),
+        ),
       ),
     );
   }

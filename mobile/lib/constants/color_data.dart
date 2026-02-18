@@ -4,6 +4,8 @@ import 'app_theme.dart';
 
 // Neon orange primary. Prefer Theme.of(context).colorScheme.primary in new code.
 Color primaryColor = AppTheme.neonOrange;
+// Light orange for login/register header so app logo is visible
+Color lightOrangeHeader = const Color(0xFFFFDDCC);
 // Light mode defaults (for static/legacy use; dark mode should use theme)
 Color backgroundColor = const Color(0xFFF8F9FB);
 Color fontBlack = const Color(0xFF111111);

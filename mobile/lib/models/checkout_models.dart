@@ -138,3 +138,43 @@ class PaymentInitiateResult {
   final String? paymentUrl;
   final String? trx;
 }
+
+/// SprintPay paynow?mode=api response (account details to show in-app).
+class SprintPayAccountResponse {
+  SprintPayAccountResponse({
+    required this.status,
+    required this.accountNo,
+    required this.accountName,
+    required this.bankName,
+    required this.amount,
+    required this.currency,
+    required this.ref,
+    required this.businessName,
+    required this.verifyUrl,
+  });
+
+  factory SprintPayAccountResponse.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] as Map<String, dynamic>? ?? {};
+    return SprintPayAccountResponse(
+      status: json['status'] == true,
+      accountNo: data['account_no'] as String? ?? '',
+      accountName: data['account_name'] as String? ?? '',
+      bankName: data['bank_name'] as String? ?? '',
+      amount: (data['amount'] as num?)?.toDouble() ?? 0,
+      currency: data['currency'] as String? ?? 'NGN',
+      ref: data['ref'] as String? ?? '',
+      businessName: data['business_name'] as String? ?? '',
+      verifyUrl: data['verify_url'] as String? ?? '',
+    );
+  }
+
+  final bool status;
+  final String accountNo;
+  final String accountName;
+  final String bankName;
+  final double amount;
+  final String currency;
+  final String ref;
+  final String businessName;
+  final String verifyUrl;
+}

@@ -1,16 +1,14 @@
 // ignore: file_names
-import 'package:figma_squircle/figma_squircle.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:giftfr/constants/size_config.dart';
 import 'package:giftfr/constants/color_data.dart';
-
-import '../../constants/constant.dart';
-import '../../constants/widget_utils.dart';
-import '../../providers/auth_provider.dart';
-import '../../services/api_service.dart';
-import '../home/home_screen.dart';
-import 'forgot_password_screen.dart';
+import 'package:giftfr/constants/constant.dart';
+import 'package:giftfr/constants/widget_utils.dart';
+import 'package:giftfr/providers/auth_provider.dart';
+import 'package:giftfr/services/api_service.dart';
+import 'package:giftfr/ui/home/home_screen.dart';
+import 'package:giftfr/ui/login/forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key, this.initialTab = 0}) : super(key: key);
@@ -53,9 +51,11 @@ class _LoginScreen extends State<LoginScreen>
     return WillPopScope(
         child: Scaffold(
           backgroundColor: backgroundColor,
-          body: getBackgroundWidget(Column(
-            children: [
-              TabBar(
+          body: getBackgroundWidget(
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TabBar(
                 onTap: (value) {
                   _selectedTabbar = value;
                   setState(() {});
@@ -106,179 +106,172 @@ class _LoginScreen extends State<LoginScreen>
                 isScrollable: false,
               ),
               (_selectedTabbar == 0)
-                  ? Container(
-                      width: double.infinity,
+                  ? Padding(
                       padding: EdgeInsets.symmetric(
-                          horizontal: Constant.getPercentSize(screenWidth, 4)),
+                          horizontal: Constant.getPercentSize(screenWidth, 5)),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          getSpace(Constant.getPercentSize(screenHeight, 3)),
-                          getLoginTextField(
-                              emailSignInController, "Email", "email.svg"),
-                          ValueListenableBuilder(
-                            builder: (context, value, child) {
-                              return getPassTextField(passSignInController,
-                                  "Password", "eye.svg", isShowPass.value, () {
-                                isShowPass.value = !isShowPass.value;
-                              });
-                            },
-                            valueListenable: isShowPass,
+                          getSpace(Constant.getPercentSize(screenHeight, 2.5)),
+                          _buildProfessionalField(
+                            context: context,
+                            controller: emailSignInController,
+                            hint: 'Email or username',
+                            keyboardType: TextInputType.emailAddress,
+                            prefixIcon: Icons.email_outlined,
                           ),
+                          SizedBox(height: Constant.getPercentSize(screenHeight, 1.8)),
+                          _buildProfessionalPasswordField(
+                            context: context,
+                            controller: passSignInController,
+                            hint: 'Password',
+                            obscure: !isShowPass.value,
+                            onToggle: () => setState(() => isShowPass.value = !isShowPass.value),
+                          ),
+                          SizedBox(height: Constant.getPercentSize(screenHeight, 1)),
                           Align(
-                              alignment: Alignment.centerRight,
-                              child: InkWell(
-                                onTap: () {
-                                  Constant.sendToScreen(
-                                      const ForgotPasswordScreen(), context);
-                                },
-                                child: getCustomText(
-                                    "Forgot Password?",
-                                    fontBlack,
-                                    1,
-                                    TextAlign.end,
-                                    FontWeight.bold,
-                                    Constant.getPercentSize(screenHeight, 2.3)),
-                              )),
-                          getSpace(appbarPadding / 2),
-                          getButton(primaryColor, true, _isLoading ? "Signing in…" : "Sign In", Colors.white,
-                              () async {
-                            final username = emailSignInController.text.trim();
-                            final password = passSignInController.text;
-                            if (username.isEmpty || password.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please enter email and password')),
-                              );
-                              return;
-                            }
-                            setState(() => _isLoading = true);
-                            final api = context.read<ApiService>();
-                            final auth = context.read<AuthProvider>();
-                            final result = await api.login(username: username, password: password);
-                            if (!mounted) return;
-                            setState(() => _isLoading = false);
-                            if (result.success && result.data != null) {
-                              await auth.setFromLogin(
-                                apiKey: result.data!.apiKey,
-                                email: result.data!.user.email,
-                                name: result.data!.user.displayName,
-                              );
-                              if (!mounted) return;
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () =>
+                                  Constant.sendToScreen(const ForgotPasswordScreen(), context),
+                              child: Text(
+                                'Forgot Password?',
+                                style: TextStyle(
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: Constant.getPercentSize(screenHeight, 2)),
+                          SizedBox(
+                            height: 52,
+                            child: FilledButton(
+                              onPressed: _isLoading
+                                  ? null
+                                  : () async {
+                                      final username = emailSignInController.text.trim();
+                                      final password = passSignInController.text;
+                                      if (username.isEmpty || password.isEmpty) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                              content: Text('Please enter email and password')),
+                                        );
+                                        return;
+                                      }
+                                      setState(() => _isLoading = true);
+                                      final api = context.read<ApiService>();
+                                      final auth = context.read<AuthProvider>();
+                                      final result =
+                                          await api.login(username: username, password: password);
+                                      if (!mounted) return;
+                                      setState(() => _isLoading = false);
+                                      if (result.success && result.data != null) {
+                                        await auth.setFromLogin(
+                                          apiKey: result.data!.apiKey,
+                                          email: result.data!.user.email,
+                                          name: result.data!.user.displayName,
+                                        );
+                                        if (!mounted) return;
+                                        Navigator.of(context).pushReplacement(
+                                            MaterialPageRoute(
+                                                builder: (context) => HomeScreen()));
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                                content: Text(
+                                                    result.error ?? 'Login failed')));
+                                      }
+                                    },
+                              style: FilledButton.styleFrom(
+                                backgroundColor: primaryColor,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: Text(_isLoading ? 'Signing in…' : 'Sign In',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600, fontSize: 16)),
+                            ),
+                          ),
+                          SizedBox(height: Constant.getPercentSize(screenHeight, 1.5)),
+                          OutlinedButton(
+                            onPressed: () {
                               Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(builder: (context) => HomeScreen()),
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(result.error ?? 'Login failed')),
-                              );
-                            }
-                          }, FontWeight.w500,
-                              EdgeInsets.symmetric(vertical: appbarPadding)),
-                          getCustomText(
-                              "Or sign in with",
-                              Colors.grey,
-                              1,
-                              TextAlign.center,
-                              FontWeight.w400,
-                              Constant.getPercentSize(screenHeight, 2.2)),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: getButtonContainer(
-                                    Row(
-                                      children: [
-                                        getSvgImage(
-                                            "email.svg", getEdtIconSize()),
-                                        getHorSpace(Constant.getPercentSize(
-                                            screenWidth, 1.7)),
-                                        getCustomText(
-                                            "Google",
-                                            fontBlack,
-                                            1,
-                                            TextAlign.center,
-                                            FontWeight.bold,
-                                            getEdtTextSize())
-                                      ],
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                    ),
-                                    EdgeInsets.only(
-                                        left: 0,
-                                        top: appbarPadding,
-                                        bottom: appbarPadding,
-                                        right: appbarPadding / 2),
-                                    backgroundColor),
-                                flex: 1,
-                              ),
-                              Expanded(
-                                child: getButtonContainer(
-                                    Row(
-                                      children: [
-                                        getSvgImage(
-                                            "facebook.svg", getEdtIconSize()),
-                                        getHorSpace(Constant.getPercentSize(
-                                            screenWidth, 1.7)),
-                                        getCustomText(
-                                            "Facebook",
-                                            fontBlack,
-                                            1,
-                                            TextAlign.center,
-                                            FontWeight.bold,
-                                            getEdtTextSize())
-                                      ],
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                    ),
-                                    EdgeInsets.only(
-                                        left: appbarPadding / 2,
-                                        top: appbarPadding,
-                                        bottom: appbarPadding,
-                                        right: 0),
-                                    backgroundColor),
-                                flex: 1,
-                              ),
-                            ],
-                          )
+                                  MaterialPageRoute(
+                                      builder: (context) => HomeScreen()));
+                            },
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 52),
+                              side: BorderSide(color: primaryColor),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: Text(
+                              'Continue as guest',
+                              style: TextStyle(
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16),
+                            ),
+                          ),
                         ],
                       ),
                     )
-                  : Container(
-                      width: double.infinity,
+                  : Padding(
                       padding: EdgeInsets.symmetric(
-                          horizontal: Constant.getPercentSize(screenWidth, 4)),
+                          horizontal: Constant.getPercentSize(screenWidth, 5)),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           getSpace(Constant.getPercentSize(screenHeight, 2)),
-                          getLoginTextField(
-                              firstnameController, "First name", "email.svg"),
-                          getLoginTextField(
-                              lastnameController, "Last name", "email.svg"),
-                          getLoginTextField(
-                              emailRegPhoneController, "Email", "email.svg"),
-                          ValueListenableBuilder(
-                            builder: (context, value, child) {
-                              return getPassTextField(passSignInController,
-                                  "Password", "eye.svg", isShowPass.value, () {
-                                isShowPass.value = !isShowPass.value;
-                              });
-                            },
-                            valueListenable: isShowPass,
+                          _buildProfessionalField(
+                            context: context,
+                            controller: firstnameController,
+                            hint: 'First name',
+                            textCapitalization: TextCapitalization.words,
+                            prefixIcon: Icons.person_outline,
                           ),
-                          ValueListenableBuilder(
-                            builder: (context, value, child) {
-                              return getPassTextField(confirmPassController,
-                                  "Confirm password", "eye.svg", isShowConfirmPass.value, () {
-                                isShowConfirmPass.value = !isShowConfirmPass.value;
-                              });
-                            },
-                            valueListenable: isShowConfirmPass,
+                          SizedBox(height: Constant.getPercentSize(screenHeight, 1.8)),
+                          _buildProfessionalField(
+                            context: context,
+                            controller: lastnameController,
+                            hint: 'Last name',
+                            textCapitalization: TextCapitalization.words,
+                            prefixIcon: Icons.person_outline,
                           ),
-                          getSpace(appbarPadding / 2),
-                          getButton(
-                              primaryColor, true, _isLoading ? "Registering…" : "Register", Colors.white, () async {
+                          SizedBox(height: Constant.getPercentSize(screenHeight, 1.8)),
+                          _buildProfessionalField(
+                            context: context,
+                            controller: emailRegPhoneController,
+                            hint: 'Email',
+                            keyboardType: TextInputType.emailAddress,
+                            prefixIcon: Icons.email_outlined,
+                          ),
+                          SizedBox(height: Constant.getPercentSize(screenHeight, 1.8)),
+                          _buildProfessionalPasswordField(
+                            context: context,
+                            controller: passSignInController,
+                            hint: 'Password',
+                            obscure: !isShowPass.value,
+                            onToggle: () => setState(() => isShowPass.value = !isShowPass.value),
+                          ),
+                          SizedBox(height: Constant.getPercentSize(screenHeight, 1.8)),
+                          _buildProfessionalPasswordField(
+                            context: context,
+                            controller: confirmPassController,
+                            hint: 'Confirm password',
+                            obscure: !isShowConfirmPass.value,
+                            onToggle: () => setState(() => isShowConfirmPass.value = !isShowConfirmPass.value),
+                          ),
+                          SizedBox(height: Constant.getPercentSize(screenHeight, 2)),
+                          SizedBox(
+                            height: 52,
+                            child: FilledButton(
+                              onPressed: _isLoading
+                                  ? null
+                                  : () async {
                             final email = emailRegPhoneController.text.trim();
                             final password = passSignInController.text;
                             final confirm = confirmPassController.text;
@@ -327,8 +320,20 @@ class _LoginScreen extends State<LoginScreen>
                                 SnackBar(content: Text(result.error ?? 'Registration failed')),
                               );
                             }
-                          }, FontWeight.w500,
-                              EdgeInsets.symmetric(vertical: appbarPadding)),
+                                  },
+                              style: FilledButton.styleFrom(
+                                backgroundColor: primaryColor,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: Text(
+                                _isLoading ? 'Registering…' : 'Register',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600, fontSize: 16),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -356,12 +361,118 @@ class _LoginScreen extends State<LoginScreen>
               //   controller: _tabController,
               // ),
             ],
-          )),
+          ),
+            title: '',
+            headerColor: lightOrangeHeader,
+          ),
         ),
         onWillPop: () async {
           Constant.closeApp();
           return false;
         });
+  }
+
+  Widget _buildProfessionalField({
+    required BuildContext context,
+    required TextEditingController controller,
+    required String hint,
+    TextInputType? keyboardType,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    IconData prefixIcon = Icons.edit_outlined,
+  }) {
+    final theme = Theme.of(context);
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      textCapitalization: textCapitalization,
+      style: TextStyle(
+        fontSize: 16,
+        color: fontBlack,
+        fontWeight: FontWeight.w500,
+      ),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: greyFont.withOpacity(0.8),
+          fontWeight: FontWeight.w400,
+        ),
+        prefixIcon: Icon(
+          prefixIcon,
+          size: 22,
+          color: primaryColor.withOpacity(0.8),
+        ),
+        filled: true,
+        fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: theme.dividerColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: theme.dividerColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: primaryColor, width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfessionalPasswordField({
+    required BuildContext context,
+    required TextEditingController controller,
+    required String hint,
+    required bool obscure,
+    required VoidCallback onToggle,
+  }) {
+    final theme = Theme.of(context);
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      style: TextStyle(
+        fontSize: 16,
+        color: fontBlack,
+        fontWeight: FontWeight.w500,
+      ),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: greyFont.withOpacity(0.8),
+          fontWeight: FontWeight.w400,
+        ),
+        prefixIcon: Icon(
+          Icons.lock_outline,
+          size: 22,
+          color: primaryColor.withOpacity(0.8),
+        ),
+        suffixIcon: IconButton(
+          icon: Icon(
+            obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+            size: 22,
+            color: greyFont,
+          ),
+          onPressed: onToggle,
+        ),
+        filled: true,
+        fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: theme.dividerColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: theme.dividerColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: primaryColor, width: 1.5),
+        ),
+      ),
+    );
+  }
 
     // return WillPopScope(
     //     child: Scaffold(
@@ -572,5 +683,4 @@ class _LoginScreen extends State<LoginScreen>
     //     onWillPop: () async {
     //       return false;
     //     });
-  }
 }
