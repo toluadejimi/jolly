@@ -159,7 +159,6 @@
                                     name="note_to_seller"
                                     id="note_to_seller"
                                     rows="4"
-                                    required
                                     placeholder="Enter your note here..."
                                     maxlength="250"
                                 >{{ old('note_to_seller', session('note_to_seller')) }}</textarea>

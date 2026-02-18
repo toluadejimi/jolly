@@ -283,7 +283,6 @@
                                                           id="note_to_seller"
                                                           rows="4"
                                                           maxlength="250"
-                                                          required
                                                           placeholder="Enter your note here...">{{ old('note_to_seller', session('note_to_seller')) }}</textarea>
 
                                                 <small id="charCount" class="text-muted d-block mt-2">0 / 250 characters</small>
