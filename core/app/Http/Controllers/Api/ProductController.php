@@ -14,6 +14,7 @@ class ProductController extends Controller
         $query = Product::query()
             ->published()
             ->with(['brand:id,name,slug', 'displayImage'])
+            ->withCount('productVariants')
             ->when($request->has('category_id'), fn ($q) => $q->whereHas('categories', fn ($c) => $c->where('category_id', $request->category_id)))
             ->when($request->has('brand_id'), fn ($q) => $q->where('brand_id', $request->brand_id))
             ->when($request->filled('search'), fn ($q) => $q->where('name', 'like', '%' . $request->search . '%'));
@@ -36,6 +37,7 @@ class ProductController extends Controller
                 'brand' => $product->brand ? ['id' => $product->brand->id, 'name' => $product->brand->name] : null,
                 'image_url' => $product->mainImage(false),
                 'thumb_url' => $product->mainImage(true),
+                'has_variants' => ($product->product_variants_count ?? 0) > 0,
             ];
         });
 
@@ -58,6 +60,13 @@ class ProductController extends Controller
     public function show($id): JsonResponse
     {
         $product = Product::published()->with(['brand:id,name,slug', 'displayImage', 'productVariants'])->find($id);
+        $attributeValueIds = $product ? $product->productVariants->pluck('attribute_values')->filter()->flatten()->unique()->values()->all() : [];
+        $attributeLabelById = [];
+        if (!empty($attributeValueIds)) {
+            foreach (\App\Models\AttributeValue::whereIn('id', $attributeValueIds)->get() as $av) {
+                $attributeLabelById[$av->id] = $av->value ?? $av->name ?? (string) $av->id;
+            }
+        }
 
         if (!$product) {
             return response()->json([
@@ -87,12 +96,17 @@ class ProductController extends Controller
                     'brand' => $product->brand ? ['id' => $product->brand->id, 'name' => $product->brand->name] : null,
                     'image_url' => $product->mainImage(false),
                     'thumb_url' => $product->mainImage(true),
-                    'variants' => $product->productVariants->map(fn ($v) => [
-                        'id' => $v->id,
-                        'regular_price' => (float) $v->regular_price,
-                        'sale_price' => (float) ($v->sale_price ?? $v->regular_price),
-                        'in_stock' => $v->in_stock ?? 0,
-                    ]),
+                    'variants' => $product->productVariants->map(function ($v) use ($attributeLabelById) {
+                        $ids = is_array($v->attribute_values) ? $v->attribute_values : json_decode($v->attribute_values ?? '[]', true);
+                        $name = $ids ? implode(', ', array_filter(array_map(fn ($id) => $attributeLabelById[$id] ?? null, $ids))) : null;
+                        return [
+                            'id' => $v->id,
+                            'regular_price' => (float) $v->regular_price,
+                            'sale_price' => (float) ($v->sale_price ?? $v->regular_price),
+                            'in_stock' => $v->in_stock ?? 0,
+                            'name' => $name ?: ('Option #' . $v->id),
+                        ];
+                    }),
                 ],
             ],
         ]);

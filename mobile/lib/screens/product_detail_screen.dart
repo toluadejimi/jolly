@@ -213,8 +213,11 @@ class _ProductDetailBody extends StatelessWidget {
                       final variantPrice = v.salePrice < v.regularPrice
                           ? v.salePrice
                           : v.regularPrice;
+                      final optionLabel = v.name != null && v.name!.isNotEmpty
+                          ? '${v.name} — ${formatNiara(variantPrice)}'
+                          : formatNiara(variantPrice);
                       return ChoiceChip(
-                        label: Text(formatNiara(variantPrice)),
+                        label: Text(optionLabel),
                         selected: isSelected,
                         onSelected: (_) => onVariantSelected(isSelected ? null : v),
                         selectedColor: theme.colorScheme.primaryContainer,

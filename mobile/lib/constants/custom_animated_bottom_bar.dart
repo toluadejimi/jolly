@@ -142,38 +142,38 @@ class _ItemWidget extends StatelessWidget {
                   Container(
                     width: Constant.getPercentSize(containerSize, 70),
                     height: Constant.getPercentSize(containerSize, 70),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      if (isSelected && isDark)
-                        BoxShadow(
-                          color: item.activeColor.withOpacity(0.45),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                        ),
-                      if (isSelected && !isDark)
-                        BoxShadow(
-                          color: shadowColor.withOpacity(0.08),
-                          blurRadius: 4,
-                          spreadRadius: 1,
-                          offset: const Offset(0, 2),
-                        ),
-                    ],
-                    color: isSelected ? item.activeColor : Colors.transparent,
-                  ),
-                  child: Center(
-                    child: SvgPicture.asset(
-                      Constant.assetImagePath + item.imageName!,
-                      colorFilter: isSelected
-                          ? ColorFilter.mode(
-                              isDark ? Colors.black : Colors.white,
-                              BlendMode.srcIn,
-                            )
-                          : null,
-                      height: (item.iconSize! * 1.1),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        if (isSelected && isDark)
+                          BoxShadow(
+                            color: item.activeColor.withOpacity(0.45),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          ),
+                        if (isSelected && !isDark)
+                          BoxShadow(
+                            color: shadowColor.withOpacity(0.08),
+                            blurRadius: 4,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 2),
+                          ),
+                      ],
+                      color: isSelected ? item.activeColor : Colors.transparent,
+                    ),
+                    child: Center(
+                      child: SvgPicture.asset(
+                        Constant.assetImagePath + item.imageName!,
+                        colorFilter: isSelected
+                            ? ColorFilter.mode(
+                                isDark ? Colors.black : Colors.white,
+                                BlendMode.srcIn,
+                              )
+                            : null,
+                        height: (item.iconSize! * 1.1),
+                      ),
                     ),
                   ),
-                ),
                 if (item.title != null && item.title!.isNotEmpty) ...[
                   SizedBox(height: Constant.getPercentSize(containerSize, 4)),
                   Flexible(
@@ -197,6 +197,7 @@ class _ItemWidget extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }

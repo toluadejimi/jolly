@@ -596,8 +596,11 @@ class _TabHomeState extends State<TabHome> {
                         children: product.variants.map((v) {
                           final variantPrice = v.salePrice < v.regularPrice ? v.salePrice : v.regularPrice;
                           final isSelected = selectedVariant?.id == v.id;
+                          final optionLabel = v.name != null && v.name!.isNotEmpty
+                              ? '${v.name} — ${formatNiara(variantPrice)}'
+                              : formatNiara(variantPrice);
                           return ChoiceChip(
-                            label: Text(formatNiara(variantPrice)),
+                            label: Text(optionLabel),
                             selected: isSelected,
                             onSelected: (_) => setModalState(() => selectedVariant = isSelected ? null : v),
                             selectedColor: theme.colorScheme.primaryContainer,
@@ -765,7 +768,7 @@ class _TabHomeState extends State<TabHome> {
                     padding: EdgeInsets.symmetric(vertical: Constant.getPercentSize(h, 2)),
                     child: Center(
                       child: getCustomText(
-                        'Add to cart',
+                        p.hasVariants ? 'Choose option' : 'Add to cart',
                         theme.colorScheme.onPrimary,
                         1,
                         TextAlign.center,

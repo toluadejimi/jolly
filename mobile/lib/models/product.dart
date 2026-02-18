@@ -13,6 +13,7 @@ class ProductItem {
     this.imageUrl,
     this.thumbUrl,
     this.badge,
+    this.hasVariants = false,
   });
 
   factory ProductItem.fromJson(Map<String, dynamic> json) {
@@ -20,6 +21,7 @@ class ProductItem {
     final badge = badgeRaw is String && badgeRaw.trim().isNotEmpty
         ? badgeRaw.trim()
         : null;
+    final hasVariants = json['has_variants'] as bool? ?? false;
     return ProductItem(
       id: json['id'] as int,
       name: json['name'] as String,
@@ -36,6 +38,7 @@ class ProductItem {
       imageUrl: json['image_url'] as String?,
       thumbUrl: json['thumb_url'] as String?,
       badge: badge,
+      hasVariants: hasVariants,
     );
   }
 
@@ -52,6 +55,7 @@ class ProductItem {
   final String? imageUrl;
   final String? thumbUrl;
   final String? badge;
+  final bool hasVariants;
 
   String get displayPrice => salePrice < regularPrice
       ? '$currency $salePrice'
@@ -178,14 +182,20 @@ class ProductVariant {
     required this.regularPrice,
     required this.salePrice,
     this.inStock = 0,
+    this.name,
   });
 
   factory ProductVariant.fromJson(Map<String, dynamic> json) {
+    final nameRaw = json['name'] ?? json['option'] ?? json['title'];
+    final name = nameRaw is String && nameRaw.trim().isNotEmpty
+        ? nameRaw.trim()
+        : null;
     return ProductVariant(
       id: json['id'] as int,
       regularPrice: (json['regular_price'] as num).toDouble(),
       salePrice: (json['sale_price'] as num).toDouble(),
       inStock: (json['in_stock'] as num?)?.toInt() ?? 0,
+      name: name,
     );
   }
 
@@ -193,4 +203,5 @@ class ProductVariant {
   final double regularPrice;
   final double salePrice;
   final int inStock;
+  final String? name;
 }
