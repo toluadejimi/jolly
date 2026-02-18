@@ -113,6 +113,9 @@ class UserOrderDetail {
     this.subtotal,
     this.shippingCharge,
     this.paymentStatus,
+    this.estimatedDeliveryAt,
+    this.trackingNumber,
+    this.trackingUrl,
   });
 
   factory UserOrderDetail.fromJson(Map<String, dynamic> json) {
@@ -130,6 +133,9 @@ class UserOrderDetail {
       subtotal: (json['subtotal'] as num?)?.toDouble(),
       shippingCharge: (json['shipping_charge'] as num?)?.toDouble(),
       paymentStatus: json['payment_status'] as String?,
+      estimatedDeliveryAt: json['estimated_delivery_at'] as String?,
+      trackingNumber: json['tracking_number'] as String?,
+      trackingUrl: json['tracking_url'] as String?,
     );
   }
 
@@ -143,6 +149,9 @@ class UserOrderDetail {
   final double? subtotal;
   final double? shippingCharge;
   final String? paymentStatus;
+  final String? estimatedDeliveryAt;
+  final String? trackingNumber;
+  final String? trackingUrl;
 
   String get statusDisplay {
     switch (status) {
@@ -171,6 +180,7 @@ class UserOrderDetailItem {
     required this.quantity,
     required this.price,
     required this.subtotal,
+    this.imageUrl,
   });
 
   factory UserOrderDetailItem.fromJson(Map<String, dynamic> json) {
@@ -180,6 +190,7 @@ class UserOrderDetailItem {
       quantity: (json['quantity'] as num).toInt(),
       price: (json['price'] as num).toDouble(),
       subtotal: (json['subtotal'] as num).toDouble(),
+      imageUrl: json['image_url'] as String?,
     );
   }
 
@@ -188,6 +199,7 @@ class UserOrderDetailItem {
   final int quantity;
   final double price;
   final double subtotal;
+  final String? imageUrl;
 }
 
 /// Orders list response from GET /api/orders.

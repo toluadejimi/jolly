@@ -131,16 +131,37 @@ class OrderController extends Controller
         $user = $request->user();
         $order = Order::where('user_id', $user->id)
             ->where(fn ($q) => $q->where('id', $orderRef)->orWhere('order_number', $orderRef))
-            ->with(['orderDetail.product', 'appliedCoupon'])
+            ->with(['orderDetail.product', 'orderDetail.productVariant', 'appliedCoupon'])
             ->firstOrFail();
 
-        $items = $order->orderDetail->map(fn ($d) => [
-            'product_id' => $d->product_id,
-            'product_name' => $d->product->name ?? null,
-            'quantity' => $d->quantity,
-            'price' => (float) $d->price,
-            'subtotal' => (float) ($d->price * $d->quantity),
-        ]);
+        $items = $order->orderDetail->map(function ($d) {
+            $product = $d->product;
+            $variant = $d->productVariant;
+            $imageUrl = null;
+            if ($variant && $variant->main_image_id) {
+                $imageUrl = $variant->mainImage(true);
+            }
+            if (!$imageUrl && $product) {
+                $imageUrl = $product->mainImage(true);
+            }
+            return [
+                'product_id' => $d->product_id,
+                'product_name' => $product->name ?? null,
+                'quantity' => $d->quantity,
+                'price' => (float) $d->price,
+                'subtotal' => (float) ($d->price * $d->quantity),
+                'image_url' => $imageUrl,
+            ];
+        });
+
+        $estimatedDelivery = null;
+        if ($order->estimated_delivery_at) {
+            if ($order->estimated_delivery_end_at && $order->estimated_delivery_end_at->format('Y-m-d') != $order->estimated_delivery_at->format('Y-m-d')) {
+                $estimatedDelivery = $order->estimated_delivery_at->format('M j, Y') . ' – ' . $order->estimated_delivery_end_at->format('M j, Y');
+            } else {
+                $estimatedDelivery = $order->estimated_delivery_at->format('l, F j, Y');
+            }
+        }
 
         return response()->json([
             'remark' => 'order_detail',
@@ -157,6 +178,9 @@ class OrderController extends Controller
                     'payment_status' => $order->payment_status == Status::PAYMENT_SUCCESS ? 'paid' : 'unpaid',
                     'status' => $this->orderStatusLabel($order->status),
                     'created_at' => $order->created_at->toIso8601String(),
+                    'estimated_delivery_at' => $estimatedDelivery,
+                    'tracking_number' => $order->tracking_number ?: null,
+                    'tracking_url' => $order->tracking_url ?: null,
                     'items' => $items,
                 ],
             ],

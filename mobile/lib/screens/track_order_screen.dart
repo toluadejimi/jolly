@@ -72,39 +72,51 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Track Order'),
+        backgroundColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.primary,
+        foregroundColor: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Text(
+              'Track Your Order',
+              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
             TextField(
               controller: _controller,
               decoration: const InputDecoration(
                 labelText: 'Order number',
-                hintText: 'e.g. ORD-12345',
+                hintText: 'Enter Your Order ID',
                 border: OutlineInputBorder(),
               ),
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => _track(),
             ),
             const SizedBox(height: 16),
-            FilledButton(
-              onPressed: _loading ? null : _track,
-              child: _loading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Track'),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _loading ? null : _track,
+                child: _loading
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Track Now'),
+              ),
             ),
             if (_result != null) ...[
-              const SizedBox(height: 24),
-              _buildResult(_result!),
+              const SizedBox(height: 28),
+              _buildResult(context, _result!),
             ],
           ],
         ),
@@ -112,45 +124,218 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
     );
   }
 
-  Widget _buildResult(OrderTrackingResult r) {
+  Widget _buildResult(BuildContext context, OrderTrackingResult r) {
+    final theme = Theme.of(context);
     if (!r.success) {
       return Card(
-        color: Theme.of(context).colorScheme.errorContainer,
+        color: theme.colorScheme.errorContainer,
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Text(r.error ?? 'Order not found'),
+          child: Row(
+            children: [
+              Icon(Icons.error_outline, color: theme.colorScheme.onErrorContainer),
+              const SizedBox(width: 12),
+              Expanded(child: Text(r.error ?? 'Order not found', style: theme.textTheme.bodyMedium)),
+            ],
+          ),
         ),
       );
     }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Card(
+          elevation: 1,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Order tracking details',
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                if (r.orderNumber != null && r.orderNumber!.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text('Order ${r.orderNumber}', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                ],
+                const SizedBox(height: 12),
+                // Estimated delivery – always show row
+                RichText(
+                  text: TextSpan(
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface),
+                    children: [
+                      TextSpan(text: 'Estimated delivery: ', style: TextStyle(fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                      TextSpan(
+                        text: (r.estimatedDeliveryAt != null && r.estimatedDeliveryAt!.isNotEmpty) ? r.estimatedDeliveryAt! : '—',
+                        style: TextStyle(color: (r.estimatedDeliveryAt != null && r.estimatedDeliveryAt!.isNotEmpty) ? null : theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Tracking number – always show row
+                RichText(
+                  text: TextSpan(
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface),
+                    children: [
+                      TextSpan(text: 'Tracking Number: ', style: TextStyle(fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                      TextSpan(
+                        text: (r.trackingNumber != null && r.trackingNumber!.isNotEmpty) ? r.trackingNumber! : '—',
+                        style: TextStyle(color: (r.trackingNumber != null && r.trackingNumber!.isNotEmpty) ? null : theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Tracking link – show link if URL present, else label
+                if (r.trackingUrl != null && r.trackingUrl!.isNotEmpty)
+                  InkWell(
+                    onTap: () async {
+                      final uri = Uri.tryParse(r.trackingUrl!);
+                      if (uri != null && await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.open_in_new, size: 18, color: theme.colorScheme.primary),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: RichText(
+                              text: TextSpan(
+                                style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface),
+                                children: [
+                                  TextSpan(text: 'Tracking: ', style: TextStyle(fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                                  TextSpan(text: r.trackingUrl!, style: TextStyle(color: theme.colorScheme.primary, decoration: TextDecoration.underline)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  RichText(
+                    text: TextSpan(
+                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface),
+                      children: [
+                        TextSpan(text: 'Tracking: ', style: TextStyle(fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
+                        TextSpan(text: '—', style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6))),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        if (r.isCanceled)
+          Card(
+            color: Colors.red.shade50,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(Icons.cancel_outlined, color: Colors.red.shade700),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text('This order is canceled.', style: theme.textTheme.bodyMedium?.copyWith(color: Colors.red.shade900))),
+                ],
+              ),
+            ),
+          )
+        else if (r.isReturned)
+          Card(
+            color: Colors.orange.shade50,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(Icons.assignment_return_outlined, color: Colors.orange.shade700),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text('This order was returned.', style: theme.textTheme.bodyMedium?.copyWith(color: Colors.orange.shade900))),
+                ],
+              ),
+            ),
+          )
+        else
+          _buildStatusSteps(context, r.status ?? 0),
+      ],
+    );
+  }
+
+  /// Four steps: Pending (0), Processing (1), Dispatched (2), Delivered (3).
+  Widget _buildStatusSteps(BuildContext context, int status) {
+    final theme = Theme.of(context);
+    const steps = [
+      (label: 'Pending', icon: Icons.pending_actions_outlined),
+      (label: 'Processing', icon: Icons.sync_alt),
+      (label: 'Dispatched', icon: Icons.local_shipping_outlined),
+      (label: 'Delivered', icon: Icons.check_circle_outline),
+    ];
+    final activeColor = theme.colorScheme.primary;
+    final inactiveColor = theme.colorScheme.outline.withOpacity(0.6);
+
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
+        child: Row(
           children: [
-            Text(
-              'Order ${r.orderNumber ?? ''}',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 12),
-            if (r.estimatedDeliveryAt != null) ...[
-              const Text('Estimated delivery:', style: TextStyle(fontWeight: FontWeight.w500)),
-              const SizedBox(height: 4),
-              Text(r.estimatedDeliveryAt!),
-              const SizedBox(height: 12),
-            ],
-            if (r.trackingNumber != null) ...[
-              const Text('Tracking number:', style: TextStyle(fontWeight: FontWeight.w500)),
-              const SizedBox(height: 4),
-              Text(r.trackingNumber!),
-              const SizedBox(height: 12),
-            ],
-            if (r.trackingUrl != null && r.trackingUrl!.isNotEmpty) ...[
-              FilledButton.icon(
-                onPressed: () => launchUrl(Uri.parse(r.trackingUrl!)),
-                icon: const Icon(Icons.open_in_new, size: 18),
-                label: const Text('Open tracking link'),
+            for (int i = 0; i < steps.length; i++) ...[
+              if (i > 0)
+                Expanded(
+                  child: Divider(
+                    thickness: 2,
+                    color: status > i - 1 ? activeColor : inactiveColor,
+                  ),
+                ),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: status >= i ? activeColor.withOpacity(0.15) : theme.colorScheme.surfaceContainerHighest,
+                        border: Border.all(
+                          color: status >= i ? activeColor : inactiveColor,
+                          width: status >= i ? 2 : 1,
+                        ),
+                      ),
+                      child: Icon(
+                        steps[i].icon,
+                        size: 22,
+                        color: status >= i ? activeColor : inactiveColor,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      steps[i].label,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: status >= i ? activeColor : inactiveColor,
+                        fontWeight: status >= i ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
+              if (i < steps.length - 1)
+                Expanded(
+                  child: Divider(
+                    thickness: 2,
+                    color: status > i ? activeColor : inactiveColor,
+                  ),
+                ),
             ],
           ],
         ),

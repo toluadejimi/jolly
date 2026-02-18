@@ -466,8 +466,9 @@ class ApiService {
 
   /// GET /api/order-tracking/{orderNumber} (no auth)
   Future<OrderTrackingResult> getOrderTracking(String orderNumber) async {
+    final encoded = Uri.encodeComponent(orderNumber.trim());
     final res = await http.get(
-      Uri.parse('$baseUrl/api/order-tracking/$orderNumber'),
+      Uri.parse('$baseUrl/api/order-tracking/$encoded'),
       headers: _publicHeaders,
     );
     if (res.statusCode == 404) {
