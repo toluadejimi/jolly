@@ -90,6 +90,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _state = TextEditingController();
   final _zip = TextEditingController();
   final _country = TextEditingController();
+  final _customisedTest = TextEditingController();
+  final _customisedShortTest = TextEditingController();
+  final _noteToSeller = TextEditingController();
 
   CheckoutExtras? _extras;
 
@@ -150,6 +153,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           _country.text = c.name;
         }
       }
+      if (prefilled['customised_test'] is String) _customisedTest.text = prefilled['customised_test'] as String;
+      if (prefilled['customised_short_test'] is String) _customisedShortTest.text = prefilled['customised_short_test'] as String;
+      if (prefilled['note_to_seller'] is String) _noteToSeller.text = prefilled['note_to_seller'] as String;
     }
     final extras = args['extras'] as CheckoutExtras?;
     if (extras != null) _extras = extras;
@@ -181,6 +187,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _state.dispose();
     _zip.dispose();
     _country.dispose();
+    _customisedTest.dispose();
+    _customisedShortTest.dispose();
+    _noteToSeller.dispose();
     super.dispose();
   }
 
@@ -271,6 +280,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       setState(() => _error = 'Your cart is empty');
       return;
     }
+    if (cart.items.any((i) => i.hasCustomisedTest) && _customisedTest.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter customized text')),
+      );
+      return;
+    }
+    if (cart.items.any((i) => i.hasCustomisedShortTest) && _customisedShortTest.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter customized short text (max 40 characters)')),
+      );
+      return;
+    }
     setState(() {
       _loading = true;
       _error = null;
@@ -303,15 +324,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       address: _address.text.trim(),
       apt: _apt.text.trim().isEmpty ? null : _apt.text.trim(),
     );
-    final extras = _extras;
+    final effectiveExtras = _extras ?? CheckoutExtras(
+      noteToSeller: _noteToSeller.text.trim().isEmpty ? null : _noteToSeller.text.trim(),
+      noteCharge: cart.items.any((i) => i.hasNote) && _noteToSeller.text.trim().isNotEmpty ? 5000 : 0,
+      customisedTest: _customisedTest.text.trim().isEmpty ? null : _customisedTest.text.trim(),
+      customisedShortTest: _customisedShortTest.text.trim().isEmpty ? null : _customisedShortTest.text.trim(),
+    );
     final orderRes = await api.createOrder(
       items: cart.items,
       shippingAddress: address,
       shippingMethodId: _selectedShipping!.id,
-      noteToSeller: extras?.noteToSeller,
-      noteCharge: extras?.noteCharge ?? 0,
-      customisedTest: extras?.customisedTest,
-      customisedShortTest: extras?.customisedShortTest,
+      noteToSeller: effectiveExtras.noteToSeller,
+      noteCharge: effectiveExtras.noteCharge,
+      customisedTest: effectiveExtras.customisedTest,
+      customisedShortTest: effectiveExtras.customisedShortTest,
     );
     if (!mounted) return;
     if (!orderRes.success || orderRes.data == null) {
@@ -325,107 +351,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
     _orderResult = orderRes.data;
     _error = null;
-    // 3) Load payment methods, pick default (SprintPay), initiate and redirect to gateway (match web flow)
-    final payListRes = await api.getPaymentMethods();
-    if (!mounted) return;
-    if (!payListRes.success || payListRes.data == null || payListRes.data!.isEmpty) {
-      setState(() => _loading = false);
-      if (_isAuthError(payListRes.error)) {
-        _showLoginRequired();
-      } else {
-        setState(() => _error = payListRes.error ?? 'No payment method available');
-      }
-      return;
-    }
-    _paymentMethods = payListRes.data!;
-    PaymentMethodItem? chosen;
-    for (final m in _paymentMethods) {
-      if (m.name.toLowerCase().contains('sprintpay')) {
-        chosen = m;
-        break;
-      }
-    }
-    chosen ??= _paymentMethods.first;
-    final payRes = await api.initiatePayment(
-      orderId: _orderResult!.orderId,
-      gateway: chosen.methodCode == 0 ? 0 : chosen.id,
-      currency: chosen.currency,
-    );
-    if (!mounted) return;
     setState(() => _loading = false);
-    if (!payRes.success || payRes.data == null) {
-      setState(() => _loading = false);
-      if (_isAuthError(payRes.error)) {
-        _showLoginRequired();
-      } else {
-        setState(() => _error = payRes.error ?? 'Payment initiation failed');
-      }
+    if (!mounted) return;
+    // SprintPay direct flow: paynow?amount=&key=&ref=&email=&mode=api → bottom sheet
+    final orderData = orderRes.data!;
+    final userEmail = _email.text.trim();
+    if (userEmail.isEmpty) {
+      setState(() => _error = 'Email is required for payment');
       return;
     }
-    final data = payRes.data!;
-    if (data.paymentUrl != null && data.paymentUrl!.isNotEmpty) {
-      final usedSheet = await showSprintPayPaymentFlow(
-        context,
-        paymentUrl: data.paymentUrl!,
-        orderNumber: data.orderNumber,
-        onOrderSuccess: () => context.read<CartProvider>().clear(),
-      );
-      if (!mounted) return;
-      if (usedSheet) return;
-      final uri = Uri.tryParse(data.paymentUrl!);
-      if (uri != null && await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-      context.read<CartProvider>().clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Complete payment in the browser. Order: ${data.orderNumber}'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      Navigator.of(context).popUntil((r) => r.isFirst);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => TrackOrderScreen(orderNumber: data.orderNumber),
-        ),
-      );
-    } else {
-      context.read<CartProvider>().clear();
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Order placed'),
-          content: Text(
-            'Your order ${data.orderNumber} has been placed successfully.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                Navigator.of(context).popUntil((r) => r.isFirst);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        TrackOrderScreen(orderNumber: data.orderNumber),
-                  ),
-                );
-              },
-              child: const Text('Track order'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                Navigator.of(context).popUntil((r) => r.isFirst);
-              },
-              child: const Text('Done'),
-            ),
-          ],
-        ),
-      );
-    }
+    await showSprintPayDirectFlow(
+      context,
+      amount: orderData.totalAmount,
+      ref: orderData.orderNumber,
+      email: userEmail,
+      orderNumber: orderData.orderNumber,
+      onOrderSuccess: () => context.read<CartProvider>().clear(),
+    );
   }
 
   Future<void> _placeOrder() async {
@@ -455,16 +397,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       address: _address.text.trim(),
       apt: _apt.text.trim().isEmpty ? null : _apt.text.trim(),
     );
-    final extras = _extras;
+    final effectiveExtras = _extras ?? CheckoutExtras(
+      noteToSeller: _noteToSeller.text.trim().isEmpty ? null : _noteToSeller.text.trim(),
+      noteCharge: cart.items.any((i) => i.hasNote) && _noteToSeller.text.trim().isNotEmpty ? 5000 : 0,
+      customisedTest: _customisedTest.text.trim().isEmpty ? null : _customisedTest.text.trim(),
+      customisedShortTest: _customisedShortTest.text.trim().isEmpty ? null : _customisedShortTest.text.trim(),
+    );
     final api = context.read<ApiService>();
     final res = await api.createOrder(
       items: cart.items,
       shippingAddress: address,
       shippingMethodId: _selectedShipping!.id,
-      noteToSeller: extras?.noteToSeller,
-      noteCharge: extras?.noteCharge ?? 0,
-      customisedTest: extras?.customisedTest,
-      customisedShortTest: extras?.customisedShortTest,
+      noteToSeller: effectiveExtras.noteToSeller,
+      noteCharge: effectiveExtras.noteCharge,
+      customisedTest: effectiveExtras.customisedTest,
+      customisedShortTest: effectiveExtras.customisedShortTest,
     );
     if (!mounted) return;
     setState(() {
@@ -672,6 +619,96 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
+  List<Widget> _buildExtraOptionSections(ThemeData theme) {
+    final cart = context.read<CartProvider>();
+    final showCustomisedTest = cart.items.any((i) => i.hasCustomisedTest);
+    final showCustomisedShortTest = cart.items.any((i) => i.hasCustomisedShortTest);
+    final showNote = cart.items.any((i) => i.hasNote);
+    final showCustomerPhoto = cart.items.any((i) => i.hasCustomerPhoto);
+    final list = <Widget>[];
+    if (showCustomerPhoto) {
+      list.addAll([
+        const SizedBox(height: 24),
+        Text(
+          'Upload Customized Product Photo',
+          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Front and back picture upload is available on the website.',
+          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+        ),
+      ]);
+    }
+    if (showCustomisedTest) {
+      list.addAll([
+        const SizedBox(height: 24),
+        Text(
+          'Customized Text',
+          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _customisedTest,
+          decoration: const InputDecoration(
+            hintText: 'Enter your note here...',
+            border: OutlineInputBorder(),
+            alignLabelWithHint: true,
+          ),
+          maxLines: 4,
+          maxLength: 5000,
+        ),
+      ]);
+    }
+    if (showCustomisedShortTest) {
+      list.addAll([
+        const SizedBox(height: 24),
+        Text(
+          'Customized Short Text (40)',
+          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _customisedShortTest,
+          decoration: const InputDecoration(
+            hintText: 'Enter your short note here...',
+            border: OutlineInputBorder(),
+          ),
+          maxLength: 40,
+        ),
+      ]);
+    }
+    if (showNote) {
+      list.addAll([
+        const SizedBox(height: 24),
+        Text(
+          'Note to Seller',
+          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _noteToSeller,
+          decoration: const InputDecoration(
+            hintText: 'Enter your note here...',
+            border: OutlineInputBorder(),
+            alignLabelWithHint: true,
+          ),
+          maxLines: 3,
+          maxLength: 250,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Note: Additional fee of ₦5,000 will be added.',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ]);
+    }
+    return list;
+  }
+
   Widget _shippingForm(ThemeData theme) {
     final showStateDropdown = _selectedCountry != null &&
         (_selectedCountry!.code == 'US' || _selectedCountry!.code == 'CA');
@@ -795,6 +832,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             border: OutlineInputBorder(),
           ),
         ),
+        ..._buildExtraOptionSections(theme),
         const SizedBox(height: 24),
         FilledButton(
           onPressed: _loading ? null : _proceedToPayment,

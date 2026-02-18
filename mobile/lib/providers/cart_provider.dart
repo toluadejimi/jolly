@@ -25,6 +25,10 @@ class CartProvider extends ChangeNotifier {
         imageUrl: item.imageUrl,
         currency: item.currency,
         quantity: item.quantity,
+        hasCustomerPhoto: item.hasCustomerPhoto,
+        hasCustomisedTest: item.hasCustomisedTest,
+        hasCustomisedShortTest: item.hasCustomisedShortTest,
+        hasNote: item.hasNote,
       ));
     }
     notifyListeners();

@@ -569,6 +569,10 @@ class _TabHomeState extends State<TabHome> {
         imageUrl: p.thumbUrl ?? p.imageUrl,
         currency: p.currency,
         quantity: 1,
+        hasCustomerPhoto: product.customerPhoto,
+        hasCustomisedTest: product.customisedTest,
+        hasCustomisedShortTest: product.customisedShortTest,
+        hasNote: product.note,
       ));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -653,6 +657,10 @@ class _TabHomeState extends State<TabHome> {
                                     imageUrl: product.thumbUrl ?? product.imageUrl,
                                     currency: product.currency,
                                     quantity: 1,
+                                    hasCustomerPhoto: product.customerPhoto,
+                                    hasCustomisedTest: product.customisedTest,
+                                    hasCustomisedShortTest: product.customisedShortTest,
+                                    hasNote: product.note,
                                   ));
                                   Navigator.of(ctx).pop();
                                   ScaffoldMessenger.of(context).showSnackBar(

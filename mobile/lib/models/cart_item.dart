@@ -9,6 +9,10 @@ class CartItem {
     this.imageUrl,
     this.currency = '',
     this.quantity = 1,
+    this.hasCustomerPhoto = false,
+    this.hasCustomisedTest = false,
+    this.hasCustomisedShortTest = false,
+    this.hasNote = false,
   });
 
   final int productId;
@@ -18,6 +22,10 @@ class CartItem {
   final String? imageUrl;
   final String currency;
   int quantity;
+  final bool hasCustomerPhoto;
+  final bool hasCustomisedTest;
+  final bool hasCustomisedShortTest;
+  final bool hasNote;
 
   String get displayPrice => '$currency ${(price * quantity).toStringAsFixed(2)}';
   String get unitPrice => '$currency ${price.toStringAsFixed(2)}';
@@ -31,6 +39,10 @@ class CartItem {
       imageUrl: imageUrl,
       currency: currency,
       quantity: quantity ?? this.quantity,
+      hasCustomerPhoto: hasCustomerPhoto,
+      hasCustomisedTest: hasCustomisedTest,
+      hasCustomisedShortTest: hasCustomisedShortTest,
+      hasNote: hasNote,
     );
   }
 }

@@ -365,6 +365,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                     imageUrl: p.thumbUrl ?? p.imageUrl,
                                     currency: p.currency,
                                     quantity: 1,
+                                    hasCustomerPhoto: p.customerPhoto,
+                                    hasCustomisedTest: p.customisedTest,
+                                    hasCustomisedShortTest: p.customisedShortTest,
+                                    hasNote: p.note,
                                   ));
                                   CheckoutScreen.showCheckoutChoice(context);
                                 },

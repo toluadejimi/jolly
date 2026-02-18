@@ -18,6 +18,10 @@ class ProductItem {
     this.usaExpressDelivery = false,
     this.usaDelivery = false,
     this.allCountriesDelivery = false,
+    this.customerPhoto = false,
+    this.customisedTest = false,
+    this.customisedShortTest = false,
+    this.note = false,
   });
 
   factory ProductItem.fromJson(Map<String, dynamic> json) {
@@ -47,6 +51,10 @@ class ProductItem {
       usaExpressDelivery: json['usa_express_delivery'] as bool? ?? false,
       usaDelivery: json['usa_delivery'] as bool? ?? false,
       allCountriesDelivery: json['all_countries_delivery'] as bool? ?? false,
+      customerPhoto: ProductDetail._parseBool(json['customer_photo']),
+      customisedTest: ProductDetail._parseBool(json['customised_test']),
+      customisedShortTest: ProductDetail._parseBool(json['customised_short_test']),
+      note: ProductDetail._parseBool(json['note']),
     );
   }
 
@@ -68,6 +76,10 @@ class ProductItem {
   final bool usaExpressDelivery;
   final bool usaDelivery;
   final bool allCountriesDelivery;
+  final bool customerPhoto;
+  final bool customisedTest;
+  final bool customisedShortTest;
+  final bool note;
 
   /// Delivery badges matching web product_images.blade.php (Today Delivery, US Express, US Delivery, All Countries).
   List<String> get deliveryBadges {

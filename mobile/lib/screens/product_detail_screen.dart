@@ -295,6 +295,10 @@ class _ProductDetailBody extends StatelessWidget {
                                   imageUrl: selectedVariant?.imageUrl ?? product.thumbUrl ?? product.imageUrl,
                                   currency: product.currency,
                                   quantity: quantity,
+                                  hasCustomerPhoto: product.customerPhoto,
+                                  hasCustomisedTest: product.customisedTest,
+                                  hasCustomisedShortTest: product.customisedShortTest,
+                                  hasNote: product.note,
                                 ));
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -704,6 +708,10 @@ class _ProductCheckoutFormState extends State<_ProductCheckoutForm> {
           imageUrl: widget.selectedVariant?.imageUrl ?? widget.product.thumbUrl ?? widget.product.imageUrl,
           currency: widget.product.currency,
           quantity: widget.quantity,
+          hasCustomerPhoto: widget.product.customerPhoto,
+          hasCustomisedTest: widget.product.customisedTest,
+          hasCustomisedShortTest: widget.product.customisedShortTest,
+          hasNote: widget.product.note,
         ));
     if (!mounted) return;
     setState(() => _loading = false);
