@@ -63,7 +63,14 @@ class ProductController extends Controller
 
     public function show($id): JsonResponse
     {
-        $product = Product::published()->with(['brand:id,name,slug', 'displayImage', 'productVariants'])->find($id);
+        $product = Product::published()
+            ->with([
+                'brand:id,name,slug',
+                'displayImage',
+                'galleryImages',
+                'productVariants' => fn ($q) => $q->published()->with(['displayImage', 'galleryImages']),
+            ])
+            ->find($id);
         $attributeValueIds = $product ? $product->productVariants->pluck('attribute_values')->filter()->flatten()->unique()->values()->all() : [];
         $attributeLabelById = [];
         if (!empty($attributeValueIds)) {
@@ -82,6 +89,45 @@ class ProductController extends Controller
 
         $prices = $product->prices(null);
 
+        // Gallery: main image first, then gallery (match web product_images)
+        $galleryUrls = [];
+        $mainUrl = $product->mainImage(false);
+        if ($mainUrl) {
+            $galleryUrls[] = $mainUrl;
+        }
+        $galleryCollection = $product->galleryImages ?? collect();
+        foreach ($galleryCollection as $media) {
+            $url = $media->full_url ?? url($media->path . '/' . $media->file_name);
+            if (!in_array($url, $galleryUrls)) {
+                $galleryUrls[] = $url;
+            }
+        }
+
+        $variantsPayload = $product->productVariants->map(function ($v) use ($attributeLabelById) {
+            $ids = is_array($v->attribute_values) ? $v->attribute_values : json_decode($v->attribute_values ?? '[]', true);
+            $name = $ids ? implode(', ', array_filter(array_map(fn ($id) => $attributeLabelById[$id] ?? null, $ids))) : null;
+            $variantImageUrl = $v->mainImage(false);
+            $variantGalleryUrls = [];
+            if ($variantImageUrl) {
+                $variantGalleryUrls[] = $variantImageUrl;
+            }
+            foreach ($v->galleryImages ?? [] as $media) {
+                $url = $media->full_url ?? url($media->path . '/' . $media->file_name);
+                if (!in_array($url, $variantGalleryUrls)) {
+                    $variantGalleryUrls[] = $url;
+                }
+            }
+            return [
+                'id' => $v->id,
+                'regular_price' => (float) $v->regular_price,
+                'sale_price' => (float) ($v->sale_price ?? $v->regular_price),
+                'in_stock' => $v->in_stock ?? 0,
+                'name' => $name ?: ('Option #' . $v->id),
+                'image_url' => $variantImageUrl,
+                'gallery_urls' => array_values($variantGalleryUrls),
+            ];
+        });
+
         return response()->json([
             'remark' => 'product_detail',
             'status' => 'success',
@@ -92,6 +138,7 @@ class ProductController extends Controller
                     'name' => $product->name,
                     'slug' => $product->slug,
                     'sku' => $product->sku,
+                    'description' => $product->description ?? '',
                     'regular_price' => (float) ($prices->regular_price ?? $product->regular_price),
                     'sale_price' => (float) ($prices->sale_price ?? $product->sale_price ?? $product->regular_price),
                     'currency' => gs('cur_text'),
@@ -100,21 +147,12 @@ class ProductController extends Controller
                     'brand' => $product->brand ? ['id' => $product->brand->id, 'name' => $product->brand->name] : null,
                     'image_url' => $product->mainImage(false),
                     'thumb_url' => $product->mainImage(true),
+                    'gallery_urls' => array_values($galleryUrls),
                     'today_delivery' => (bool) ($product->today_delivery ?? 0),
                     'usa_express_delivery' => (bool) ($product->usa_express_delivery ?? 0),
                     'usa_delivery' => (bool) ($product->usa_delivery ?? 0),
                     'all_countries_delivery' => (bool) ($product->all_countries_delivery ?? 0),
-                    'variants' => $product->productVariants->map(function ($v) use ($attributeLabelById) {
-                        $ids = is_array($v->attribute_values) ? $v->attribute_values : json_decode($v->attribute_values ?? '[]', true);
-                        $name = $ids ? implode(', ', array_filter(array_map(fn ($id) => $attributeLabelById[$id] ?? null, $ids))) : null;
-                        return [
-                            'id' => $v->id,
-                            'regular_price' => (float) $v->regular_price,
-                            'sale_price' => (float) ($v->sale_price ?? $v->regular_price),
-                            'in_stock' => $v->in_stock ?? 0,
-                            'name' => $name ?: ('Option #' . $v->id),
-                        ];
-                    }),
+                    'variants' => $variantsPayload,
                 ],
             ],
         ]);

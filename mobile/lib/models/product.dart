@@ -161,6 +161,8 @@ class ProductDetail {
     this.variants = const [],
     this.imageUrl,
     this.thumbUrl,
+    this.galleryUrls = const [],
+    this.description,
     this.badge,
     this.todayDelivery = false,
     this.usaExpressDelivery = false,
@@ -170,6 +172,7 @@ class ProductDetail {
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
     final v = json['variants'] as List<dynamic>? ?? [];
+    final galleryList = json['gallery_urls'] as List<dynamic>? ?? [];
     final badgeRaw = json['badge'] ?? json['product_badge'] ?? json['tag'];
     final badge = badgeRaw is String && badgeRaw.toString().trim().isNotEmpty
         ? badgeRaw.toString().trim()
@@ -192,6 +195,8 @@ class ProductDetail {
           .toList(),
       imageUrl: json['image_url'] as String?,
       thumbUrl: json['thumb_url'] as String?,
+      galleryUrls: galleryList.map((e) => e.toString()).where((s) => s.isNotEmpty).toList(),
+      description: json['description'] as String?,
       badge: badge,
       todayDelivery: json['today_delivery'] as bool? ?? false,
       usaExpressDelivery: json['usa_express_delivery'] as bool? ?? false,
@@ -213,11 +218,20 @@ class ProductDetail {
   final List<ProductVariant> variants;
   final String? imageUrl;
   final String? thumbUrl;
+  final List<String> galleryUrls;
+  final String? description;
   final String? badge;
   final bool todayDelivery;
   final bool usaExpressDelivery;
   final bool usaDelivery;
   final bool allCountriesDelivery;
+
+  /// All image URLs to show: gallery if present, else main image.
+  List<String> get displayImageUrls {
+    if (galleryUrls.isNotEmpty) return galleryUrls;
+    final main = imageUrl ?? thumbUrl;
+    return main != null && main.isNotEmpty ? [main] : [];
+  }
 
   List<String> get deliveryBadges {
     final list = <String>[];
@@ -246,6 +260,8 @@ class ProductVariant {
     required this.salePrice,
     this.inStock = 0,
     this.name,
+    this.imageUrl,
+    this.galleryUrls = const [],
   });
 
   factory ProductVariant.fromJson(Map<String, dynamic> json) {
@@ -253,12 +269,15 @@ class ProductVariant {
     final name = nameRaw is String && nameRaw.trim().isNotEmpty
         ? nameRaw.trim()
         : null;
+    final galleryList = json['gallery_urls'] as List<dynamic>? ?? [];
     return ProductVariant(
       id: json['id'] as int,
       regularPrice: (json['regular_price'] as num).toDouble(),
       salePrice: (json['sale_price'] as num).toDouble(),
       inStock: (json['in_stock'] as num?)?.toInt() ?? 0,
       name: name,
+      imageUrl: json['image_url'] as String?,
+      galleryUrls: galleryList.map((e) => e.toString()).where((s) => s.isNotEmpty).toList(),
     );
   }
 
@@ -267,4 +286,12 @@ class ProductVariant {
   final double salePrice;
   final int inStock;
   final String? name;
+  final String? imageUrl;
+  final List<String> galleryUrls;
+
+  /// Image URLs to show for this variant: variant gallery if any, else variant image, else empty.
+  List<String> get displayImageUrls {
+    if (galleryUrls.isNotEmpty) return galleryUrls;
+    return imageUrl != null && imageUrl!.isNotEmpty ? [imageUrl!] : [];
+  }
 }

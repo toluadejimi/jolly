@@ -12,6 +12,21 @@ import '../utils/format_utils.dart';
 import '../utils/color_utils.dart';
 import '../widgets/product_badge_ribbon.dart';
 
+/// Strip simple HTML tags and normalize whitespace for description text.
+String stripHtmlToPlainText(String? html) {
+  if (html == null || html.isEmpty) return '';
+  String t = html
+      .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+      .replaceAll(RegExp(r'</p>\s*<p>', caseSensitive: false), '\n\n')
+      .replaceAll(RegExp(r'<[^>]*>'), '')
+      .replaceAll('&nbsp;', ' ')
+      .replaceAll('&amp;', '&')
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      .replaceAll('&quot;', '"');
+  return t.splitMapJoin(RegExp(r'\s+'), onMatch: (_) => ' ', onNonMatch: (s) => s).trim();
+}
+
 class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen({super.key, required this.productId});
 
@@ -135,7 +150,6 @@ class _ProductDetailBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final imageUrl = product.imageUrl ?? product.thumbUrl;
     final hasVariants = product.variants.isNotEmpty;
     final price = selectedVariant != null
         ? (selectedVariant!.salePrice < selectedVariant!.regularPrice
@@ -145,44 +159,18 @@ class _ProductDetailBody extends StatelessWidget {
             ? product.salePrice
             : product.regularPrice;
     final canAddToCart = !hasVariants || selectedVariant != null;
+    // When a variant with images is selected, show its images in the gallery
+    final galleryUrls = selectedVariant != null && selectedVariant!.displayImageUrls.isNotEmpty
+        ? selectedVariant!.displayImageUrls
+        : product.displayImageUrls;
 
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Hero image with badge ribbons (match web product_images.blade.php)
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                height: 280,
-                width: double.infinity,
-                color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                child: imageUrl != null && imageUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) => const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2)),
-                        errorWidget: (_, __, ___) => Icon(
-                          Icons.card_giftcard,
-                          size: 80,
-                          color: theme.colorScheme.primary,
-                        ),
-                      )
-                    : Icon(
-                        Icons.card_giftcard,
-                        size: 80,
-                        color: theme.colorScheme.primary,
-                      ),
-              ),
-              if (product.displayBadges.isNotEmpty)
-                Positioned(
-                  top: 10,
-                  left: 10,
-                  child: ProductBadgeRibbon(labels: product.displayBadges),
-                ),
-            ],
+          _ProductImageGallery(
+            imageUrls: galleryUrls,
+            badges: product.displayBadges,
           ),
           Padding(
             padding: const EdgeInsets.all(20),
@@ -221,49 +209,38 @@ class _ProductDetailBody extends StatelessWidget {
                     ),
                   ),
                 ],
-                // Variant selector
-                if (hasVariants) ...[
+                // Description
+                if (product.description != null && product.description!.trim().isNotEmpty) ...[
                   const SizedBox(height: 20),
+                  Text(
+                    'Description',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    stripHtmlToPlainText(product.description),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+                // Variant selector – professional layout
+                if (hasVariants) ...[
+                  const SizedBox(height: 24),
                   Text(
                     'Choose option',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 8,
-                    children: product.variants.map((v) {
-                      final isSelected = selectedVariant?.id == v.id;
-                      final variantPrice = v.salePrice < v.regularPrice
-                          ? v.salePrice
-                          : v.regularPrice;
-                      final display = variantOptionDisplay(v.name, formatNiara(variantPrice));
-                      return ChoiceChip(
-                        label: display.color != null
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 18,
-                                    height: 18,
-                                    decoration: BoxDecoration(
-                                      color: display.color,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: theme.dividerColor),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(display.displayLabel),
-                                ],
-                              )
-                            : Text(display.displayLabel),
-                        selected: isSelected,
-                        onSelected: (_) => onVariantSelected(isSelected ? null : v),
-                        selectedColor: theme.colorScheme.primaryContainer,
-                      );
-                    }).toList(),
+                  const SizedBox(height: 12),
+                  _VariantSelector(
+                    variants: product.variants,
+                    selectedVariant: selectedVariant,
+                    onVariantSelected: onVariantSelected,
                   ),
                 ],
                 // Quantity
@@ -310,7 +287,7 @@ class _ProductDetailBody extends StatelessWidget {
                                   variantId: selectedVariant?.id,
                                   name: product.name,
                                   price: price,
-                                  imageUrl: product.thumbUrl ?? product.imageUrl,
+                                  imageUrl: selectedVariant?.imageUrl ?? product.thumbUrl ?? product.imageUrl,
                                   currency: product.currency,
                                   quantity: quantity,
                                 ));
@@ -337,6 +314,245 @@ class _ProductDetailBody extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Image gallery with page indicator. Shows multiple product/variant images.
+class _ProductImageGallery extends StatefulWidget {
+  const _ProductImageGallery({
+    required this.imageUrls,
+    this.badges = const [],
+  });
+
+  final List<String> imageUrls;
+  final List<String> badges;
+
+  @override
+  State<_ProductImageGallery> createState() => _ProductImageGalleryState();
+}
+
+class _ProductImageGalleryState extends State<_ProductImageGallery> {
+  late PageController _pageController;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final urls = widget.imageUrls.isEmpty
+        ? <String>[]
+        : widget.imageUrls;
+    final hasImages = urls.isNotEmpty;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        SizedBox(
+          height: 320,
+          width: double.infinity,
+          child: hasImages
+              ? PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: (i) => setState(() => _currentPage = i),
+                  itemCount: urls.length,
+                  itemBuilder: (context, index) {
+                    return CachedNetworkImage(
+                      imageUrl: urls[index],
+                      fit: BoxFit.contain,
+                      placeholder: (_, __) => const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2)),
+                      errorWidget: (_, __, ___) => Icon(
+                        Icons.card_giftcard,
+                        size: 80,
+                        color: theme.colorScheme.primary,
+                      ),
+                    );
+                  },
+                )
+              : Container(
+                  color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                  child: Icon(
+                    Icons.card_giftcard,
+                    size: 80,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+        ),
+        if (hasImages && urls.length > 1)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 12,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(urls.length, (i) {
+                final selected = i == _currentPage;
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: selected ? 10 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: selected
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.onSurface.withOpacity(0.4),
+                  ),
+                );
+              }),
+            ),
+          ),
+        if (widget.badges.isNotEmpty)
+          Positioned(
+            top: 10,
+            left: 10,
+            child: ProductBadgeRibbon(labels: widget.badges),
+          ),
+      ],
+    );
+  }
+}
+
+/// Professional variant selector: cards with optional thumbnail, color, or text.
+class _VariantSelector extends StatelessWidget {
+  const _VariantSelector({
+    required this.variants,
+    required this.selectedVariant,
+    required this.onVariantSelected,
+  });
+
+  final List<ProductVariant> variants;
+  final ProductVariant? selectedVariant;
+  final ValueChanged<ProductVariant?> onVariantSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossCount = constraints.maxWidth > 400 ? 2 : 1;
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: crossCount,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: crossCount == 2 ? 2.8 : 3.2,
+          children: variants.map((v) {
+            final isSelected = selectedVariant?.id == v.id;
+            final variantPrice = v.salePrice < v.regularPrice ? v.salePrice : v.regularPrice;
+            final display = variantOptionDisplay(v.name, formatNiara(variantPrice));
+            final hasImage = v.imageUrl != null && v.imageUrl!.isNotEmpty;
+
+            return Material(
+              color: isSelected
+                  ? theme.colorScheme.primaryContainer.withOpacity(0.5)
+                  : theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(12),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: () => onVariantSelected(isSelected ? null : v),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.outline.withOpacity(0.3),
+                      width: isSelected ? 2 : 1,
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  child: Row(
+                    children: [
+                      if (hasImage)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: CachedNetworkImage(
+                            imageUrl: v.imageUrl!,
+                            width: 56,
+                            height: 56,
+                            fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) => Icon(
+                              Icons.image_not_supported_outlined,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        )
+                      else if (display.color != null)
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: display.color,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: theme.dividerColor),
+                          ),
+                        )
+                      else
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.inventory_2_outlined,
+                            color: theme.colorScheme.onSurfaceVariant,
+                            size: 22,
+                          ),
+                        ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              display.displayLabel,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (v.inStock > 0 && v.inStock < 20)
+                              Text(
+                                '${v.inStock} left',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.error,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      if (isSelected)
+                        Icon(
+                          Icons.check_circle,
+                          color: theme.colorScheme.primary,
+                          size: 22,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
     );
   }
 }
