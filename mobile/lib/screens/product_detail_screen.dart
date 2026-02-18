@@ -9,6 +9,8 @@ import '../providers/cart_provider.dart';
 import '../services/api_service.dart';
 import '../ui/home/home_screen.dart';
 import '../utils/format_utils.dart';
+import '../utils/color_utils.dart';
+import '../widgets/product_badge_ribbon.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen({super.key, required this.productId});
@@ -42,26 +44,39 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           Consumer<CartProvider>(
             builder: (context, cart, _) {
               return IconButton(
-                icon: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Icon(Icons.shopping_cart_outlined, color: theme.appBarTheme.foregroundColor),
-                    if (cart.count > 0)
+                icon: SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.center,
+                    children: [
                       Positioned(
-                        right: -4,
-                        top: -4,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                          constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                          child: Text(
-                            cart.count > 99 ? '99+' : '${cart.count}',
-                            style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
+                        left: 0,
+                        top: 0,
+                        child: Icon(Icons.shopping_cart_outlined, color: theme.appBarTheme.foregroundColor, size: 24),
+                      ),
+                      if (cart.count > 0)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                            ),
+                            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                            child: Center(
+                              child: Text(
+                                cart.count > 99 ? '99+' : '${cart.count}',
+                                style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
                 onPressed: () {
                   Navigator.of(context).push(
@@ -135,28 +150,39 @@ class _ProductDetailBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Hero image
-          Container(
-            height: 280,
-            width: double.infinity,
-            color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-            child: imageUrl != null && imageUrl.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (_, __) => const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2)),
-                    errorWidget: (_, __, ___) => Icon(
-                      Icons.card_giftcard,
-                      size: 80,
-                      color: theme.colorScheme.primary,
-                    ),
-                  )
-                : Icon(
-                    Icons.card_giftcard,
-                    size: 80,
-                    color: theme.colorScheme.primary,
-                  ),
+          // Hero image with badge ribbons (match web product_images.blade.php)
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                height: 280,
+                width: double.infinity,
+                color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                child: imageUrl != null && imageUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2)),
+                        errorWidget: (_, __, ___) => Icon(
+                          Icons.card_giftcard,
+                          size: 80,
+                          color: theme.colorScheme.primary,
+                        ),
+                      )
+                    : Icon(
+                        Icons.card_giftcard,
+                        size: 80,
+                        color: theme.colorScheme.primary,
+                      ),
+              ),
+              if (product.displayBadges.isNotEmpty)
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: ProductBadgeRibbon(labels: product.displayBadges),
+                ),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.all(20),
@@ -213,11 +239,26 @@ class _ProductDetailBody extends StatelessWidget {
                       final variantPrice = v.salePrice < v.regularPrice
                           ? v.salePrice
                           : v.regularPrice;
-                      final optionLabel = v.name != null && v.name!.isNotEmpty
-                          ? '${v.name} — ${formatNiara(variantPrice)}'
-                          : formatNiara(variantPrice);
+                      final display = variantOptionDisplay(v.name, formatNiara(variantPrice));
                       return ChoiceChip(
-                        label: Text(optionLabel),
+                        label: display.color != null
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 18,
+                                    height: 18,
+                                    decoration: BoxDecoration(
+                                      color: display.color,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: theme.dividerColor),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(display.displayLabel),
+                                ],
+                              )
+                            : Text(display.displayLabel),
                         selected: isSelected,
                         onSelected: (_) => onVariantSelected(isSelected ? null : v),
                         selectedColor: theme.colorScheme.primaryContainer,

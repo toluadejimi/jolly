@@ -19,6 +19,8 @@ import 'package:giftfr/providers/cart_provider.dart';
 import 'package:giftfr/services/api_service.dart';
 import 'package:giftfr/ui/home/home_screen.dart';
 import 'package:giftfr/utils/format_utils.dart';
+import 'package:giftfr/utils/color_utils.dart';
+import 'package:giftfr/widgets/product_badge_ribbon.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TabHome extends StatefulWidget {
@@ -150,36 +152,47 @@ class _TabHomeState extends State<TabHome> {
                           ),
                         );
                       },
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          getSvgImage("Bag.svg", iconSize, color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary),
-                          if (cart.count > 0)
+                      child: SizedBox(
+                        width: iconSize + 14,
+                        height: iconSize + 14,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          alignment: Alignment.center,
+                          children: [
                             Positioned(
-                              right: -4,
-                              top: -4,
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
-                                ),
-                                constraints: const BoxConstraints(
-                                  minWidth: 18,
-                                  minHeight: 18,
-                                ),
-                                child: Text(
-                                  cart.count > 99 ? '99+' : '${cart.count}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                              left: 0,
+                              top: 0,
+                              child: getSvgImage("Bag.svg", iconSize, color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onPrimary),
+                            ),
+                            if (cart.count > 0)
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.rectangle,
+                                    borderRadius: BorderRadius.all(Radius.circular(10)),
                                   ),
-                                  textAlign: TextAlign.center,
+                                  constraints: const BoxConstraints(
+                                    minWidth: 18,
+                                    minHeight: 18,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      cart.count > 99 ? '99+' : '${cart.count}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -265,9 +278,10 @@ class _TabHomeState extends State<TabHome> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Expanded(
+                                    SizedBox(
+                                      height: Constant.getPercentSize(categoryHeight, 48),
+                                      width: categoryWidth,
                                       child: Container(
-                                        width: categoryWidth,
                                         decoration: BoxDecoration(
                                           color: theme.cardTheme.color,
                                           borderRadius: BorderRadius.circular(12),
@@ -295,10 +309,10 @@ class _TabHomeState extends State<TabHome> {
                                         ),
                                       ),
                                     ),
-                                    SizedBox(height: Constant.getPercentSize(categoryHeight, 6)),
+                                    SizedBox(height: Constant.getPercentSize(categoryHeight, 4)),
                                     SizedBox(
                                       width: categoryWidth,
-                                      height: Constant.getPercentSize(categoryHeight, 18),
+                                      height: Constant.getPercentSize(categoryHeight, 42),
                                       child: getCustomText(
                                         cat.name,
                                         theme.colorScheme.onSurface,
@@ -596,11 +610,26 @@ class _TabHomeState extends State<TabHome> {
                         children: product.variants.map((v) {
                           final variantPrice = v.salePrice < v.regularPrice ? v.salePrice : v.regularPrice;
                           final isSelected = selectedVariant?.id == v.id;
-                          final optionLabel = v.name != null && v.name!.isNotEmpty
-                              ? '${v.name} — ${formatNiara(variantPrice)}'
-                              : formatNiara(variantPrice);
+                          final display = variantOptionDisplay(v.name, formatNiara(variantPrice));
                           return ChoiceChip(
-                            label: Text(optionLabel),
+                            label: display.color != null
+                                ? Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 18,
+                                        height: 18,
+                                        decoration: BoxDecoration(
+                                          color: display.color,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: theme.dividerColor),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(display.displayLabel),
+                                    ],
+                                  )
+                                : Text(display.displayLabel),
                             selected: isSelected,
                             onSelected: (_) => setModalState(() => selectedVariant = isSelected ? null : v),
                             selectedColor: theme.colorScheme.primaryContainer,
@@ -707,32 +736,11 @@ class _TabHomeState extends State<TabHome> {
                             child: Icon(Icons.card_giftcard, size: Constant.getPercentSize(h, 25), color: theme.colorScheme.primary),
                           ),
                   ),
-                  if (p.badge != null && p.badge!.isNotEmpty)
+                  if (p.displayBadges.isNotEmpty)
                     Positioned(
-                      top: 6,
-                      right: 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary,
-                          borderRadius: BorderRadius.circular(6),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 4,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          p.badge!,
-                          style: TextStyle(
-                            color: theme.colorScheme.onPrimary,
-                            fontSize: Constant.getPercentSize(h, 3.2),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
+                      top: 10,
+                      left: 10,
+                      child: ProductBadgeRibbon(labels: p.displayBadges),
                     ),
                 ],
               ),

@@ -171,8 +171,11 @@ class _LoginScreen extends State<LoginScreen>
                               )),
                           getSpace(appbarPadding / 2),
                           getButton(primaryColor, true, "Sign In", Colors.white,
-                              () {
-                            PrefData.setLogIn(true);
+                              () async {
+                            await PrefData.setLogIn(true);
+                            await PrefData.setUserEmail(emailSignInController.text.trim().isEmpty ? null : emailSignInController.text.trim());
+                            await PrefData.setUserName(null); // Backend could provide name later
+                            if (!context.mounted) return;
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(builder: (context) => HomeScreen()),
                             );

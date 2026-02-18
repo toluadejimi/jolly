@@ -14,6 +14,10 @@ class ProductItem {
     this.thumbUrl,
     this.badge,
     this.hasVariants = false,
+    this.todayDelivery = false,
+    this.usaExpressDelivery = false,
+    this.usaDelivery = false,
+    this.allCountriesDelivery = false,
   });
 
   factory ProductItem.fromJson(Map<String, dynamic> json) {
@@ -39,6 +43,10 @@ class ProductItem {
       thumbUrl: json['thumb_url'] as String?,
       badge: badge,
       hasVariants: hasVariants,
+      todayDelivery: json['today_delivery'] as bool? ?? false,
+      usaExpressDelivery: json['usa_express_delivery'] as bool? ?? false,
+      usaDelivery: json['usa_delivery'] as bool? ?? false,
+      allCountriesDelivery: json['all_countries_delivery'] as bool? ?? false,
     );
   }
 
@@ -56,6 +64,27 @@ class ProductItem {
   final String? thumbUrl;
   final String? badge;
   final bool hasVariants;
+  final bool todayDelivery;
+  final bool usaExpressDelivery;
+  final bool usaDelivery;
+  final bool allCountriesDelivery;
+
+  /// Delivery badges matching web product_images.blade.php (Today Delivery, US Express, US Delivery, All Countries).
+  List<String> get deliveryBadges {
+    final list = <String>[];
+    if (todayDelivery) list.add('Today Delivery');
+    if (usaExpressDelivery) list.add('🇺🇸 US Express Shipping');
+    if (usaDelivery) list.add('🇺🇸 US Delivery');
+    if (allCountriesDelivery) list.add('🌎 All Countries Delivery');
+    return list;
+  }
+
+  /// All badges to show on card: delivery badges first, then generic badge if any.
+  List<String> get displayBadges {
+    final list = List<String>.from(deliveryBadges);
+    if (badge != null && badge!.isNotEmpty) list.add(badge!);
+    return list;
+  }
 
   String get displayPrice => salePrice < regularPrice
       ? '$currency $salePrice'
@@ -132,10 +161,19 @@ class ProductDetail {
     this.variants = const [],
     this.imageUrl,
     this.thumbUrl,
+    this.badge,
+    this.todayDelivery = false,
+    this.usaExpressDelivery = false,
+    this.usaDelivery = false,
+    this.allCountriesDelivery = false,
   });
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
     final v = json['variants'] as List<dynamic>? ?? [];
+    final badgeRaw = json['badge'] ?? json['product_badge'] ?? json['tag'];
+    final badge = badgeRaw is String && badgeRaw.toString().trim().isNotEmpty
+        ? badgeRaw.toString().trim()
+        : null;
     return ProductDetail(
       id: json['id'] as int,
       name: json['name'] as String,
@@ -154,6 +192,11 @@ class ProductDetail {
           .toList(),
       imageUrl: json['image_url'] as String?,
       thumbUrl: json['thumb_url'] as String?,
+      badge: badge,
+      todayDelivery: json['today_delivery'] as bool? ?? false,
+      usaExpressDelivery: json['usa_express_delivery'] as bool? ?? false,
+      usaDelivery: json['usa_delivery'] as bool? ?? false,
+      allCountriesDelivery: json['all_countries_delivery'] as bool? ?? false,
     );
   }
 
@@ -170,6 +213,26 @@ class ProductDetail {
   final List<ProductVariant> variants;
   final String? imageUrl;
   final String? thumbUrl;
+  final String? badge;
+  final bool todayDelivery;
+  final bool usaExpressDelivery;
+  final bool usaDelivery;
+  final bool allCountriesDelivery;
+
+  List<String> get deliveryBadges {
+    final list = <String>[];
+    if (todayDelivery) list.add('Today Delivery');
+    if (usaExpressDelivery) list.add('🇺🇸 US Express Shipping');
+    if (usaDelivery) list.add('🇺🇸 US Delivery');
+    if (allCountriesDelivery) list.add('🌎 All Countries Delivery');
+    return list;
+  }
+
+  List<String> get displayBadges {
+    final list = List<String>.from(deliveryBadges);
+    if (badge != null && badge!.isNotEmpty) list.add(badge!);
+    return list;
+  }
 
   String get displayPrice => salePrice < regularPrice
       ? '$currency $salePrice'

@@ -124,12 +124,7 @@ class _TabCartState extends State<TabCart> {
                               width: double.infinity,
                               child: FilledButton(
                                 onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const CheckoutScreen(),
-                                    ),
-                                  );
+                                  CheckoutScreen.showCheckoutChoice(context);
                                 },
                                 child: const Text('Proceed to Checkout'),
                               ),

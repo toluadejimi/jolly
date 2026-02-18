@@ -38,6 +38,10 @@ class ProductController extends Controller
                 'image_url' => $product->mainImage(false),
                 'thumb_url' => $product->mainImage(true),
                 'has_variants' => ($product->product_variants_count ?? 0) > 0,
+                'today_delivery' => (bool) ($product->today_delivery ?? 0),
+                'usa_express_delivery' => (bool) ($product->usa_express_delivery ?? 0),
+                'usa_delivery' => (bool) ($product->usa_delivery ?? 0),
+                'all_countries_delivery' => (bool) ($product->all_countries_delivery ?? 0),
             ];
         });
 
@@ -96,6 +100,10 @@ class ProductController extends Controller
                     'brand' => $product->brand ? ['id' => $product->brand->id, 'name' => $product->brand->name] : null,
                     'image_url' => $product->mainImage(false),
                     'thumb_url' => $product->mainImage(true),
+                    'today_delivery' => (bool) ($product->today_delivery ?? 0),
+                    'usa_express_delivery' => (bool) ($product->usa_express_delivery ?? 0),
+                    'usa_delivery' => (bool) ($product->usa_delivery ?? 0),
+                    'all_countries_delivery' => (bool) ($product->all_countries_delivery ?? 0),
                     'variants' => $product->productVariants->map(function ($v) use ($attributeLabelById) {
                         $ids = is_array($v->attribute_values) ? $v->attribute_values : json_decode($v->attribute_values ?? '[]', true);
                         $name = $ids ? implode(', ', array_filter(array_map(fn ($id) => $attributeLabelById[$id] ?? null, $ids))) : null;

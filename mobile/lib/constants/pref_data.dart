@@ -6,6 +6,8 @@ class PrefData {
 
   static String introAvailable = prefName + "isIntroAvailable";
   static String isLoggedIn = prefName + "isLoggedIn";
+  static String userName = prefName + "userName";
+  static String userEmail = prefName + "userEmail";
 
   static Future<SharedPreferences> getPrefInstance() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -30,7 +32,34 @@ class PrefData {
 
   static Future<bool> isLogIn() async {
     SharedPreferences preferences = await getPrefInstance();
-    bool isIntroAvailable = preferences.getBool(isLoggedIn) ?? false;
-    return isIntroAvailable;
+    return preferences.getBool(isLoggedIn) ?? false;
+  }
+
+  static Future<void> setUserName(String? name) async {
+    SharedPreferences preferences = await getPrefInstance();
+    if (name == null || name.isEmpty) {
+      preferences.remove(userName);
+    } else {
+      preferences.setString(userName, name);
+    }
+  }
+
+  static Future<String?> getUserName() async {
+    SharedPreferences preferences = await getPrefInstance();
+    return preferences.getString(userName);
+  }
+
+  static Future<void> setUserEmail(String? email) async {
+    SharedPreferences preferences = await getPrefInstance();
+    if (email == null || email.isEmpty) {
+      preferences.remove(userEmail);
+    } else {
+      preferences.setString(userEmail, email);
+    }
+  }
+
+  static Future<String?> getUserEmail() async {
+    SharedPreferences preferences = await getPrefInstance();
+    return preferences.getString(userEmail);
   }
 }

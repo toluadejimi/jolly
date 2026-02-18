@@ -8,6 +8,7 @@ import '../models/product.dart';
 import '../providers/cart_provider.dart';
 import '../services/api_service.dart';
 import '../utils/format_utils.dart';
+import '../widgets/product_badge_ribbon.dart';
 import 'checkout_screen.dart';
 import 'product_detail_screen.dart';
 
@@ -297,25 +298,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                 : const Icon(Icons.card_giftcard, size: 36),
                           ),
                         ),
-                        if (p.badge != null && p.badge!.isNotEmpty)
+                        if (p.displayBadges.isNotEmpty)
                           Positioned(
                             top: 4,
-                            right: 4,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primary,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                p.badge!,
-                                style: TextStyle(
-                                  color: theme.colorScheme.onPrimary,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                            left: 4,
+                            child: ProductBadgeRibbon(
+                              labels: p.displayBadges,
+                              compact: true,
+                              maxLines: 2,
                             ),
                           ),
                       ],
@@ -376,12 +366,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                     currency: p.currency,
                                     quantity: 1,
                                   ));
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const CheckoutScreen(),
-                                    ),
-                                  );
+                                  CheckoutScreen.showCheckoutChoice(context);
                                 },
                                 child: Text('Buy now', style: theme.textTheme.labelSmall),
                               ),
