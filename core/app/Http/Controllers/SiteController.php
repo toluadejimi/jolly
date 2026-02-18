@@ -282,11 +282,21 @@ class SiteController extends Controller {
             return response()->json(['error' => $notify]);
         }
 
-        return response()->json([
+        $payload = [
             'success' => true,
             'payment_status' => $orderData->payment_status,
             'status' => $orderData->status,
             'is_cod' => $orderData->is_cod,
-        ]);
+        ];
+
+        if ($orderData->estimated_delivery_at) {
+            $payload['estimated_delivery_at'] = $orderData->estimated_delivery_at->format('l, F j, Y \a\t g:i A');
+        } else {
+            $payload['estimated_delivery_at'] = null;
+        }
+
+        $payload['tracking_url'] = $orderData->tracking_url ?: null;
+
+        return response()->json($payload);
     }
 }

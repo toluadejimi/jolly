@@ -15,6 +15,25 @@
                 </div>
             </div>
 
+            <div id="order-tracking-info" class="row justify-content-center mb-4 d-none">
+                <div class="col-lg-10 col-xl-8">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h6 class="card-title mb-3">@lang('Order tracking details')</h6>
+                            <div id="tracking-estimated-delivery" class="mb-2 d-none">
+                                <strong>@lang('Estimated delivery'):</strong>
+                                <span id="tracking-estimated-delivery-value"></span>
+                            </div>
+                            <div id="tracking-url-wrap" class="d-none">
+                                <a id="tracking-url-link" href="#" target="_blank" rel="noopener noreferrer" class="btn btn--primary btn-sm">
+                                    <i class="las la-external-link-alt"></i> @lang('Track your order')
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row justify-content-center">
                 <div class="col-lg-10 col-xl-8">
                     <div class="order-track-wrapper d-flex flex-wrap justify-content-center">
@@ -70,7 +89,21 @@
                 let orderNumber = $('input[name=order_number]').val();
 
                 $.get(`{{ route('track.order', '') }}/${orderNumber}`, function(response) {
+                    var $info = $('#order-tracking-info');
+                    $('#tracking-estimated-delivery').addClass('d-none');
+                    $('#tracking-url-wrap').addClass('d-none');
+
                     if (response.success) {
+                        $('#order-tracking-info').removeClass('d-none');
+                        if (response.estimated_delivery_at) {
+                            $('#tracking-estimated-delivery-value').text(response.estimated_delivery_at);
+                            $('#tracking-estimated-delivery').removeClass('d-none');
+                        }
+                        if (response.tracking_url) {
+                            $('#tracking-url-link').attr('href', response.tracking_url);
+                            $('#tracking-url-wrap').removeClass('d-none');
+                        }
+
                         if (response.status == {{ Status::ORDER_CANCELED }}) {
                             $('.confirm-state, .processing-state, .dispatched-state, .delivered-state').removeClass('active');
                             notify('error', 'This order is canceled by admin');
@@ -87,6 +120,7 @@
                             response.status >= '{{ Status::ORDER_DELIVERED }}' ? $('.delivered-state').addClass('active') : $('.delivered-state').removeClass('active');
                         }
                     } else {
+                        $('#order-tracking-info').addClass('d-none');
                         $('.confirm-state, .processing-state, .dispatched-state, .delivered-state').removeClass('active');
                         notify('error', response.error);
                     }
