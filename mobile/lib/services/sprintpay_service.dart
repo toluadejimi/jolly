@@ -87,7 +87,8 @@ class SprintPayService {
     }
   }
 
-  /// Polls verify_url. Returns 'pending', 'success', 'completed', or null on error.
+  /// Polls verify_url. Payment success is indicated only by {"status":"paid"}.
+  /// Returns the status string (e.g. 'paid', 'pending') or null on error.
   static Future<String?> checkVerifyUrl(String verifyUrl) async {
     try {
       final res = await http.get(Uri.parse(verifyUrl)).timeout(const Duration(seconds: 10));

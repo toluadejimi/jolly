@@ -50,6 +50,38 @@ class OrderController extends Controller
         ]);
     }
 
+    /**
+     * Confirm payment for an order (e.g. after SprintPay returns status=paid).
+     * Sets order payment_status to paid and status to processing.
+     */
+    public function confirmPayment(Request $request, int $orderId): JsonResponse
+    {
+        $user = $request->user();
+        $order = Order::where('id', $orderId)->where('user_id', $user->id)->first();
+        if (!$order) {
+            return response()->json([
+                'remark' => 'order_not_found',
+                'status' => 'error',
+                'message' => ['error' => ['Order not found.']],
+            ], 404);
+        }
+        if ($order->payment_status == Status::PAYMENT_SUCCESS) {
+            return response()->json([
+                'remark' => 'payment_confirmed',
+                'status' => 'success',
+                'message' => ['success' => ['Order is already paid.']],
+            ]);
+        }
+        $order->payment_status = Status::PAYMENT_SUCCESS;
+        $order->status = Status::ORDER_PROCESSING;
+        $order->save();
+        return response()->json([
+            'remark' => 'payment_confirmed',
+            'status' => 'success',
+            'message' => ['success' => ['Order marked as paid and processing.']],
+        ]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();

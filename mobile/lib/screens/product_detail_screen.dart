@@ -933,6 +933,7 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
       amount: orderData.totalAmount,
       ref: orderData.orderNumber,
       email: _email.text.trim(),
+      orderId: orderData.orderId,
       orderNumber: orderData.orderNumber,
       onOrderSuccess: () {},
     );

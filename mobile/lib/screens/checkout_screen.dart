@@ -402,6 +402,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       amount: orderData.totalAmount,
       ref: orderData.orderNumber,
       email: userEmail,
+      orderId: orderData.orderId,
       orderNumber: orderData.orderNumber,
       onOrderSuccess: () => context.read<CartProvider>().clear(),
     );
@@ -547,6 +548,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final usedSheet = await showSprintPayPaymentFlow(
         context,
         paymentUrl: data.paymentUrl!,
+        orderId: data.orderId,
         orderNumber: data.orderNumber,
         onOrderSuccess: () => context.read<CartProvider>().clear(),
       );

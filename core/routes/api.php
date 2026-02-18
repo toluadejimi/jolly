@@ -18,6 +18,7 @@ Route::middleware(['throttle:60,1'])->group(function () {
         Route::get('shipping-methods', [App\Http\Controllers\Api\ShippingController::class, 'index'])->name('shipping.methods');
         Route::get('payment-methods', [App\Http\Controllers\Api\PaymentController::class, 'methods'])->name('payment.methods');
         Route::get('orders', [App\Http\Controllers\Api\OrderController::class, 'index'])->name('orders.index');
+        Route::post('orders/{orderId}/confirm-payment', [App\Http\Controllers\Api\OrderController::class, 'confirmPayment'])->name('orders.confirm_payment');
         Route::get('orders/{order}', [App\Http\Controllers\Api\OrderController::class, 'show'])->name('orders.show');
         Route::post('upload-customer-photos', [App\Http\Controllers\Api\OrderController::class, 'uploadCustomerPhotos'])->name('orders.upload_photos');
         Route::post('orders', [App\Http\Controllers\Api\OrderController::class, 'store'])->name('orders.store');

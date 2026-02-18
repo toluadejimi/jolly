@@ -4,9 +4,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 import '../models/checkout_models.dart';
 import '../screens/track_order_screen.dart';
+import '../services/api_service.dart';
 import '../services/sprintpay_service.dart';
 import '../utils/format_utils.dart';
 
@@ -20,6 +22,7 @@ const double _sheetRadius = 20;
 Future<bool> showSprintPayPaymentFlow(
   BuildContext context, {
   required String paymentUrl,
+  required int orderId,
   required String orderNumber,
   required VoidCallback onOrderSuccess,
 }) async {
@@ -39,6 +42,7 @@ Future<bool> showSprintPayPaymentFlow(
       backgroundColor: Colors.transparent,
       builder: (ctx) => SprintPayPaymentSheet(
         data: data,
+        orderId: orderId,
         orderNumber: orderNumber,
         onOrderSuccess: onOrderSuccess,
       ),
@@ -55,6 +59,7 @@ Future<void> showSprintPayDirectFlow(
   required double amount,
   required String ref,
   required String email,
+  required int orderId,
   required String orderNumber,
   required VoidCallback onOrderSuccess,
 }) async {
@@ -81,6 +86,7 @@ Future<void> showSprintPayDirectFlow(
     backgroundColor: Colors.transparent,
     builder: (ctx) => SprintPayPaymentSheet(
       data: result.data!,
+      orderId: orderId,
       orderNumber: orderNumber,
       onOrderSuccess: onOrderSuccess,
     ),
@@ -88,15 +94,18 @@ Future<void> showSprintPayDirectFlow(
 }
 
 /// Payment details bottom sheet: neon orange theme, copy, I Have Paid, Close, polling.
+/// On verify URL returning {"status":"paid"}, calls API to confirm payment then runs success flow.
 class SprintPayPaymentSheet extends StatefulWidget {
   const SprintPayPaymentSheet({
     super.key,
     required this.data,
+    required this.orderId,
     required this.orderNumber,
     required this.onOrderSuccess,
   });
 
   final SprintPayAccountResponse data;
+  final int orderId;
   final String orderNumber;
   final VoidCallback onOrderSuccess;
 
@@ -133,11 +142,19 @@ class _SprintPayPaymentSheetState extends State<SprintPayPaymentSheet> {
     if (!mounted) return;
     final status = await SprintPayService.checkVerifyUrl(widget.data.verifyUrl);
     if (!mounted) return;
-    if (status == 'success' || status == 'completed') {
+    // Only {"status":"paid"} is treated as payment success.
+    if (status == 'paid') {
       _pollTimer?.cancel();
       _pollTimer = null;
       _polling = false;
       setState(() => _verifying = false);
+      final api = context.read<ApiService>();
+      final confirmRes = await api.confirmPayment(widget.orderId);
+      if (!mounted) return;
+      if (!confirmRes.success) {
+        setState(() => _verifyError = confirmRes.error ?? 'Could not update order status.');
+        return;
+      }
       Navigator.of(context).pop();
       widget.onOrderSuccess();
       Navigator.of(context).pushAndRemoveUntil(
