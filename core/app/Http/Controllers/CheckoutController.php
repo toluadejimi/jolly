@@ -166,16 +166,16 @@ class CheckoutController extends Controller
 
         }
 
-        if ($get_variant) {
-
-            $price = $variant->regular_price;
-
-        } else {
-
-            $price = $product->regular_price;
-
+        if ($get_variant && !$variant) {
+            $notify[] = ['error', 'Please select a valid product option (variant).'];
+            return back()->withNotify($notify);
         }
 
+        if ($get_variant && $variant) {
+            $price = $variant->regular_price;
+        } else {
+            $price = $product->regular_price ?? 0;
+        }
 
         $order_id = "JOLFR" . random_int(0000, 9999);
 
