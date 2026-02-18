@@ -8,6 +8,7 @@ class PrefData {
   static String isLoggedIn = prefName + "isLoggedIn";
   static String userName = prefName + "userName";
   static String userEmail = prefName + "userEmail";
+  static String apiKey = prefName + "apiKey";
 
   static Future<SharedPreferences> getPrefInstance() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -61,5 +62,19 @@ class PrefData {
   static Future<String?> getUserEmail() async {
     SharedPreferences preferences = await getPrefInstance();
     return preferences.getString(userEmail);
+  }
+
+  static Future<void> setApiKey(String? key) async {
+    SharedPreferences preferences = await getPrefInstance();
+    if (key == null || key.isEmpty) {
+      preferences.remove(apiKey);
+    } else {
+      preferences.setString(apiKey, key);
+    }
+  }
+
+  static Future<String?> getApiKey() async {
+    SharedPreferences preferences = await getPrefInstance();
+    return preferences.getString(apiKey);
   }
 }

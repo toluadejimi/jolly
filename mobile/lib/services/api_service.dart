@@ -9,6 +9,7 @@ import '../models/order_tracking.dart';
 import '../models/product.dart';
 import '../models/slider.dart';
 import '../models/api_response.dart';
+import '../models/auth_data.dart';
 import '../models/cart_item.dart';
 
 class ApiService {
@@ -29,6 +30,52 @@ class ApiService {
       m['Authorization'] = 'Bearer $_apiKey';
     }
     return m;
+  }
+
+  /// POST /api/login (no auth). Returns api_key and user.
+  Future<ApiResponse<AuthData>> login({required String username, required String password}) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/login'),
+      headers: _publicHeaders,
+      body: jsonEncode({'username': username, 'password': password}),
+    );
+    return _parseAuthResponse(res);
+  }
+
+  /// POST /api/register (no auth). Returns api_key and user.
+  Future<ApiResponse<AuthData>> register({
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+    String? firstname,
+    String? lastname,
+  }) async {
+    final body = <String, dynamic>{
+      'email': email,
+      'password': password,
+      'password_confirmation': passwordConfirmation,
+      if (firstname != null && firstname.isNotEmpty) 'firstname': firstname,
+      if (lastname != null && lastname.isNotEmpty) 'lastname': lastname,
+    };
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/register'),
+      headers: _publicHeaders,
+      body: jsonEncode(body),
+    );
+    return _parseAuthResponse(res);
+  }
+
+  static ApiResponse<AuthData> _parseAuthResponse(http.Response res) {
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if ((body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Request failed');
+    }
+    final data = body['data'] as Map<String, dynamic>?;
+    if (data == null) return ApiResponse.error('No data');
+    return ApiResponse.success(AuthData.fromJson(data));
   }
 
   /// GET /api/products

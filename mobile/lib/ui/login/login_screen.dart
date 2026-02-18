@@ -1,16 +1,14 @@
 // ignore: file_names
-import 'dart:convert';
-import 'package:country_state_city_picker/model/select_status_model.dart' as status;
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:giftfr/constants/pref_data.dart';
+import 'package:provider/provider.dart';
 import 'package:giftfr/constants/size_config.dart';
 import 'package:giftfr/constants/color_data.dart';
-import 'package:giftfr/ui/login/verify_screen.dart';
 
 import '../../constants/constant.dart';
 import '../../constants/widget_utils.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/api_service.dart';
 import '../home/home_screen.dart';
 import 'forgot_password_screen.dart';
 
@@ -31,36 +29,19 @@ class _LoginScreen extends State<LoginScreen>
   TextEditingController emailRegPhoneController = TextEditingController();
   TextEditingController emailSignInController = TextEditingController();
   TextEditingController passSignInController = TextEditingController();
+  TextEditingController firstnameController = TextEditingController();
+  TextEditingController lastnameController = TextEditingController();
+  TextEditingController confirmPassController = TextEditingController();
   ValueNotifier<bool> isShowPass = ValueNotifier(false);
+  ValueNotifier<bool> isShowConfirmPass = ValueNotifier(false);
   bool chkVal = false;
-
-  List<String> country = ["Choose Country"];
-  String _selectedCountry = "Choose Country";
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _selectedTabbar = widget.initialTab;
     _tabController = TabController(vsync: this, length: 2, initialIndex: widget.initialTab);
-    getCounty();
-  }
-
-  Future getCounty() async {
-    try {
-      final res = await rootBundle.loadString('assets/country.json');
-      final countryres = jsonDecode(res) as List;
-      for (var data in countryres) {
-        var model = status.StatusModel();
-        model.name = data['name'];
-        model.emoji = data['emoji'];
-        if (!mounted) return;
-        setState(() {
-          country.add(model.emoji! + "    " + model.name!);
-        });
-      }
-    } catch (_) {
-      // country.json not found; keep default "Choose Country"
-    }
   }
 
   @override
@@ -69,17 +50,6 @@ class _LoginScreen extends State<LoginScreen>
     double screenHeight = SizeConfig.safeBlockVertical! * 100;
     double screenWidth = SizeConfig.safeBlockHorizontal! * 100;
     double appbarPadding = getAppBarPadding();
-    double height = getEditHeight();
-    double radius = Constant.getPercentSize(height, 20);
-    double fontSize = Constant.getPercentSize(height, 30);
-    double privacySize = Constant.getPercentSize(getEditHeight(),25);
-
-    TextStyle style = TextStyle(
-        color: fontBlack,
-        fontSize: fontSize,
-        fontFamily: Constant.fontsFamily,
-        fontWeight: FontWeight.w500);
-
     return WillPopScope(
         child: Scaffold(
           backgroundColor: backgroundColor,
@@ -170,15 +140,37 @@ class _LoginScreen extends State<LoginScreen>
                                     Constant.getPercentSize(screenHeight, 2.3)),
                               )),
                           getSpace(appbarPadding / 2),
-                          getButton(primaryColor, true, "Sign In", Colors.white,
+                          getButton(primaryColor, true, _isLoading ? "Signing in…" : "Sign In", Colors.white,
                               () async {
-                            await PrefData.setLogIn(true);
-                            await PrefData.setUserEmail(emailSignInController.text.trim().isEmpty ? null : emailSignInController.text.trim());
-                            await PrefData.setUserName(null); // Backend could provide name later
-                            if (!context.mounted) return;
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(builder: (context) => HomeScreen()),
-                            );
+                            final username = emailSignInController.text.trim();
+                            final password = passSignInController.text;
+                            if (username.isEmpty || password.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Please enter email and password')),
+                              );
+                              return;
+                            }
+                            setState(() => _isLoading = true);
+                            final api = context.read<ApiService>();
+                            final auth = context.read<AuthProvider>();
+                            final result = await api.login(username: username, password: password);
+                            if (!mounted) return;
+                            setState(() => _isLoading = false);
+                            if (result.success && result.data != null) {
+                              await auth.setFromLogin(
+                                apiKey: result.data!.apiKey,
+                                email: result.data!.user.email,
+                                name: result.data!.user.displayName,
+                              );
+                              if (!mounted) return;
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(builder: (context) => HomeScreen()),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(result.error ?? 'Login failed')),
+                              );
+                            }
                           }, FontWeight.w500,
                               EdgeInsets.symmetric(vertical: appbarPadding)),
                           getCustomText(
@@ -259,65 +251,13 @@ class _LoginScreen extends State<LoginScreen>
                           horizontal: Constant.getPercentSize(screenWidth, 4)),
                       child: Column(
                         children: [
-                          getSpace(Constant.getPercentSize(screenHeight, 3)),
+                          getSpace(Constant.getPercentSize(screenHeight, 2)),
                           getLoginTextField(
-                              emailSignInController, "Email", "email.svg"),
-                          getLoginTextField(emailRegPhoneController,
-                              "Phone Number", "Call_Calling.svg"),
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: Constant.getHeightPercentSize(1.2)),
-                            child: SizedBox(
-                              height: height,
-                              child: Container(
-                                // margin: EdgeInsets.symmetric(
-                                //     vertical: Constant.getHeightPercentSize(1.2)),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal:
-                                        Constant.getWidthPercentSize(2.5)),
-                                decoration: ShapeDecoration(
-                                  color: Colors.transparent,
-                                  shape: SmoothRectangleBorder(
-                                    side: BorderSide(
-                                        color: Colors.grey.shade400, width: 1),
-                                    borderRadius: SmoothBorderRadius(
-                                      cornerRadius: radius,
-                                      cornerSmoothing: 0.8,
-                                    ),
-                                  ),
-                                ),
-                                child: Center(
-                                  child: DropdownButton<String>(
-                                    dropdownColor: backgroundColor,
-                                    isExpanded: true,
-                                    itemHeight: null,
-                                    isDense: true,
-                                    underline: getSpace(0),
-                                    items: country
-                                        .map((String dropDownStringItem) {
-                                      return DropdownMenuItem<String>(
-                                        value: dropDownStringItem,
-                                        child: Row(
-                                          children: [
-                                            Text(
-                                              dropDownStringItem,
-                                              style: style,
-                                            )
-                                          ],
-                                        ),
-                                      );
-                                    }).toList(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _selectedCountry = value!;
-                                      });
-                                    },
-                                    value: _selectedCountry,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                              firstnameController, "First name", "email.svg"),
+                          getLoginTextField(
+                              lastnameController, "Last name", "email.svg"),
+                          getLoginTextField(
+                              emailRegPhoneController, "Email", "email.svg"),
                           ValueListenableBuilder(
                             builder: (context, value, child) {
                               return getPassTextField(passSignInController,
@@ -327,57 +267,66 @@ class _LoginScreen extends State<LoginScreen>
                             },
                             valueListenable: isShowPass,
                           ),
-                          getSpace(appbarPadding / 2),
-                          Row(
-                            children: [
-                              SizedBox(
-                                height: getEdtIconSize(),
-                                width: getEdtIconSize(),
-                                child: Checkbox(
-                                  onChanged: (value) {
-                                    setState(() {
-                                      chkVal = value!;
-                                    });
-                                  },
-                                  value: chkVal,
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  side: BorderSide(width: 0.5, color: greyFont),
-                                  activeColor: primaryColor,
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(5)),
-                                  ),
-                                ),
-                              ),
-                              getHorSpace(
-                                  Constant.getPercentSize(screenWidth, 1.5)),
-                              getCustomText(
-                                  "I accepted",
-                                  fontBlack,
-                                  1,
-                                  TextAlign.start,
-                                  FontWeight.w400,
-                                  privacySize),
-                              getHorSpace(
-                                  Constant.getPercentSize(screenWidth, 1.5)),
-                              Expanded(child: getCustomText(
-                                  "Terms & Privacy Policy",
-                                  primaryColor,
-                                  1,
-                                  TextAlign.start,
-                                  FontWeight.w400,
-                                  privacySize),flex: 1,)
-
-                            ],
+                          ValueListenableBuilder(
+                            builder: (context, value, child) {
+                              return getPassTextField(confirmPassController,
+                                  "Confirm password", "eye.svg", isShowConfirmPass.value, () {
+                                isShowConfirmPass.value = !isShowConfirmPass.value;
+                              });
+                            },
+                            valueListenable: isShowConfirmPass,
                           ),
                           getSpace(appbarPadding / 2),
                           getButton(
-                              primaryColor, true, "Register", Colors.white, () {
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                  builder: (context) => const VerifyScreen()),
+                              primaryColor, true, _isLoading ? "Registering…" : "Register", Colors.white, () async {
+                            final email = emailRegPhoneController.text.trim();
+                            final password = passSignInController.text;
+                            final confirm = confirmPassController.text;
+                            if (email.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Please enter email')),
+                              );
+                              return;
+                            }
+                            if (password.length < 6) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Password must be at least 6 characters')),
+                              );
+                              return;
+                            }
+                            if (password != confirm) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Passwords do not match')),
+                              );
+                              return;
+                            }
+                            setState(() => _isLoading = true);
+                            final api = context.read<ApiService>();
+                            final auth = context.read<AuthProvider>();
+                            final result = await api.register(
+                              email: email,
+                              password: password,
+                              passwordConfirmation: confirm,
+                              firstname: firstnameController.text.trim().isEmpty ? null : firstnameController.text.trim(),
+                              lastname: lastnameController.text.trim().isEmpty ? null : lastnameController.text.trim(),
                             );
+                            if (!mounted) return;
+                            setState(() => _isLoading = false);
+                            if (result.success && result.data != null) {
+                              await auth.setFromLogin(
+                                apiKey: result.data!.apiKey,
+                                email: result.data!.user.email,
+                                name: result.data!.user.displayName,
+                              );
+                              if (!mounted) return;
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(builder: (context) => HomeScreen()),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(result.error ?? 'Registration failed')),
+                              );
+                            }
                           }, FontWeight.w500,
                               EdgeInsets.symmetric(vertical: appbarPadding)),
                         ],

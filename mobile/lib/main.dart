@@ -2,23 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'constants/app_theme.dart';
+import 'providers/auth_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/theme_provider.dart';
 import 'services/api_service.dart';
 import 'ui/intro/splash_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final authProvider = AuthProvider();
+  await authProvider.loadFromPrefs();
+  runApp(MyApp(authProvider: authProvider));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.authProvider});
+  final AuthProvider authProvider;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider(create: (_) => ApiService()),
+        ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
+        ProxyProvider<AuthProvider, ApiService>(
+          update: (_, auth, __) => ApiService(apiKey: auth.apiKey),
+        ),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
       ],

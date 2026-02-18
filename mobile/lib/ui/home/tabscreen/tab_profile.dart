@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import '../../../constants/constant.dart';
 import '../../../constants/pref_data.dart';
 import '../../../constants/widget_utils.dart';
+import '../../../providers/auth_provider.dart';
 
 class TabProfile extends StatefulWidget {
   const TabProfile({Key? key}) : super(key: key);
@@ -220,9 +221,7 @@ class _TabProfileState extends State<TabProfile> {
               "Logout",
               theme.colorScheme.onPrimary,
               () async {
-                await PrefData.setLogIn(false);
-                await PrefData.setUserName(null);
-                await PrefData.setUserEmail(null);
+                await context.read<AuthProvider>().logout();
                 if (!context.mounted) return;
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => const LoginScreen()),
