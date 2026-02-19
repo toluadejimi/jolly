@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:giftfr/constants/constant.dart';
 import 'package:giftfr/constants/pref_data.dart';
 import 'package:giftfr/constants/size_config.dart';
-import 'package:giftfr/constants/widget_utils.dart';
-import 'package:giftfr/constants/color_data.dart';
 import 'package:giftfr/ui/home/home_screen.dart';
 import 'package:giftfr/ui/intro/intro_screen.dart';
 import '../login/login_screen.dart';
@@ -56,29 +54,20 @@ class _SplashScreen extends State<SplashScreen> {
 
     return WillPopScope(
         child: Scaffold(
-          backgroundColor: backgroundColor,
+          backgroundColor: Colors.black,
           body: SizedBox(
             width: double.infinity,
             height: double.infinity,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Padding(
-                  padding:
-                      EdgeInsets.all(Constant.getPercentSize(iconSize, 25)),
-                  child: getSvgImage("Bag.svg", iconSize, color: fontBlack)
-                  // Image.asset(
-                  //   Constant.assetImagePath + "logo_img.png",
-                  //   width: iconSize,
-                  //   height: iconSize,
-                  //   fit: BoxFit.fill,
-                  //   color: fontBlack,
-                  // ),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: Constant.getPercentSize(screenHeight, 8)),
+                child: Image.asset(
+                  Constant.assetImagePath + "jellyboxfr_logo.png",
+                  width: iconSize * 2.2,
+                  fit: BoxFit.contain,
                 ),
-                getCustomText("Gift Store", fontBlack, 1, TextAlign.center,
-                    FontWeight.w900, Constant.getPercentSize(screenHeight, 5.5))
-              ],
+              ),
             ),
           ),
         ),

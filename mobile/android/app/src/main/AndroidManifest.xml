@@ -1,8 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Camera/photo access is requested at runtime by the image_picker plugin when user uploads product photos -->
     <application
-        android:label="giftfr"
+        android:label="JollyBoxfr"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="false"
+        android:allowBackup="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

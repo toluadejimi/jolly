@@ -202,6 +202,15 @@ class SiteController extends Controller {
         return view('Template::cookie', compact('pageTitle', 'cookie'));
     }
 
+    /**
+     * App privacy policy page (for App Store / Play Store and web).
+     * URL: /privacy
+     */
+    public function privacy() {
+        $pageTitle = 'Privacy Policy';
+        return view('Template::privacy', compact('pageTitle'));
+    }
+
     public function placeholderImage($size = null) {
         $imgWidth = explode('x', $size)[0];
         $imgHeight = explode('x', $size)[1];

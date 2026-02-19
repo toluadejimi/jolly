@@ -56,7 +56,9 @@ class _IntroScreen extends State<IntroScreen> {
                           width: double.infinity,
                           child: Image.asset(
                             Constant.assetImagePath + introList[index].image!,
-                            fit: BoxFit.fill,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
                           ),
                         );
                       },

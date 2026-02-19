@@ -42,33 +42,26 @@ class DataFile {
     "color5.png",
   ];
 
-  /// Onboarding slides (static content; not from API).
+  /// Onboarding slides (static content; not from API). Order: Delivery → Shopping → Payment.
   static List<ModelIntro> getAllIntroData() {
-    final introImage = "banner.png";
     return [
       ModelIntro(
         1,
-        "Find the perfect gift\n for every occasion",
-        "Browse our collection and send something special\nto the people you care about.",
-        introImage,
+        "Track your orders\neasily",
+        "See delivery status, estimated delivery\nand tracking link for every order.",
+        "onboarding_delivery.png",
       ),
       ModelIntro(
         2,
-        "Track your orders\n easily",
-        "Enter your order number and see delivery status,\nestimated delivery and tracking link.",
-        introImage,
+        "Find the perfect gift\nfor every occasion",
+        "Browse our collection and send something special\nto the people you care about.",
+        "onboarding_shopping.png",
       ),
       ModelIntro(
         3,
-        "Secure checkout\n and fast delivery",
-        "Shop with confidence. We keep your details safe\nand deliver on time.",
-        introImage,
-      ),
-      ModelIntro(
-        4,
-        "Welcome to Gift Store",
-        "Sign in or create an account to start shopping\nand managing your orders.",
-        introImage,
+        "Secure checkout\n& easy payment",
+        "Shop with confidence. We keep your details safe\nand offer simple, secure payments.",
+        "onboarding_payment.png",
       ),
     ];
   }

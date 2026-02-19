@@ -15,7 +15,7 @@ import '../models/auth_data.dart';
 import '../models/cart_item.dart';
 
 /// Set to true to print API request/response in the terminal (where `flutter run` is active).
-const bool kLogApi = true;
+const bool kLogApi = false;
 
 void _logApi(String method, String url, {String? requestBody, int? statusCode, String? responseBody}) {
   if (!kLogApi || !kDebugMode) return;
