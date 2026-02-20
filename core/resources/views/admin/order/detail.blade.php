@@ -228,14 +228,14 @@
                 </div>
 
                 <div class="col-md-6">
-                    @if ($order->shipping_address)
-                        @php
-                            $addr = is_object($order->shipping_address) ? $order->shipping_address : (object) ($order->shipping_address ?? []);
-                            $addrValue = function ($v) { return trim((string) ($v ?? '')) ?: '—'; };
-                        @endphp
-                        <div class="details-info-address">
-
-                            <h6 class="mb-3">@lang('Shipping Details')</h6>
+                    @php
+                        $hasShippingAddr = $order->shipping_address && (is_object($order->shipping_address) ? (array) $order->shipping_address !== [] : !empty($order->shipping_address));
+                        $addr = $hasShippingAddr ? (is_object($order->shipping_address) ? $order->shipping_address : (object) ($order->shipping_address ?? [])) : null;
+                        $addrValue = function ($v) { return trim((string) ($v ?? '')) ?: '—'; };
+                    @endphp
+                    <div class="details-info-address">
+                        <h6 class="mb-3">@lang('Shipping Details')</h6>
+                        @if ($addr)
                             <ul class="info-address-list">
                                 <li>
                                     <span class="title">@lang('Name') </span>
@@ -291,7 +291,6 @@
                                     </span>
                                 </li>
 
-
                                 <li>
                                     <span class="title">@lang('Customer Phone')</span>
                                     <span>
@@ -300,8 +299,15 @@
                                     </span>
                                 </li>
                             </ul>
-                        </div>
-                    @endif
+                        @else
+                            <p class="text-muted mb-0">
+                                @if ($order->user)
+                                    @lang('Customer'): {{ trim(($order->user->firstname ?? '') . ' ' . ($order->user->lastname ?? '')) ?: '—' }} ({{ $order->user->email ?? '' }})
+                                @endif
+                                {{ $order->user ? '— ' : '' }}@lang('No shipping address was saved for this order.')
+                            </p>
+                        @endif
+                    </div>
 
 
 
