@@ -231,11 +231,20 @@
                     @php
                         $hasShippingAddr = $order->shipping_address && (is_object($order->shipping_address) ? (array) $order->shipping_address !== [] : !empty($order->shipping_address));
                         $addr = $hasShippingAddr ? (is_object($order->shipping_address) ? $order->shipping_address : (object) ($order->shipping_address ?? [])) : null;
+                        if (!$addr && isset($userDefaultShippingAddress) && $userDefaultShippingAddress) {
+                            $addr = $userDefaultShippingAddress;
+                            $addrIsFallback = true;
+                        } else {
+                            $addrIsFallback = false;
+                        }
                         $addrValue = function ($v) { return trim((string) ($v ?? '')) ?: '—'; };
                     @endphp
                     <div class="details-info-address">
                         <h6 class="mb-3">@lang('Shipping Details')</h6>
                         @if ($addr)
+                            @if (!empty($addrIsFallback))
+                                <p class="text-muted small mb-2">@lang('Customer’s saved address (not stored on this order). New orders will save address correctly.')</p>
+                            @endif
                             <ul class="info-address-list">
                                 <li>
                                     <span class="title">@lang('Name') </span>

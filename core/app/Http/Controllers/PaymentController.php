@@ -394,13 +394,7 @@ class PaymentController extends Controller {
         $order->user_id           = auth()->id() ?? 0;
         $order->guest_id          = $guestUser?->id ?? null;
 
-        if (auth()->check()) {
-            $order->shipping_address = $shippingAddress
-                ? ($shippingAddress instanceof ShippingAddress ? $this->setShippingAddress($shippingAddress) : $shippingAddress)
-                : null;
-        } else {
-            $order->shipping_address = $shippingAddress ? $shippingAddress : null;
-        }
+        $order->shipping_address = $this->normalizeShippingAddressForOrder($shippingAddress);
 
         $order->shipping_method_id = $shippingMethod->id ?? 0;
         $order->shipping_charge    = $shippingCharge;
@@ -443,17 +437,47 @@ class PaymentController extends Controller {
         }
     }
 
-    private function  setShippingAddress(ShippingAddress $address) {
+    /**
+     * Build a single array for order->shipping_address so it is always stored the same way
+     * (for both logged-in users with saved address, logged-in with inline form, and guests).
+     */
+    private function normalizeShippingAddressForOrder($shippingAddress): ?array
+    {
+        if (!$shippingAddress) {
+            return null;
+        }
+        if ($shippingAddress instanceof ShippingAddress) {
+            return [
+                'firstname' => $shippingAddress->firstname ?? '',
+                'lastname'  => $shippingAddress->lastname ?? '',
+                'mobile'    => $shippingAddress->mobile ?? '',
+                'email'     => $shippingAddress->email ?? '',
+                'country'   => $shippingAddress->country ?? '',
+                'city'      => $shippingAddress->city ?? '',
+                'state'     => $shippingAddress->state ?? '',
+                'zip'       => $shippingAddress->zip ?? '',
+                'address'   => $shippingAddress->address ?? '',
+                'apt'       => $shippingAddress->apt ?? '',
+            ];
+        }
+        $data = is_object($shippingAddress) ? (array) $shippingAddress : $shippingAddress;
         return [
-            'firstname' => $address->firstname,
-            'lastname'  => $address->lastname,
-            'mobile'    => $address->mobile,
-            'country'   => $address->country,
-            'city'      => $address->city,
-            'state'     => $address->state,
-            'zip'       => $address->zip,
-            'address'   => $address->address,
+            'firstname' => $data['firstname'] ?? '',
+            'lastname'  => $data['lastname'] ?? '',
+            'mobile'    => $data['mobile'] ?? '',
+            'email'     => $data['email'] ?? '',
+            'country'   => $data['country'] ?? '',
+            'city'      => $data['city'] ?? '',
+            'state'     => $data['state'] ?? '',
+            'zip'       => $data['zip'] ?? '',
+            'address'   => $data['address'] ?? '',
+            'apt'       => $data['apt'] ?? '',
         ];
+    }
+
+    private function setShippingAddress(ShippingAddress $address): array
+    {
+        return $this->normalizeShippingAddressForOrder($address);
     }
 
     private function saveOrderDetails($cartData, $orderId, $note = null , $front_photo = null, $back_photo = null, $customised_test = null, $customised_short_test = null) {

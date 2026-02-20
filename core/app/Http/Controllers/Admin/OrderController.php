@@ -120,8 +120,13 @@ class OrderController extends Controller
         $pageTitle = 'Order Details';
         $order     = Order::where('id', $id)->with('user', 'deposit', 'deposit.gateway', 'orderDetail.product', 'orderDetail.productVariant', 'appliedCoupon')->firstOrFail();
 
+        $userDefaultShippingAddress = null;
+        if ($order->user_id) {
+            $userDefaultShippingAddress = \App\Models\ShippingAddress::where('user_id', $order->user_id)->orderBy('id', 'desc')->first();
+        }
+
         $pid = $id;
-        return view('admin.order.detail', compact('order', 'pageTitle', 'pid'));
+        return view('admin.order.detail', compact('order', 'pageTitle', 'pid', 'userDefaultShippingAddress'));
     }
 
 
