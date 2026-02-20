@@ -179,6 +179,19 @@ class CheckoutController extends Controller
 
         $order_id = "JOLFR" . random_int(0000, 9999);
 
+        $fullShippingAddress = [
+            'firstname' => $request->firstname ?? '',
+            'lastname'  => $request->lastname ?? '',
+            'mobile'    => $request->mobile ?? '',
+            'email'     => $request->email ?? '',
+            'country'   => $request->country ?? '',
+            'city'      => $request->city ?? '',
+            'state'     => $request->state ?? '',
+            'zip'       => $request->zip ?? '',
+            'address'   => $request->address ?? '',
+            'apt'       => $request->apt ?? '',
+        ];
+
         $shippingData = [
             'firstname' => $request->firstname,
             'lastname' => $request->lastname,
@@ -200,7 +213,7 @@ class CheckoutController extends Controller
             'note_charge' => $note_charge ?? 0,
             'order_number' => $order_id,
             'user_id' => Auth::id(),
-            'shipping_address' => $request->address,
+            'shipping_address' => $fullShippingAddress,
             'subtotal' => $price,
             'total_amount' => $price + $note_charge,
         ];
