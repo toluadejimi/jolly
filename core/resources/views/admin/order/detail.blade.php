@@ -231,6 +231,7 @@
                     @if ($order->shipping_address)
                         @php
                             $addr = is_object($order->shipping_address) ? $order->shipping_address : (object) ($order->shipping_address ?? []);
+                            $addrValue = function ($v) { return trim((string) ($v ?? '')) ?: '—'; };
                         @endphp
                         <div class="details-info-address">
 
@@ -243,9 +244,9 @@
                                         @php
                                         $name = trim(($addr->firstname ?? '') . ' ' . ($addr->lastname ?? ''));
                                         if (!$name && $order->user) {
-                                            $name = trim($order->user->firstname . ' ' . $order->user->lastname);
+                                            $name = trim(($order->user->firstname ?? '') . ' ' . ($order->user->lastname ?? ''));
                                         }
-                                        echo $name ?: 'N/A';
+                                        echo $name ?: '—';
                                     @endphp
                                     </span>
                                 </li>
@@ -254,7 +255,7 @@
                                     <span class="title">@lang('Address')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $addr->address ?? 'Nill' }}
+                                        {{ $addrValue($addr->address ?? null) }}
                                     </span>
                                 </li>
 
@@ -262,7 +263,7 @@
                                     <span class="title">@lang('State')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $addr->state ?? 'Nill' }}
+                                        {{ $addrValue($addr->state ?? null) }}
                                     </span>
                                 </li>
 
@@ -270,7 +271,7 @@
                                     <span class="title">@lang('City')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $addr->city ?? 'NILL' }}
+                                        {{ $addrValue($addr->city ?? null) }}
                                     </span>
                                 </li>
 
@@ -278,7 +279,7 @@
                                     <span class="title">@lang('Zip')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $addr->zip ?? 'NILL' }}
+                                        {{ $addrValue($addr->zip ?? null) }}
                                     </span>
                                 </li>
 
@@ -286,7 +287,7 @@
                                     <span class="title">@lang('Country')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $addr->country ?? 'NILL' }}
+                                        {{ $addrValue($addr->country ?? null) }}
                                     </span>
                                 </li>
 
@@ -295,7 +296,7 @@
                                     <span class="title">@lang('Customer Phone')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
-                                        {{ $addr->mobile ?? 'NILL' }}
+                                        {{ $addrValue($addr->mobile ?? null) }}
                                     </span>
                                 </li>
                             </ul>
