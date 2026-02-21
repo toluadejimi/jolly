@@ -10,6 +10,7 @@ import 'package:giftfr/screens/track_order_screen.dart';
 import 'package:giftfr/screens/orders_list_screen.dart';
 import 'package:giftfr/screens/track_order_screen.dart';
 import 'package:giftfr/ui/login/change_password_screen.dart';
+import 'package:giftfr/screens/profile_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../../constants/constant.dart';
@@ -189,7 +190,12 @@ class _TabProfileState extends State<TabProfile> {
                 child: Column(
                   children: [
                     getSpace(appBarPadding),
-                    getSettingRow("User.svg", "My Profile", () {}, context: context),
+                    getSettingRow("User.svg", "My Profile", () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                      );
+                    }, context: context),
                     getSeparatorWidget(context),
                     getSettingRow("Bag.svg", "My Orders", () {
                       Navigator.push(

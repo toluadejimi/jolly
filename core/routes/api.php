@@ -14,6 +14,7 @@ Route::middleware(['throttle:60,1'])->group(function () {
 
     Route::middleware('api.key')->group(function () {
         Route::post('change-password', [App\Http\Controllers\Api\AuthController::class, 'changePassword'])->name('auth.change_password');
+        Route::post('account/delete', [App\Http\Controllers\Api\AuthController::class, 'deleteAccount'])->name('auth.delete_account');
         Route::get('dashboard', [App\Http\Controllers\Api\DashboardController::class, 'index'])->name('dashboard');
         Route::get('shipping-methods', [App\Http\Controllers\Api\ShippingController::class, 'index'])->name('shipping.methods');
         Route::get('payment-methods', [App\Http\Controllers\Api\PaymentController::class, 'methods'])->name('payment.methods');

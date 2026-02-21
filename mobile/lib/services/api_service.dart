@@ -464,6 +464,24 @@ class ApiService {
     return ApiResponse.success(null);
   }
 
+  /// POST /api/account/delete (requires API key). Permanently deletes the user account.
+  Future<ApiResponse<void>> deleteAccount() async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/api/account/delete'),
+      headers: _authHeaders,
+      body: jsonEncode(<String, dynamic>{}),
+    );
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if (res.statusCode == 401) return ApiResponse.error('Please log in to delete your account.');
+    if ((body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Failed to delete account');
+    }
+    return ApiResponse.success(null);
+  }
+
   /// GET /api/order-tracking/{orderNumber} (no auth)
   Future<OrderTrackingResult> getOrderTracking(String orderNumber) async {
     final encoded = Uri.encodeComponent(orderNumber.trim());

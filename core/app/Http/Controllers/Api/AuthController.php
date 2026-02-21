@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Validator;
 
@@ -177,6 +178,33 @@ class AuthController extends Controller
             'remark' => 'password_changed',
             'status' => 'success',
             'message' => ['success' => ['Password changed successfully.']],
+        ]);
+    }
+
+    /**
+     * POST /api/account/delete (requires API key).
+     * Permanently deletes the authenticated user's account: revokes API keys and anonymizes user data.
+     * Order history is retained for legal record; the account cannot be used again.
+     */
+    public function deleteAccount(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $user->apiKeys()->delete();
+
+        $user->email = 'deleted_' . $user->id . '_' . Str::random(8) . '@deleted.local';
+        $user->firstname = '';
+        $user->lastname = '';
+        $user->password = Hash::make(Str::random(32));
+        $user->status = Status::USER_BAN;
+        $user->save();
+
+        \App\Models\ShippingAddress::where('user_id', $user->id)->delete();
+
+        return response()->json([
+            'remark' => 'account_deleted',
+            'status' => 'success',
+            'message' => ['success' => ['Your account has been permanently deleted.']],
         ]);
     }
 
