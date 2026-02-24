@@ -12,6 +12,13 @@
                         @php echo $order->paymentBadge() @endphp
                         @php echo $order->statusBadge() @endphp
                     </span>
+                    @if ($order->conversation)
+                        <a href="{{ route('admin.order.conversation.show', $order->conversation->id) }}" class="btn btn-outline--primary btn-sm ms-2">
+                            <i class="las la-comments"></i> @lang('Contact seller chat')
+                        </a>
+                    @else
+                        <span class="text-muted small ms-2">@lang('No conversation yet')</span>
+                    @endif
                 </h5>
 
                 <span> {{ showDateTime($order->created_at, 'F d, Y') }} @lang('at')

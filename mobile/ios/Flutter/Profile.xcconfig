@@ -1,4 +1,4 @@
-#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"
 #include "Generated.xcconfig"
 // Exclude simulator and 32-bit from device build for App Store validation (64-bit only)
 EXCLUDED_ARCHS[sdk=iphoneos*]=i386 x86_64 armv7

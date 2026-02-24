@@ -2,6 +2,8 @@
 
 <li><a href="{{ route('user.orders.all') }}" class="{{ menuActive('user.orders*') }}"><i class="las la-list"></i>@lang('Orders')</a></li>
 
+<li><a href="{{ route('user.orders.conversations.index') }}" class="{{ menuActive('user.orders.conversations*') }}"><i class="las la-comment-dots"></i>@lang('Contact Seller')</a></li>
+
 <li><a href="{{ route('user.profile.setting') }}" class="{{ menuActive('user.profile.setting') }}"><i class="las la-user-alt"></i>@lang('Profile')</a></li>
 
 <li>

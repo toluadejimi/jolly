@@ -118,7 +118,7 @@ class OrderController extends Controller
     public function orderDetails($id)
     {
         $pageTitle = 'Order Details';
-        $order     = Order::where('id', $id)->with('user', 'deposit', 'deposit.gateway', 'orderDetail.product', 'orderDetail.productVariant', 'appliedCoupon')->firstOrFail();
+        $order     = Order::where('id', $id)->with('user', 'deposit', 'deposit.gateway', 'orderDetail.product', 'orderDetail.productVariant', 'appliedCoupon', 'conversation')->firstOrFail();
 
         $userDefaultShippingAddress = null;
         if ($order->user_id) {

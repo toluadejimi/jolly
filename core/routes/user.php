@@ -68,6 +68,12 @@ Route::middleware('auth')->name('user.')->group(function () {
                 Route::get('canceled', 'OrderController@canceledOrders')->name('canceled');
                 Route::get('{order_number}', 'OrderController@orderDetails')->name('details');
             });
+            Route::controller('OrderConversationController')->prefix('orders')->name('orders.')->group(function () {
+                Route::get('conversations', 'index')->name('conversations.index');
+                Route::get('conversation/{order_number}', 'show')->name('conversation.show');
+                Route::post('conversation/{order_number}', 'store')->name('conversation.store');
+                Route::get('conversation/attachment/{message_id}', 'downloadAttachment')->name('conversation.attachment');
+            });
 
             //Profile setting
             Route::controller('ProfileController')->group(function () {

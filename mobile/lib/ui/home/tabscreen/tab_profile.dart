@@ -11,6 +11,7 @@ import 'package:giftfr/screens/orders_list_screen.dart';
 import 'package:giftfr/screens/track_order_screen.dart';
 import 'package:giftfr/ui/login/change_password_screen.dart';
 import 'package:giftfr/screens/profile_screen.dart';
+import 'package:giftfr/services/api_service.dart';
 import 'package:provider/provider.dart';
 
 import '../../../constants/constant.dart';
@@ -26,8 +27,58 @@ class TabProfile extends StatefulWidget {
 }
 
 class _TabProfileState extends State<TabProfile> {
+  bool _deleteAccountLoading = false;
+
   Future<void> _refreshAuth() async {
     setState(() {});
+  }
+
+  Future<void> _deleteAccount(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete account'),
+        content: const Text(
+          'Are you sure you want to permanently delete your account? '
+          'This cannot be undone. Your order history will be kept for our records but you will no longer have access.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete my account'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !context.mounted) return;
+
+    setState(() => _deleteAccountLoading = true);
+    final api = context.read<ApiService>();
+    final res = await api.deleteAccount();
+    if (!context.mounted) return;
+    setState(() => _deleteAccountLoading = false);
+
+    if (res.success) {
+      await context.read<AuthProvider>().logout();
+      if (!context.mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (route) => false,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Your account has been deleted.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(res.error ?? 'Failed to delete account')),
+      );
+    }
   }
 
   @override
@@ -196,6 +247,13 @@ class _TabProfileState extends State<TabProfile> {
                         MaterialPageRoute(builder: (context) => const ProfileScreen()),
                       );
                     }, context: context),
+                    getSeparatorWidget(context),
+                    getSettingRow(
+                      "User.svg",
+                      _deleteAccountLoading ? "Deleting…" : "Delete account",
+                      _deleteAccountLoading ? () {} : () => _deleteAccount(context),
+                      context: context,
+                    ),
                     getSeparatorWidget(context),
                     getSettingRow("Bag.svg", "My Orders", () {
                       Navigator.push(

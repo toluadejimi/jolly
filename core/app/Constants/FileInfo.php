@@ -58,6 +58,9 @@ class FileInfo {
         $data['digitalProductFile'] = [
             'path' => 'assets/digital_product',
         ];
+        $data['orderConversation'] = [
+            'path' => 'assets/order_conversations',
+        ];
 
         $data['attribute'] = [
             'path' => 'assets/images/attribute_values',

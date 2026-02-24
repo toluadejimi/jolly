@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Constants\Status;
+use App\Models\OrderConversation;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model {
@@ -41,6 +42,10 @@ class Order extends Model {
 
     public function orderDetail() {
         return $this->hasMany(OrderDetail::class);
+    }
+
+    public function conversation() {
+        return $this->hasOne(OrderConversation::class);
     }
 
     public function getAmountAttribute() {

@@ -277,6 +277,14 @@ Route::middleware('admin')->group(function () {
         Route::post('return/{id}', 'return')->name('return');
     });
 
+    // Order conversations (Contact Seller)
+    Route::controller('OrderConversationController')->prefix('order-conversations')->name('order.conversation.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('view/{id}', 'show')->name('show');
+        Route::post('reply/{id}', 'store')->name('reply');
+        Route::get('attachment/{message_id}', 'downloadAttachment')->name('attachment');
+    });
+
     // Deposit Gateway
     Route::name('gateway.')->prefix('gateway')->group(function () {
         // Automatic Gateway

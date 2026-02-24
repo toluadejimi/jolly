@@ -16,11 +16,14 @@
                     @php echo $order->statusBadge() @endphp
                 </span>
             </div>
-            <div>
+            <div class="d-flex align-items-center flex-wrap gap-2">
                 <h5 class="order-details-id mb-1 d-flex align-items-center flex-wrap gap-3">
                     <span class="order-details-id">#{{ $order->order_number }}
                 </h5>
                 <span> {{ showDateTime($order->created_at, 'd F, Y') }}</span>
+                <a href="{{ route('user.orders.conversation.show', $order->order_number) }}" class="btn btn--primary btn-sm">
+                    <i class="las la-comment-dots"></i> @lang('Contact Seller')
+                </a>
             </div>
         </div>
 
