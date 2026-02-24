@@ -6,6 +6,7 @@ import '../models/user_dashboard.dart';
 import '../services/api_service.dart';
 import '../utils/format_utils.dart';
 import 'order_detail_screen.dart';
+import 'order_conversation_screen.dart';
 
 class OrdersListScreen extends StatefulWidget {
   const OrdersListScreen({super.key, this.statusFilter});
@@ -172,6 +173,17 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                                       ),
                                     );
                                   },
+                                  onContactSeller: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => OrderConversationScreen(
+                                          orderRef: order.orderNumber,
+                                          orderNumber: order.orderNumber,
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 )),
                           if (res.data!.orders.isNotEmpty && res.data!.lastPage > res.data!.currentPage)
                             Padding(
@@ -262,21 +274,56 @@ class _CountChip extends StatelessWidget {
 }
 
 class _OrderTile extends StatelessWidget {
-  const _OrderTile({required this.order, required this.onTap});
+  const _OrderTile({required this.order, required this.onTap, this.onContactSeller});
 
   final UserOrderItem order;
   final VoidCallback onTap;
+  final VoidCallback? onContactSeller;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        title: Text(order.orderNumber, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text('${order.statusDisplay} · ${formatNiara(order.totalAmount)}'),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            title: Row(
+              children: [
+                Expanded(child: Text(order.orderNumber, style: const TextStyle(fontWeight: FontWeight.w600))),
+                if (order.conversation != null && order.conversation!.unreadCount > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.error,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${order.conversation!.unreadCount}',
+                      style: TextStyle(color: theme.colorScheme.onError, fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+              ],
+            ),
+            subtitle: Text('${order.statusDisplay} · ${formatNiara(order.totalAmount)}'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: onTap,
+          ),
+          if (onContactSeller != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: onContactSeller,
+                  icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                  label: const Text('Contact Seller'),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

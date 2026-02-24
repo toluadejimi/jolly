@@ -8,6 +8,7 @@ import 'package:giftfr/ui/home/home_screen.dart';
 import 'package:giftfr/ui/login/login_screen.dart';
 import 'package:giftfr/screens/track_order_screen.dart';
 import 'package:giftfr/screens/orders_list_screen.dart';
+import 'package:giftfr/screens/order_conversations_list_screen.dart';
 import 'package:giftfr/screens/track_order_screen.dart';
 import 'package:giftfr/ui/login/change_password_screen.dart';
 import 'package:giftfr/screens/profile_screen.dart';
@@ -259,6 +260,13 @@ class _TabProfileState extends State<TabProfile> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const OrdersListScreen()),
+                      );
+                    }, context: context),
+                    getSeparatorWidget(context),
+                    getSettingRow("User.svg", "Contact Seller", () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const OrderConversationsListScreen()),
                       );
                     }, context: context),
                     getSeparatorWidget(context),

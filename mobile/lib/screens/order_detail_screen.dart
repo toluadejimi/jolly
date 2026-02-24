@@ -8,6 +8,7 @@ import '../models/api_response.dart';
 import '../models/user_dashboard.dart';
 import '../services/api_service.dart';
 import '../utils/format_utils.dart';
+import 'order_conversation_screen.dart';
 
 /// Returns a color for the order status chip.
 Color statusColor(String status) {
@@ -143,6 +144,25 @@ class _OrderDetailBody extends StatelessWidget {
                     Text('Total', style: theme.textTheme.titleMedium),
                     Text(formatNiara(order.totalAmount), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                   ],
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => OrderConversationScreen(
+                            orderRef: order.id,
+                            orderNumber: order.orderNumber,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.chat_bubble_outline, size: 20),
+                    label: const Text('Contact Seller'),
+                  ),
                 ),
               ],
             ),

@@ -87,7 +87,7 @@ class OrderController extends Controller
         $user = $request->user();
         $orders = Order::where('user_id', $user->id)
             ->isValidOrder()
-            ->with('orderDetail.product')
+            ->with('orderDetail.product', 'conversation')
             ->orderByDesc('id')
             ->when($request->filled('status'), function ($q) use ($request) {
                 $status = $request->status;
@@ -99,16 +99,23 @@ class OrderController extends Controller
             })
             ->paginate(min((int) $request->get('per_page', 15), 50));
 
-        $items = $orders->getCollection()->map(fn ($order) => [
-            'id' => $order->id,
-            'order_number' => $order->order_number,
-            'subtotal' => (float) $order->subtotal,
-            'shipping_charge' => (float) $order->shipping_charge,
-            'total_amount' => (float) $order->total_amount,
-            'payment_status' => $order->payment_status == Status::PAYMENT_SUCCESS ? 'paid' : 'unpaid',
-            'status' => $this->orderStatusLabel($order->status),
-            'created_at' => $order->created_at->toIso8601String(),
-        ]);
+        $items = $orders->getCollection()->map(function ($order) {
+            $conv = $order->conversation;
+            return [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'subtotal' => (float) $order->subtotal,
+                'shipping_charge' => (float) $order->shipping_charge,
+                'total_amount' => (float) $order->total_amount,
+                'payment_status' => $order->payment_status == Status::PAYMENT_SUCCESS ? 'paid' : 'unpaid',
+                'status' => $this->orderStatusLabel($order->status),
+                'created_at' => $order->created_at->toIso8601String(),
+                'conversation' => $conv ? [
+                    'conversation_id' => $conv->id,
+                    'unread_count' => $conv->unreadCountForUser(),
+                ] : null,
+            ];
+        });
 
         return response()->json([
             'remark' => 'orders_list',
@@ -131,7 +138,7 @@ class OrderController extends Controller
         $user = $request->user();
         $order = Order::where('user_id', $user->id)
             ->where(fn ($q) => $q->where('id', $orderRef)->orWhere('order_number', $orderRef))
-            ->with(['orderDetail.product', 'orderDetail.productVariant', 'appliedCoupon'])
+            ->with(['orderDetail.product', 'orderDetail.productVariant', 'appliedCoupon', 'conversation'])
             ->firstOrFail();
 
         $items = $order->orderDetail->map(function ($d) {
@@ -163,6 +170,7 @@ class OrderController extends Controller
             }
         }
 
+        $conv = $order->conversation;
         return response()->json([
             'remark' => 'order_detail',
             'status' => 'success',
@@ -182,6 +190,10 @@ class OrderController extends Controller
                     'tracking_number' => $order->tracking_number ?: null,
                     'tracking_url' => $order->tracking_url ?: null,
                     'items' => $items,
+                    'conversation' => $conv ? [
+                        'conversation_id' => $conv->id,
+                        'unread_count' => $conv->unreadCountForUser(),
+                    ] : null,
                 ],
             ],
         ]);

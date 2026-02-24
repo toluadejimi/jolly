@@ -10,6 +10,7 @@ import '../models/order_tracking.dart';
 import '../models/product.dart';
 import '../models/slider.dart';
 import '../models/user_dashboard.dart';
+import '../models/order_conversation.dart';
 import '../models/api_response.dart';
 import '../models/auth_data.dart';
 import '../models/cart_item.dart';
@@ -394,6 +395,94 @@ class ApiService {
       headers: _authHeaders,
     );
     return _parseOrderDetail(res);
+  }
+
+  /// GET /api/order-conversations (requires API key). List conversations for the user.
+  Future<ApiResponse<OrderConversationsListData>> getOrderConversations({int page = 1, int perPage = 15}) async {
+    final uri = Uri.parse('$baseUrl/api/order-conversations').replace(queryParameters: {'page': '$page', 'per_page': '$perPage'});
+    _logApi('GET', uri.toString());
+    final res = await http.get(uri, headers: _authHeaders);
+    _logApi('GET', uri.toString(), statusCode: res.statusCode, responseBody: res.body);
+    return _parseOrderConversationsList(res);
+  }
+
+  /// GET /api/orders/{order_ref}/conversation (requires API key). Get messages for one order.
+  Future<ApiResponse<OrderConversationData>> getOrderConversation(dynamic orderRef) async {
+    final url = '$baseUrl/api/orders/$orderRef/conversation';
+    _logApi('GET', url);
+    final res = await http.get(Uri.parse(url), headers: _authHeaders);
+    _logApi('GET', url, statusCode: res.statusCode, responseBody: res.body);
+    return _parseOrderConversation(res);
+  }
+
+  /// POST /api/orders/{order_ref}/conversation (requires API key). Send message; optional [attachmentPath] for file.
+  Future<ApiResponse<SendMessageResult>> sendOrderConversationMessage({
+    required dynamic orderRef,
+    String? message,
+    String? attachmentPath,
+  }) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/api/orders/$orderRef/conversation'),
+    );
+    request.headers.addAll(_authHeaders);
+    request.headers.remove('Content-Type');
+    if (message != null && message.isNotEmpty) {
+      request.fields['message'] = message;
+    }
+    if (attachmentPath != null && attachmentPath.isNotEmpty) {
+      try {
+        request.files.add(await http.MultipartFile.fromPath('attachment', attachmentPath));
+      } catch (e) {
+        return ApiResponse.error('Failed to read file: $e');
+      }
+    }
+    final url = '$baseUrl/api/orders/$orderRef/conversation';
+    _logApi('POST', url, requestBody: '[multipart: message, attachment?]');
+    final streamed = await request.send();
+    final res = await http.Response.fromStream(streamed);
+    _logApi('POST', url, statusCode: res.statusCode, responseBody: res.body);
+    return _parseSendMessage(res);
+  }
+
+  static ApiResponse<OrderConversationsListData> _parseOrderConversationsList(http.Response res) {
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if (res.statusCode == 401) return ApiResponse.error('Please log in to view conversations.');
+    if ((body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Request failed');
+    }
+    final data = body['data'] as Map<String, dynamic>? ?? {};
+    return ApiResponse.success(OrderConversationsListData.fromJson(data));
+  }
+
+  static ApiResponse<OrderConversationData> _parseOrderConversation(http.Response res) {
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if (res.statusCode == 401) return ApiResponse.error('Please log in.');
+    if (res.statusCode == 404) return ApiResponse.error('Order not found.');
+    if ((body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Request failed');
+    }
+    final data = body['data'] as Map<String, dynamic>? ?? {};
+    return ApiResponse.success(OrderConversationData.fromJson(data));
+  }
+
+  static ApiResponse<SendMessageResult> _parseSendMessage(http.Response res) {
+    final body = jsonDecode(res.body) as Map<String, dynamic>?;
+    if (body == null) return ApiResponse.error('Invalid response');
+    if (res.statusCode == 401) return ApiResponse.error('Please log in.');
+    if (res.statusCode == 422 || (body['status'] as String?) != 'success') {
+      final msg = body['message'];
+      final err = msg is Map ? (msg['error'] as List?)?.first : msg?.toString();
+      return ApiResponse.error(err ?? 'Failed to send message');
+    }
+    final data = body['data'] as Map<String, dynamic>? ?? {};
+    return ApiResponse.success(SendMessageResult.fromJson(data));
   }
 
   static ApiResponse<DashboardData> _parseDashboard(http.Response res) {

@@ -24,5 +24,11 @@ Route::middleware(['throttle:60,1'])->group(function () {
         Route::post('upload-customer-photos', [App\Http\Controllers\Api\OrderController::class, 'uploadCustomerPhotos'])->name('orders.upload_photos');
         Route::post('orders', [App\Http\Controllers\Api\OrderController::class, 'store'])->name('orders.store');
         Route::post('payment/initiate', [App\Http\Controllers\Api\PaymentController::class, 'initiate'])->name('payment.initiate');
+
+        // Order conversations (Contact Seller) – for mobile app
+        Route::get('order-conversations', [App\Http\Controllers\Api\OrderConversationController::class, 'index'])->name('order_conversations.index');
+        Route::get('order-conversations/attachment/{message_id}', [App\Http\Controllers\Api\OrderConversationController::class, 'attachment'])->name('order_conversations.attachment');
+        Route::get('orders/{order_ref}/conversation', [App\Http\Controllers\Api\OrderConversationController::class, 'show'])->name('orders.conversation.show');
+        Route::post('orders/{order_ref}/conversation', [App\Http\Controllers\Api\OrderConversationController::class, 'store'])->name('orders.conversation.store');
     });
 });

@@ -393,6 +393,17 @@
                 "title": "Unpaid Orders",
                 "route_name": "admin.order.unpaid",
                 "menu_active": "admin.order.unpaid"
+            },
+            {
+                "keyword": [
+                    "Order Conversations",
+                    "Contact Seller",
+                    "Customer chat",
+                    "Messages"
+                ],
+                "title": "Order Conversations",
+                "route_name": "admin.order.conversation.index",
+                "menu_active": "admin.order.conversation*"
             }
         ]
     },

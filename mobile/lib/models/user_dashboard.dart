@@ -1,3 +1,21 @@
+/// Summary of conversation for an order (in order list/detail response).
+class OrderConversationSummary {
+  OrderConversationSummary({
+    required this.conversationId,
+    required this.unreadCount,
+  });
+
+  factory OrderConversationSummary.fromJson(Map<String, dynamic> json) {
+    return OrderConversationSummary(
+      conversationId: (json['conversation_id'] as num).toInt(),
+      unreadCount: (json['unread_count'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  final int conversationId;
+  final int unreadCount;
+}
+
 /// Dashboard data from GET /api/dashboard (order counts + latest orders).
 class DashboardData {
   DashboardData({
@@ -56,9 +74,11 @@ class UserOrderItem {
     this.subtotal,
     this.shippingCharge,
     this.paymentStatus,
+    this.conversation,
   });
 
   factory UserOrderItem.fromJson(Map<String, dynamic> json) {
+    final conv = json['conversation'] as Map<String, dynamic>?;
     return UserOrderItem(
       id: (json['id'] as num).toInt(),
       orderNumber: json['order_number'] as String? ?? '',
@@ -68,6 +88,7 @@ class UserOrderItem {
       subtotal: (json['subtotal'] as num?)?.toDouble(),
       shippingCharge: (json['shipping_charge'] as num?)?.toDouble(),
       paymentStatus: json['payment_status'] as String?,
+      conversation: conv != null ? OrderConversationSummary.fromJson(conv) : null,
     );
   }
 
@@ -79,6 +100,7 @@ class UserOrderItem {
   final double? subtotal;
   final double? shippingCharge;
   final String? paymentStatus;
+  final OrderConversationSummary? conversation;
 
   String get statusDisplay {
     switch (status) {
@@ -116,10 +138,12 @@ class UserOrderDetail {
     this.estimatedDeliveryAt,
     this.trackingNumber,
     this.trackingUrl,
+    this.conversation,
   });
 
   factory UserOrderDetail.fromJson(Map<String, dynamic> json) {
     final itemsList = json['items'] as List<dynamic>? ?? [];
+    final conv = json['conversation'] as Map<String, dynamic>?;
     return UserOrderDetail(
       id: (json['id'] as num).toInt(),
       orderNumber: json['order_number'] as String? ?? '',
@@ -136,6 +160,7 @@ class UserOrderDetail {
       estimatedDeliveryAt: json['estimated_delivery_at'] as String?,
       trackingNumber: json['tracking_number'] as String?,
       trackingUrl: json['tracking_url'] as String?,
+      conversation: conv != null ? OrderConversationSummary.fromJson(conv) : null,
     );
   }
 
@@ -152,6 +177,7 @@ class UserOrderDetail {
   final String? estimatedDeliveryAt;
   final String? trackingNumber;
   final String? trackingUrl;
+  final OrderConversationSummary? conversation;
 
   String get statusDisplay {
     switch (status) {
