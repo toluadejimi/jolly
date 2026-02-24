@@ -41,23 +41,24 @@
                     <h6 class="mb-0">@lang('Messages')</h6>
                 </div>
                 <div class="card-body p-4">
-                    <div class="conversation-messages rounded-3" style="max-height: 420px; overflow-y: auto; background: var(--bs-body-bg, #f8f9fa);">
+                    <div class="conversation-messages rounded-3" style="max-height: 420px; overflow-y: auto; background: #e9ecef;">
                         @forelse ($messages as $msg)
-                            <div class="d-flex mb-4 {{ $msg->isFromAdmin() ? 'justify-content-end' : 'justify-content-start' }}">
-                                <div class="d-flex flex-column {{ $msg->isFromAdmin() ? 'align-items-end' : 'align-items-start' }}" style="max-width: 85%;">
-                                    <div class="rounded-3 px-3 py-2 shadow-sm {{ $msg->isFromAdmin() ? 'bg-primary text-white' : 'bg-white border' }}">
-                                        <div class="d-flex align-items-center gap-2 mb-1">
+                            @php $isAdmin = $msg->isFromAdmin(); @endphp
+                            <div class="d-flex mb-4 {{ $isAdmin ? 'justify-content-end' : 'justify-content-start' }}">
+                                <div class="d-flex flex-column {{ $isAdmin ? 'align-items-end' : 'align-items-start' }}" style="max-width: 85%;">
+                                    <div class="rounded-3 px-3 py-2 shadow-sm {{ $isAdmin ? 'admin-msg-bubble' : 'customer-msg-bubble' }}">
+                                        <div class="d-flex align-items-center gap-2 mb-1 msg-meta">
                                             @if ($msg->isFromUser())
-                                                <i class="las la-user text-muted small"></i>
-                                                <small class="fw-semibold opacity-75">@lang('Customer')</small>
+                                                <i class="las la-user small"></i>
+                                                <small class="fw-semibold">@lang('Customer')</small>
                                             @else
-                                                <i class="las la-headset text-white small opacity-75"></i>
-                                                <small class="opacity-75">@lang('You')</small>
+                                                <i class="las la-headset small"></i>
+                                                <small>@lang('You')</small>
                                             @endif
-                                            <small class="opacity-75 ms-auto">{{ $msg->created_at->format('M j, H:i') }}</small>
+                                            <small class="ms-auto msg-time">{{ $msg->created_at->format('M j, H:i') }}</small>
                                         </div>
                                         @if ($msg->message)
-                                            <div class="mb-1">{!! nl2br(e($msg->message)) !!}</div>
+                                            <div class="msg-body mb-1">{!! nl2br(e($msg->message)) !!}</div>
                                         @endif
                                         @if ($msg->attachment_path)
                                             @php
@@ -70,7 +71,7 @@
                                                         <img src="{{ asset($msg->attachment_path) }}" alt="" class="rounded img-thumbnail" style="max-height: 140px;">
                                                     </a>
                                                 @endif
-                                                <a href="{{ route('admin.order.conversation.attachment', $msg->id) }}" class="small d-inline-flex align-items-center gap-1 mt-1 {{ $msg->isFromAdmin() ? 'text-white' : 'text-primary' }}">
+                                                <a href="{{ route('admin.order.conversation.attachment', $msg->id) }}" class="small d-inline-flex align-items-center gap-1 mt-1 msg-attachment-link">
                                                     <i class="las la-paperclip"></i> {{ $msg->attachment_name }}
                                                 </a>
                                             </div>
@@ -141,9 +142,32 @@
 
 @push('style')
 <style>
+.conversation-messages { padding: 1rem; }
 .conversation-messages::-webkit-scrollbar { width: 8px; }
 .conversation-messages::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
 .conversation-messages::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
 .conversation-messages::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+/* Customer message: white bubble, dark text */
+.customer-msg-bubble {
+    background: #fff !important;
+    border: 1px solid #dee2e6 !important;
+    color: #212529 !important;
+}
+.customer-msg-bubble .msg-meta,
+.customer-msg-bubble .msg-time { color: #6c757d !important; }
+.customer-msg-bubble .msg-body { color: #212529 !important; font-size: 0.95rem; line-height: 1.5; }
+.customer-msg-bubble .msg-attachment-link { color: #0d6efd !important; }
+
+/* Admin message: primary bubble, white text */
+.admin-msg-bubble {
+    background: #0d6efd !important;
+    border: 1px solid #0d6efd !important;
+    color: #fff !important;
+}
+.admin-msg-bubble .msg-meta,
+.admin-msg-bubble .msg-time { color: rgba(255,255,255,0.9) !important; }
+.admin-msg-bubble .msg-body { color: #fff !important; font-size: 0.95rem; line-height: 1.5; }
+.admin-msg-bubble .msg-attachment-link { color: #fff !important; text-decoration: underline; }
 </style>
 @endpush
