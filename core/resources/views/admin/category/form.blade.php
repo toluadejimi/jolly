@@ -257,9 +257,9 @@
 
                         form.find('.select2-auto-tokenize').val(data.meta_keywords);
                         form.find('.category-thumb .image-upload-preview').css('background-image',
-                            `url(${data.image_path})`);
+                            `url('${(data.image_path || '').replace(/'/g, "\\'")}')`);
                         form.find('.category-icon .image-upload-preview').css('background-image',
-                            `url(${data.icon_path})`);
+                            `url('${(data.icon_path || '').replace(/'/g, "\\'")}')`);
                         form.attr('action', `${formAction}/${data.id}`);
                     }
 
@@ -304,6 +304,14 @@
                             if (response.action === 'updated') {
                                 $('#categoryTree').jstree('rename_node', response.categoryId, response
                                     .name);
+                                if (response.image_path) {
+                                    form.find('.category-thumb .image-upload-preview').css('background-image',
+                                        `url('${String(response.image_path).replace(/'/g, "\\'")}')`);
+                                }
+                                if (response.icon_path) {
+                                    form.find('.category-icon .image-upload-preview').css('background-image',
+                                        `url('${String(response.icon_path).replace(/'/g, "\\'")}')`);
+                                }
                             } else {
                                 $('#categoryTree').jstree('create_node', response.parentId, {
                                     "id": response.categoryId,

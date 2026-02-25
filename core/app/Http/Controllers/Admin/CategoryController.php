@@ -59,12 +59,17 @@ class CategoryController extends Controller {
 
         $message       = $id ? 'updated' : 'added';
 
-        return successResponse("Category $message successfully", [
+        $payload = [
             'categoryId' => $category->id,
             'name' => $category->name,
             'parentId' => $category->parent_id ?? '#',
             'action' => $message
-        ]);
+        ];
+        if ($id) {
+            $payload['image_path'] = $category->categoryImage();
+            $payload['icon_path'] = $category->categoryIcon();
+        }
+        return successResponse("Category $message successfully", $payload);
     }
 
     protected function setCategoryAttributes($category, $request) {
