@@ -196,7 +196,11 @@ function getPageSections($arr = false) {
 
 function getImage($image, $size = null) {
     $clean = '';
-    if (file_exists($image) && is_file($image)) {
+    $path = $image;
+    if ($image && strlen($image) > 0 && !str_starts_with($image, '/') && !preg_match('#^[A-Za-z]:[/\\\\]#', $image)) {
+        $path = public_path($image);
+    }
+    if ($path && file_exists($path) && is_file($path)) {
         return asset($image) . $clean;
     }
     if ($size) {
@@ -602,7 +606,11 @@ function array_flatten($array) {
 }
 
 function getAvatar($image, $clean = '') {
-    return file_exists($image) && is_file($image) ? asset($image) . $clean : asset(getFilePath('avatar'));
+    $path = $image;
+    if ($image && strlen($image) > 0 && !str_starts_with($image, '/') && !preg_match('#^[A-Za-z]:[/\\\\]#', $image)) {
+        $path = public_path($image);
+    }
+    return $path && file_exists($path) && is_file($path) ? asset($image) . $clean : asset(getFilePath('avatar'));
 }
 
 function slugToId($slug) {
