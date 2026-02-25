@@ -10,6 +10,12 @@ class Category extends Model
 {
     use SoftDeletes;
 
+    protected $fillable = [
+        'parent_id', 'name', 'slug', 'image', 'icon',
+        'meta_title', 'meta_description', 'meta_keywords',
+        'is_featured', 'feature_in_banner', 'position',
+    ];
+
     protected $casts   = [
         'meta_keywords' => 'array',
     ];

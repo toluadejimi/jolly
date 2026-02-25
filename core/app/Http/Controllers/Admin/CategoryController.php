@@ -66,6 +66,7 @@ class CategoryController extends Controller {
             'action' => $message
         ];
         if ($id) {
+            $category->refresh();
             $payload['image_path'] = $category->categoryImage();
             $payload['icon_path'] = $category->categoryIcon();
         }
