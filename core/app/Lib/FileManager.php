@@ -90,14 +90,32 @@ class FileManager {
     }
 
     /**
+     * Get the full filesystem path for uploads (resolves relative paths under public directory).
+     *
+     * @return string
+     */
+    protected function getUploadFullPath() {
+        $path = $this->path;
+        if ($path === '' || $path === null) {
+            return $path;
+        }
+        // Already absolute (Unix or Windows)
+        if (str_starts_with($path, '/') || (strlen($path) >= 2 && preg_match('#^[A-Za-z]:[/\\\\]#', $path))) {
+            return $path;
+        }
+        return public_path($path);
+    }
+
+    /**
      * File upload process
      *
      * @return void
      */
     public function upload() {
+        $uploadPath = $this->getUploadFullPath();
 
         //create the directory if doesn't exists
-        $path = $this->makeDirectory();
+        $path = $this->makeDirectory($uploadPath);
         if (!$path) throw new \Exception('File could not been created.');
 
         //remove the old file if exist
@@ -124,6 +142,7 @@ class FileManager {
      * @return void
      */
     protected function uploadImage() {
+        $uploadPath = $this->getUploadFullPath();
         $manager = new ImageManager(new Driver());
         $image = $manager->read($this->file);
 
@@ -133,15 +152,15 @@ class FileManager {
             $image->resize($size[0], $size[1]);
         }
         //save the image
-        $image->save($this->path . '/' . $this->filename);
+        $image->save($uploadPath . '/' . $this->filename);
 
         //save the image as thumbnail version
         if ($this->thumb) {
             if ($this->old) {
-                $this->removeFile($this->path . '/thumb_' . $this->old);
+                $this->removeFile($uploadPath . '/thumb_' . $this->old);
             }
             $thumb = explode('x', $this->thumb);
-            $manager->read($this->file)->resize($thumb[0], $thumb[1])->save($this->path . '/thumb_' . $this->filename);
+            $manager->read($this->file)->resize($thumb[0], $thumb[1])->save($uploadPath . '/thumb_' . $this->filename);
         }
     }
 
@@ -152,7 +171,8 @@ class FileManager {
      * @return void
      */
     protected function uploadFile() {
-        $this->file->move($this->path, $this->filename);
+        $uploadPath = $this->getUploadFullPath();
+        $this->file->move($uploadPath, $this->filename);
     }
 
     /**
@@ -160,12 +180,12 @@ class FileManager {
      * Developer can also call this method statically
      *
      * @param $location
-     * @return string
+     * @return string|bool
      */
     public function makeDirectory($location = null) {
-        if (!$location) $location = $this->path;
+        if (!$location) $location = $this->getUploadFullPath();
         if (file_exists($location)) return true;
-        return mkdir($location, 0755, true);
+        return @mkdir($location, 0755, true) ? true : false;
     }
 
     /**
@@ -202,12 +222,13 @@ class FileManager {
      * @return void
      */
     public function removeFile($path = null) {
-        if (!$path) $path = $this->path . '/' . $this->old;
+        $basePath = $this->getUploadFullPath();
+        if (!$path) $path = $basePath . '/' . $this->old;
 
         file_exists($path) && is_file($path) ? @unlink($path) : false;
 
         if ($this->thumb) {
-            if (!$path) $path = $this->path . '/thumb_' . $this->old;
+            $path = $basePath . '/thumb_' . $this->old;
             file_exists($path) && is_file($path) ? @unlink($path) : false;
         }
     }
