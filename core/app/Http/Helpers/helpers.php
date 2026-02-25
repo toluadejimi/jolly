@@ -198,8 +198,16 @@ function getImage($image, $size = null) {
     $clean = '';
     $exists = false;
     if ($image && strlen($image) > 0) {
-        $exists = (file_exists($image) && is_file($image));
-        if (!$exists && !str_starts_with($image, '/') && !preg_match('#^[A-Za-z]:[/\\\\]#', $image)) {
+        // For paths under assets/, check public_path first so it works regardless of CWD (e.g. category images on live)
+        $isRelativeAsset = str_starts_with($image, 'assets/');
+        if ($isRelativeAsset) {
+            $path = public_path($image);
+            $exists = ($path && file_exists($path) && is_file($path));
+        }
+        if (!$exists) {
+            $exists = (file_exists($image) && is_file($image));
+        }
+        if (!$exists && !$isRelativeAsset && !str_starts_with($image, '/') && !preg_match('#^[A-Za-z]:[/\\\\]#', $image)) {
             $path = public_path($image);
             $exists = ($path && file_exists($path) && is_file($path));
         }
@@ -612,7 +620,13 @@ function array_flatten($array) {
 function getAvatar($image, $clean = '') {
     $exists = false;
     if ($image && strlen($image) > 0) {
-        $exists = (file_exists($image) && is_file($image));
+        if (str_starts_with($image, 'assets/')) {
+            $path = public_path($image);
+            $exists = ($path && file_exists($path) && is_file($path));
+        }
+        if (!$exists) {
+            $exists = (file_exists($image) && is_file($image));
+        }
         if (!$exists && !str_starts_with($image, '/') && !preg_match('#^[A-Za-z]:[/\\\\]#', $image)) {
             $path = public_path($image);
             $exists = ($path && file_exists($path) && is_file($path));
