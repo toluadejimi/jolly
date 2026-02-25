@@ -196,11 +196,15 @@ function getPageSections($arr = false) {
 
 function getImage($image, $size = null) {
     $clean = '';
-    $path = $image;
-    if ($image && strlen($image) > 0 && !str_starts_with($image, '/') && !preg_match('#^[A-Za-z]:[/\\\\]#', $image)) {
-        $path = public_path($image);
+    $exists = false;
+    if ($image && strlen($image) > 0) {
+        $exists = (file_exists($image) && is_file($image));
+        if (!$exists && !str_starts_with($image, '/') && !preg_match('#^[A-Za-z]:[/\\\\]#', $image)) {
+            $path = public_path($image);
+            $exists = ($path && file_exists($path) && is_file($path));
+        }
     }
-    if ($path && file_exists($path) && is_file($path)) {
+    if ($exists) {
         return asset($image) . $clean;
     }
     if ($size) {
@@ -606,11 +610,15 @@ function array_flatten($array) {
 }
 
 function getAvatar($image, $clean = '') {
-    $path = $image;
-    if ($image && strlen($image) > 0 && !str_starts_with($image, '/') && !preg_match('#^[A-Za-z]:[/\\\\]#', $image)) {
-        $path = public_path($image);
+    $exists = false;
+    if ($image && strlen($image) > 0) {
+        $exists = (file_exists($image) && is_file($image));
+        if (!$exists && !str_starts_with($image, '/') && !preg_match('#^[A-Za-z]:[/\\\\]#', $image)) {
+            $path = public_path($image);
+            $exists = ($path && file_exists($path) && is_file($path));
+        }
     }
-    return $path && file_exists($path) && is_file($path) ? asset($image) . $clean : asset(getFilePath('avatar'));
+    return $exists ? asset($image) . $clean : asset(getFilePath('avatar'));
 }
 
 function slugToId($slug) {
