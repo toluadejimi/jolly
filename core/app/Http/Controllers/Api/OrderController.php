@@ -367,6 +367,14 @@ class OrderController extends Controller
             $this->updateStock($cartItem, $order->id);
         }
 
+        sendTelegramToAdmin(
+            "🛒 New order (Mobile app)\n\n"
+            . "Order: #" . $order->order_number . "\n"
+            . "Amount: " . showAmount($order->total_amount) . "\n"
+            . "Customer: " . ($request->user()->username ?? $request->user()->email) . "\n"
+            . "Items: " . $order->orderDetail->sum('quantity')
+        );
+
         return response()->json([
             'remark' => 'order_created',
             'status' => 'success',

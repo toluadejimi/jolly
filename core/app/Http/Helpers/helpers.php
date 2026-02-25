@@ -958,3 +958,28 @@ function shortenFileName($filename, $maxLength = 30) {
 
     return $start . '...' . $end . $extWithDot;
 }
+
+/**
+ * Send a Telegram message to the admin chat (if TELEGRAM_BOT_TOKEN and TELEGRAM_ADMIN_CHAT_ID are set).
+ * Returns true if sent, false otherwise.
+ */
+function sendTelegramToAdmin(string $message): bool {
+    $token = config('services.telegram.bot_token');
+    $chatId = config('services.telegram.admin_chat_id');
+    if (empty($token) || empty($chatId)) {
+        return false;
+    }
+    $url = 'https://api.telegram.org/bot' . $token . '/sendMessage';
+    $payload = [
+        'chat_id' => $chatId,
+        'text' => $message,
+        'disable_web_page_preview' => true,
+    ];
+    try {
+        $client = new \GuzzleHttp\Client(['timeout' => 5]);
+        $response = $client->post($url, ['form_params' => $payload]);
+        return $response->getStatusCode() === 200;
+    } catch (\Throwable $e) {
+        return false;
+    }
+}

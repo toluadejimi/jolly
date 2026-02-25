@@ -819,6 +819,17 @@
                 "route_name": "admin.system.update",
                 "menu_active": "admin.system.update*",
                 "counter": "updateAvailable"
+            },
+            {
+                "keyword": [
+                    "Logs",
+                    "Log viewer",
+                    "Laravel logs",
+                    "Application logs"
+                ],
+                "title": "Logs",
+                "route_name": "log-viewer",
+                "menu_active": "log-viewer"
             }
         ]
     },

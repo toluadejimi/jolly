@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderConversation;
 use App\Models\OrderConversationMessage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class OrderConversationController extends Controller
@@ -79,6 +80,14 @@ class OrderConversationController extends Controller
             'attachment_name' => $attachmentName,
         ]);
         $conversation->touch();
+
+        $preview = $message ? Str::limit($message, 150) : ($attachmentName ? __('Attachment') . ': ' . $attachmentName : __('New message'));
+        sendTelegramToAdmin(
+            "💬 Contact Seller – new message\n\n"
+            . "Order: #" . $order->order_number . "\n"
+            . "From: " . (auth()->user()->username ?? auth()->user()->email) . "\n"
+            . "Message: " . $preview
+        );
 
         $notify[] = ['success', __('Message sent.')];
         return back()->withNotify($notify);

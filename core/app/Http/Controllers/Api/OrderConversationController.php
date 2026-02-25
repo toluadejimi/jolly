@@ -159,6 +159,14 @@ class OrderConversationController extends Controller
         ]);
         $conversation->touch();
 
+        $preview = $messageText ? \Illuminate\Support\Str::limit($messageText, 150) : ($attachmentName ? 'Attachment: ' . $attachmentName : 'New message');
+        sendTelegramToAdmin(
+            "💬 Contact Seller – new message (App)\n\n"
+            . "Order: #" . $order->order_number . "\n"
+            . "From: " . ($user->username ?? $user->email) . "\n"
+            . "Message: " . $preview
+        );
+
         $attachmentUrl = ($msg->attachment_path && $msg->attachment_name) ? asset($msg->attachment_path) : null;
 
         return response()->json([
