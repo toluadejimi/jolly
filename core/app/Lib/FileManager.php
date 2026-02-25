@@ -116,7 +116,7 @@ class FileManager {
 
         //create the directory if doesn't exists
         if (!$this->makeDirectory($uploadPath)) {
-            throw new \Exception('File could not been created. Path: ' . $uploadPath . ' (check directory permissions or create it manually with chmod 775).');
+            throw new \Exception('File could not been created. Path: ' . $uploadPath . ' (create the directory and set permissions: chmod -R 775 assets, or run on server: php artisan upload-dirs:create).');
         }
 
         //remove the old file if exist
