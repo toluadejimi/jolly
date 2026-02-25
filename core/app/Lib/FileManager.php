@@ -115,8 +115,9 @@ class FileManager {
         $uploadPath = $this->getUploadFullPath();
 
         //create the directory if doesn't exists
-        $path = $this->makeDirectory($uploadPath);
-        if (!$path) throw new \Exception('File could not been created.');
+        if (!$this->makeDirectory($uploadPath)) {
+            throw new \Exception('File could not been created. Path: ' . $uploadPath . ' (check directory permissions or create it manually with chmod 775).');
+        }
 
         //remove the old file if exist
         if ($this->old) {
@@ -176,16 +177,21 @@ class FileManager {
     }
 
     /**
-     * Make directory doesn't exists
-     * Developer can also call this method statically
+     * Make directory if it doesn't exist. Uses 0775 for shared hosting.
      *
-     * @param $location
-     * @return string|bool
+     * @param string|null $location Full path to directory
+     * @return bool
      */
     public function makeDirectory($location = null) {
         if (!$location) $location = $this->getUploadFullPath();
-        if (file_exists($location)) return true;
-        return @mkdir($location, 0755, true) ? true : false;
+        if (empty($location)) return false;
+        if (is_dir($location)) return true;
+        // Create parent directories first with 0775 (helps on shared hosting)
+        $parent = dirname($location);
+        if (!is_dir($parent) && $parent !== $location) {
+            $this->makeDirectory($parent);
+        }
+        return @mkdir($location, 0775, true) ? true : false;
     }
 
     /**
