@@ -304,13 +304,16 @@
                             if (response.action === 'updated') {
                                 $('#categoryTree').jstree('rename_node', response.categoryId, response
                                     .name);
+                                var bust = (Date.now ? Date.now() : new Date().getTime());
                                 if (response.image_path) {
-                                    form.find('.category-thumb .image-upload-preview').css('background-image',
-                                        `url('${String(response.image_path).replace(/'/g, "\\'")}')`);
+                                    var sep = response.image_path.indexOf('?') >= 0 ? '&' : '?';
+                                    var imgUrl = (String(response.image_path).replace(/'/g, "\\'") + sep + 't=' + bust);
+                                    form.find('.category-thumb .image-upload-preview').css('background-image', "url('" + imgUrl + "')");
                                 }
                                 if (response.icon_path) {
-                                    form.find('.category-icon .image-upload-preview').css('background-image',
-                                        `url('${String(response.icon_path).replace(/'/g, "\\'")}')`);
+                                    var sepI = response.icon_path.indexOf('?') >= 0 ? '&' : '?';
+                                    var iconUrl = (String(response.icon_path).replace(/'/g, "\\'") + sepI + 't=' + bust);
+                                    form.find('.category-icon .image-upload-preview').css('background-image', "url('" + iconUrl + "')");
                                 }
                             } else {
                                 $('#categoryTree').jstree('create_node', response.parentId, {
