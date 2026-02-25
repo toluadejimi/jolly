@@ -3,6 +3,7 @@
 namespace App\Lib;
 
 use App\Constants\FileInfo;
+use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 
@@ -90,7 +91,9 @@ class FileManager {
     }
 
     /**
-     * Get the full filesystem path for uploads (resolves relative paths under public directory).
+     * Get the full filesystem path for uploads.
+     * Relative paths (e.g. assets/images/category) go to storage/app/public so they
+     * work consistently in all environments; use "php artisan storage:link" to expose them.
      *
      * @return string
      */
@@ -103,7 +106,7 @@ class FileManager {
         if (str_starts_with($path, '/') || (strlen($path) >= 2 && preg_match('#^[A-Za-z]:[/\\\\]#', $path))) {
             return $path;
         }
-        return public_path($path);
+        return storage_path('app/public/' . $path);
     }
 
     /**
@@ -116,7 +119,7 @@ class FileManager {
 
         //create the directory if doesn't exists
         if (!$this->makeDirectory($uploadPath)) {
-            throw new \Exception('File could not been created. Path: ' . $uploadPath . ' (create the directory and set permissions: chmod -R 775 assets, or run on server: php artisan upload-dirs:create).');
+            throw new \Exception('File could not been created. Path: ' . $uploadPath . ' (run on server: php artisan upload-dirs:create and php artisan storage:link; then chmod -R 775 storage/app/public).');
         }
 
         //remove the old file if exist
@@ -221,21 +224,56 @@ class FileManager {
     }
 
     /**
-     * Remove the file if exists
-     * Developer can also call this method statically
+     * Remove the file if exists.
+     * When $path is given (e.g. assets/images/collection/x.jpg), tries both storage and public (legacy).
      *
-     * @param $path
+     * @param string|null $path Full path or relative path like assets/images/category/filename.jpg
      * @return void
      */
     public function removeFile($path = null) {
+        if ($path !== null) {
+            $isAbsolute = str_starts_with($path, '/') || (strlen($path) >= 2 && preg_match('#^[A-Za-z]:[/\\\\]#', $path));
+            $storagePath = $isAbsolute ? $path : storage_path('app/public/' . $path);
+            $publicPath = $isAbsolute ? null : public_path($path);
+            if (file_exists($storagePath) && is_file($storagePath)) {
+                @unlink($storagePath);
+            }
+            if ($publicPath && file_exists($publicPath) && is_file($publicPath)) {
+                @unlink($publicPath);
+            }
+            $dir = dirname($path);
+            $base = basename($path);
+            $thumbStorage = $isAbsolute ? null : storage_path('app/public/' . $dir . '/thumb_' . $base);
+            $thumbPublic = $isAbsolute ? null : public_path($dir . '/thumb_' . $base);
+            if ($thumbStorage && file_exists($thumbStorage) && is_file($thumbStorage)) {
+                @unlink($thumbStorage);
+            }
+            if ($thumbPublic && file_exists($thumbPublic) && is_file($thumbPublic)) {
+                @unlink($thumbPublic);
+            }
+            return;
+        }
+
         $basePath = $this->getUploadFullPath();
-        if (!$path) $path = $basePath . '/' . $this->old;
-
-        file_exists($path) && is_file($path) ? @unlink($path) : false;
-
+        $path = $basePath . '/' . $this->old;
+        if (file_exists($path) && is_file($path)) {
+            @unlink($path);
+        } else {
+            $legacyPath = public_path($this->path . '/' . $this->old);
+            if (file_exists($legacyPath) && is_file($legacyPath)) {
+                @unlink($legacyPath);
+            }
+        }
         if ($this->thumb) {
             $path = $basePath . '/thumb_' . $this->old;
-            file_exists($path) && is_file($path) ? @unlink($path) : false;
+            if (file_exists($path) && is_file($path)) {
+                @unlink($path);
+            } else {
+                $legacyPath = public_path($this->path . '/thumb_' . $this->old);
+                if (file_exists($legacyPath) && is_file($legacyPath)) {
+                    @unlink($legacyPath);
+                }
+            }
         }
     }
 

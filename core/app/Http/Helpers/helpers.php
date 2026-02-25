@@ -22,6 +22,7 @@ use App\Models\PromotionalBanner;
 use App\Notify\Notify;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Laramin\Utility\VugiChugi;
 
 function systemDetails() {
@@ -196,24 +197,29 @@ function getPageSections($arr = false) {
 
 function getImage($image, $size = null) {
     $clean = '';
-    $exists = false;
+    $url = null;
     if ($image && strlen($image) > 0) {
-        // For paths under assets/, check public_path first so it works regardless of CWD (e.g. category images on live)
         $isRelativeAsset = str_starts_with($image, 'assets/');
         if ($isRelativeAsset) {
-            $path = public_path($image);
-            $exists = ($path && file_exists($path) && is_file($path));
+            if (Storage::disk('public')->exists($image)) {
+                $url = asset('storage/' . $image);
+            } elseif (file_exists(public_path($image)) && is_file(public_path($image))) {
+                $url = asset($image);
+            }
         }
-        if (!$exists) {
-            $exists = (file_exists($image) && is_file($image));
+        if ($url === null && file_exists($image) && is_file($image)) {
+            $url = asset($image);
         }
-        if (!$exists && !$isRelativeAsset && !str_starts_with($image, '/') && !preg_match('#^[A-Za-z]:[/\\\\]#', $image)) {
-            $path = public_path($image);
-            $exists = ($path && file_exists($path) && is_file($path));
+        if ($url === null && !$isRelativeAsset && !str_starts_with($image, '/') && !preg_match('#^[A-Za-z]:[/\\\\]#', $image)) {
+            if (Storage::disk('public')->exists($image)) {
+                $url = asset('storage/' . $image);
+            } elseif (file_exists(public_path($image)) && is_file(public_path($image))) {
+                $url = asset($image);
+            }
         }
     }
-    if ($exists) {
-        return asset($image) . $clean;
+    if ($url !== null) {
+        return $url . $clean;
     }
     if ($size) {
         return route('placeholder.image', $size);
@@ -618,21 +624,27 @@ function array_flatten($array) {
 }
 
 function getAvatar($image, $clean = '') {
-    $exists = false;
+    $url = null;
     if ($image && strlen($image) > 0) {
         if (str_starts_with($image, 'assets/')) {
-            $path = public_path($image);
-            $exists = ($path && file_exists($path) && is_file($path));
+            if (Storage::disk('public')->exists($image)) {
+                $url = asset('storage/' . $image);
+            } elseif (file_exists(public_path($image)) && is_file(public_path($image))) {
+                $url = asset($image);
+            }
         }
-        if (!$exists) {
-            $exists = (file_exists($image) && is_file($image));
+        if ($url === null && file_exists($image) && is_file($image)) {
+            $url = asset($image);
         }
-        if (!$exists && !str_starts_with($image, '/') && !preg_match('#^[A-Za-z]:[/\\\\]#', $image)) {
-            $path = public_path($image);
-            $exists = ($path && file_exists($path) && is_file($path));
+        if ($url === null && !str_starts_with($image, '/') && !preg_match('#^[A-Za-z]:[/\\\\]#', $image)) {
+            if (Storage::disk('public')->exists($image)) {
+                $url = asset('storage/' . $image);
+            } elseif (file_exists(public_path($image)) && is_file(public_path($image))) {
+                $url = asset($image);
+            }
         }
     }
-    return $exists ? asset($image) . $clean : asset(getFilePath('avatar'));
+    return $url !== null ? $url . $clean : asset(getFilePath('avatar'));
 }
 
 function slugToId($slug) {
