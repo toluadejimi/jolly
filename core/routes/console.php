@@ -24,10 +24,24 @@ Artisan::command('upload-dirs:create', function () {
     $storageBase = storage_path('app/public');
     $created = 0;
     $failed = [];
+
+    // Ensure storage/app/public exists and is writable
+    if (!is_dir($storageBase)) {
+        if (@mkdir($storageBase, 0775, true)) {
+            $this->line('<info>Created:</info> storage/app/public');
+            $created++;
+        } else {
+            $failed[] = $storageBase;
+        }
+    } else {
+        @chmod($storageBase, 0775);
+    }
+
     foreach (array_keys($dirs) as $dir) {
         $full = $storageBase . '/' . $dir;
         if (is_dir($full)) {
-            $this->line('<comment>Exists:</comment> storage/app/public/' . $dir);
+            @chmod($full, 0775);
+            $this->line('<comment>Exists (chmod 0775):</comment> storage/app/public/' . $dir);
             continue;
         }
         if (@mkdir($full, 0775, true)) {
@@ -52,5 +66,7 @@ Artisan::command('upload-dirs:create', function () {
     if (!empty($failed)) {
         $this->error('Could not create: ' . implode(', ', $failed));
         $this->line('Fix: chmod -R 775 storage/app/public');
+    } else {
+        $this->info('Upload directories are ready. Category images path: storage/app/public/assets/images/category');
     }
 })->purpose('Create upload dirs in storage/app/public and ensure storage link exists (run after deploy)');

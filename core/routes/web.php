@@ -4,6 +4,31 @@ use App\Http\Controllers\CheckoutController;
 use Illuminate\Support\Facades\Route;
 use Rap2hpoutre\LaravelLogViewer\LogViewerController;
 
+// Fallback: serve storage files when symlink is not followed by the server (e.g. shared hosting)
+Route::get('storage/{path}', function (string $path) {
+    $path = preg_replace('#(?:^|/)(?:\.\./|\.\.\\\\|\.\.)#', '', $path);
+    $path = ltrim($path, '/');
+    if ($path === '') {
+        abort(404);
+    }
+    $fullPath = storage_path('app/public/' . $path);
+    $storageRoot = realpath(storage_path('app/public'));
+    if (!$storageRoot || !is_file($fullPath)) {
+        abort(404);
+    }
+    $realFile = realpath($fullPath);
+    if (!$realFile || !str_starts_with($realFile, $storageRoot)) {
+        abort(404);
+    }
+    $mimeType = 'application/octet-stream';
+    try {
+        $mimeType = \Illuminate\Support\Facades\File::mimeType($fullPath) ?: $mimeType;
+    } catch (\Throwable $e) {
+        // keep default
+    }
+    return response()->file($fullPath, ['Content-Type' => $mimeType]);
+})->where('path', '.*')->name('storage.serve');
+
 Route::get('/clear', function () {
     \Illuminate\Support\Facades\Artisan::call('optimize:clear');
 });

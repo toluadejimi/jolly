@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Media extends Model {
 
@@ -33,13 +34,13 @@ class Media extends Model {
     }
 
     function getFullUrlAttribute() {
-        return url($this->path . '/' . $this->file_name);
+        return getImage($this->path . '/' . $this->file_name);
     }
 
     function getThumbUrlAttribute() {
-        $thumb = $this->path . '/thumb_' . $this->file_name;
-        if(file_exists($thumb) && is_file($thumb)){
-            return url($thumb);
+        $thumbPath = $this->path . '/thumb_' . $this->file_name;
+        if (Storage::disk('public')->exists($thumbPath)) {
+            return getImage($thumbPath);
         }
         return $this->full_url;
     }

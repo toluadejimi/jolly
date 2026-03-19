@@ -122,6 +122,17 @@ class FileManager {
             throw new \Exception('File could not been created. Path: ' . $uploadPath . ' (run on server: php artisan upload-dirs:create and php artisan storage:link; then chmod -R 775 storage/app/public).');
         }
 
+        // ensure directory is writable (fixes existing dirs with wrong permissions)
+        if (!is_writable($uploadPath)) {
+            @chmod($uploadPath, 0775);
+            if (!is_writable($uploadPath)) {
+                throw new \Exception(
+                    'Upload directory is not writable: ' . $uploadPath . '. ' .
+                    'Run on server: chmod -R 775 ' . storage_path('app/public') . ' and ensure the web server user can write there.'
+                );
+            }
+        }
+
         //remove the old file if exist
         if ($this->old) {
             $this->removeFile();
@@ -188,7 +199,10 @@ class FileManager {
     public function makeDirectory($location = null) {
         if (!$location) $location = $this->getUploadFullPath();
         if (empty($location)) return false;
-        if (is_dir($location)) return true;
+        if (is_dir($location)) {
+            @chmod($location, 0775);
+            return true;
+        }
         // Create parent directories first with 0775 (helps on shared hosting)
         $parent = dirname($location);
         if (!is_dir($parent) && $parent !== $location) {
