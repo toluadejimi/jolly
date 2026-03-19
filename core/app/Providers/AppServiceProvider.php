@@ -30,6 +30,8 @@ class AppServiceProvider extends ServiceProvider {
      * Bootstrap any application services.
      */
     public function boot(): void {
+        // Custom log viewer view (clear/delete on all channels); fallback to package view
+        View::addNamespace('laravel-log-viewer', resource_path('views/vendor/laravel-log-viewer'));
         View::addNamespace('laravel-log-viewer', base_path('vendor/rap2hpoutre/laravel-log-viewer/src/views'));
 
         if (!cache()->get('SystemInstalled')) {
@@ -101,9 +103,11 @@ class AppServiceProvider extends ServiceProvider {
             ]);
         });
 
-        if (gs('force_ssl')) {
-            \URL::forceScheme('https');
-        }
+        // Force SSL disabled on purpose.
+        // If you want to re-enable it later, restore the block below.
+        // if (gs('force_ssl')) {
+        //     \URL::forceScheme('https');
+        // }
 
         Paginator::useBootstrapFive();
     }

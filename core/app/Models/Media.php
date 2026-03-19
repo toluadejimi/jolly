@@ -33,14 +33,24 @@ class Media extends Model {
         return $this->hasMany(Brand::class);
     }
 
+    /**
+     * Full URL for the image. Files are under storage/app/public/{path}, exposed at /storage/{path}.
+     */
     function getFullUrlAttribute() {
-        return getImage($this->path . '/' . $this->file_name);
+        $relative = ltrim($this->path . '/' . $this->file_name, '/');
+        if (Storage::disk('public')->exists($relative)) {
+            return asset('storage/' . $relative);
+        }
+        return asset($this->path . '/' . $this->file_name);
     }
 
+    /**
+     * Thumbnail URL. Prefer thumb_ file in storage, else full image.
+     */
     function getThumbUrlAttribute() {
-        $thumbPath = $this->path . '/thumb_' . $this->file_name;
-        if (Storage::disk('public')->exists($thumbPath)) {
-            return getImage($thumbPath);
+        $thumbRelative = ltrim($this->path . '/thumb_' . $this->file_name, '/');
+        if (Storage::disk('public')->exists($thumbRelative)) {
+            return asset('storage/' . $thumbRelative);
         }
         return $this->full_url;
     }

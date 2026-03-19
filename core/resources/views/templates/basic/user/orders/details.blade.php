@@ -29,6 +29,20 @@
 
         <div class="order-details-products mb-3">
             <div class="table-responsive">
+                @if ($order->shipping_address)
+                    @php
+                        $shipAddr = is_object($order->shipping_address) ? $order->shipping_address : (object) ($order->shipping_address ?? []);
+                        $shipName = trim(($shipAddr->firstname ?? '') . ' ' . ($shipAddr->lastname ?? '')) ?: '—';
+                        $shipAddress = $shipAddr->address ?? '';
+                        $shipCity = $shipAddr->city ?? '';
+                    @endphp
+                    <p class="mb-3">
+                        <i class="las la-map-marker-alt"></i>
+                        <span class="fw-semibold">@lang('Shipping to'):</span>
+                        <span>{{ $shipName }}, {{ $shipAddress }}, {{ $shipCity }}</span>
+                    </p>
+                @endif
+
                 <table class="table table-bordered table--responsive--md">
                     <thead>
                         <tr>
@@ -51,7 +65,7 @@
                             @endphp
 
                             <tr>
-                                <td>
+                                <td data-label="@lang('Product')">
                                     <div class="single-product-item  align-items-center">
                                         <div class="thumb">
                                             <img class="lazyload" src="{{ getImage(null) }}" data-src="{{ $mainImage }}" alt="{{ @$data->product->name ?? 'product' }}">
@@ -72,9 +86,9 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td> {{ showAmount($data->price) }}</td>
-                                <td>{{ $data->quantity }}</td>
-                                <td class="text-end">{{ showAmount($data->price * $data->quantity) }}</td>
+                                <td data-label="@lang('Price')"> {{ showAmount($data->price) }}</td>
+                                <td data-label="@lang('Quantity')">{{ $data->quantity }}</td>
+                                <td data-label="@lang('Total Price')" class="text-end">{{ showAmount($data->price * $data->quantity) }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -187,6 +201,19 @@
                 @if ($order->shipping_address)
                     @php
                         $addr = is_object($order->shipping_address) ? $order->shipping_address : (object) ($order->shipping_address ?? []);
+                        $name = trim(($addr->firstname ?? '') . ' ' . ($addr->lastname ?? ''));
+                        if (!$name && isset($order_detail)) {
+                            $name = trim(($order_detail->firstname ?? '') . ' ' . ($order_detail->lastname ?? ''));
+                        }
+                        $name = $name ?: '—';
+
+                        $fullAddress = trim(($addr->address ?? ''));
+                        if (!empty($addr->apt ?? null)) {
+                            $fullAddress = trim($fullAddress . ', ' . $addr->apt);
+                        }
+                        $fullAddress = $fullAddress ?: '—';
+
+                        $phone = $addr->mobile ?? '—';
                     @endphp
                     <div class="details-info-address">
                         <h6 class="mb-3">@lang('Shipping Details')</h6>
@@ -195,14 +222,14 @@
                                 <span class="title">@lang('Name') </span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    {{ trim(($addr->firstname ?? '') . ' ' . ($addr->lastname ?? '')) ?: ($order_detail->firstname ?? '') . ' ' . ($order_detail->lastname ?? '') ?: '—' }}
+                                    {{ $name }}
                                 </span>
                             </li>
                             <li>
                                 <span class="title">@lang('Address')</span>
                                 <span>
                                     <span class="devide-colon">:</span>
-                                    {{ $addr->address ?? '—' }}
+                                    {{ $fullAddress }}
                                 </span>
                             </li>
                             <li>
