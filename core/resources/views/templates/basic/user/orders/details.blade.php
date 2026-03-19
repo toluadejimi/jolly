@@ -16,11 +16,12 @@
                     @php echo $order->statusBadge() @endphp
                 </span>
             </div>
-            <div class="d-flex align-items-center flex-wrap gap-2">
-                <h5 class="order-details-id mb-1 d-flex align-items-center flex-wrap gap-3">
-                    <span class="order-details-id">#{{ $order->order_number }}
-                </h5>
-                <span> {{ showDateTime($order->created_at, 'd F, Y') }}</span>
+            <div class="d-flex align-items-center flex-wrap gap-2 order-details-meta">
+                <span class="order-number-pill">#{{ $order->order_number }}</span>
+                <span class="order-date-pill">
+                    <i class="las la-calendar-alt" aria-hidden="true"></i>
+                    {{ showDateTime($order->created_at, 'd F, Y') }}
+                </span>
                 <a href="{{ route('user.orders.conversation.show', $order->order_number) }}" class="btn btn--primary btn-sm">
                     <i class="las la-comment-dots"></i> @lang('Contact Seller')
                 </a>
@@ -35,21 +36,51 @@
                         $shipName = trim(($shipAddr->firstname ?? '') . ' ' . ($shipAddr->lastname ?? '')) ?: '—';
                         $shipAddress = $shipAddr->address ?? '';
                         $shipCity = $shipAddr->city ?? '';
+                        $shipState = $shipAddr->state ?? '';
+                        $shipZip = $shipAddr->zip ?? '';
+                        $shipCountry = $shipAddr->country ?? '';
+
+                        $shipParts = array_filter([
+                            trim((string) ($shipAddress ?? '')),
+                            trim((string) ($shipState ?? '')),
+                            trim((string) ($shipCity ?? '')),
+                            trim((string) ($shipZip ?? '')),
+                            trim((string) ($shipCountry ?? '')),
+                        ], function ($v) {
+                            return !empty($v);
+                        });
+
+                        $shipLine = !empty($shipParts) ? implode(', ', $shipParts) : '—';
+
+                        $shipFullParts = array_filter([
+                            trim((string) ($shipName ?? '')),
+                            trim((string) ($shipLine ?? '')),
+                        ], function ($v) {
+                            return !empty($v) && $v !== '—';
+                        });
+
+                        $shipFullLine = !empty($shipFullParts) ? implode(', ', $shipFullParts) : '—';
                     @endphp
-                    <p class="mb-3">
-                        <i class="las la-map-marker-alt"></i>
-                        <span class="fw-semibold">@lang('Shipping to'):</span>
-                        <span>{{ $shipName }}, {{ $shipAddress }}, {{ $shipCity }}</span>
-                    </p>
                 @endif
 
                 <table class="table table-bordered table--responsive--md">
                     <thead>
                         <tr>
-                            <th>@lang('Product')</th>
-                            <th>@lang('Price')</th>
-                            <th>@lang('Quantity')</th>
-                            <th>@lang('Total Price')</th>
+                            <th>
+                                @if ($order->shipping_address)
+                                    <div class="shipping-to-card shipping-to-card--table">
+                                        <div class="shipping-to-card-icon" aria-hidden="true">
+                                            <i class="las la-map-marker-alt"></i>
+                                        </div>
+                                        <div class="shipping-to-card-content">
+                                            <div class="shipping-to-card-title-row">
+                                                <span class="fw-semibold">@lang('Shipping to'):</span>
+                                                <span class="shipping-to-card-full-address">{{ $shipFullLine }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -86,44 +117,58 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td data-label="@lang('Price')"> {{ showAmount($data->price) }}</td>
-                                <td data-label="@lang('Quantity')">{{ $data->quantity }}</td>
-                                <td data-label="@lang('Total Price')" class="text-end">{{ showAmount($data->price * $data->quantity) }}</td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
+
+                @if ($order->estimated_delivery_at)
+                    <div class="shipping-to-extra">
+                        <div class="shipping-to-extra-icon" aria-hidden="true">
+                            <i class="las la-clock"></i>
+                        </div>
+                        <div class="shipping-to-extra-content">
+                            <div class="shipping-to-extra-title">@lang('Estimated Delivery')</div>
+                            <div class="shipping-to-extra-value">
+                                @if ($order->estimated_delivery_end_at && $order->estimated_delivery_end_at->format('Y-m-d') != $order->estimated_delivery_at->format('Y-m-d'))
+                                    {{ $order->estimated_delivery_at->format('M j, Y') }} – {{ $order->estimated_delivery_end_at->format('M j, Y') }}
+                                @else
+                                    {{ $order->estimated_delivery_at->format('l, F j, Y') }}
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if ($order->tracking_number || $order->tracking_url)
+                    <div class="shipping-to-extra">
+                        <div class="shipping-to-extra-icon" aria-hidden="true">
+                            <i class="las la-route"></i>
+                        </div>
+                        <div class="shipping-to-extra-content">
+                            <div class="shipping-to-extra-title">@lang('Track Order')</div>
+
+                            @if ($order->tracking_number)
+                                <div class="shipping-to-extra-value">
+                                    <strong>@lang('Tracking Number'):</strong> {{ $order->tracking_number }}
+                                </div>
+                            @endif
+
+                            @if ($order->tracking_url)
+                                <div class="shipping-to-extra-actions">
+                                    <a href="{{ $order->tracking_url }}" target="_blank" rel="noopener noreferrer" class="btn btn--primary btn-sm">
+                                        <i class="las la-external-link-alt"></i> @lang('Track your order')
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 
         <div class="row g-3 flex-md-row-reverse">
-            <div class="col-md-6">
-                <div class="details-info-list">
-                    <h6 class="mb-3">@lang('Order Summary')</h6>
-                    <ul>
-                        <li>
-                            <span>@lang('Subtotal')</span>
-                            <span class="fw-semibold">{{ showAmount($subtotal, 2) }}</span>
-                        </li>
-                        @if ($order->appliedCoupon)
-                            <li>
-                                <span>(<i class="la la-minus"></i>) @lang('Coupon')
-                                    ({{ $order->appliedCoupon->coupon->coupon_code }})</span>
-                                <span> {{ showAmount($order->appliedCoupon->amount, 2) }}</span>
-                            </li>
-                        @endif
-
-                        <li>
-                            <span>(<i class="la la-plus"></i>) @lang('Shipping')</span>
-                            <span>{{ showAmount($order->shipping_charge, 2) }}</span>
-                        </li>
-
-                        <li class="total">
-                            <span>@lang('Total')</span>
-                            <span>{{ showAmount($order->total_amount) }}</span>
-                        </li>
-                    </ul>
-                </div>
+            <div class="col-md-12">
 
                 @if (isset($order->deposit) && $order->deposit->status != 0)
                     <div class="details-info-list">
@@ -161,109 +206,13 @@
                     </div>
                 @endif
 
-                @if ($order->estimated_delivery_at)
-                    <div class="details-info-list mt-3">
-                        <h6 class="mb-3">@lang('Estimated Delivery')</h6>
-                        <p class="mb-0 text--primary fw-semibold">
-                            <i class="las la-clock"></i>
-                            @if ($order->estimated_delivery_end_at && $order->estimated_delivery_end_at->format('Y-m-d') != $order->estimated_delivery_at->format('Y-m-d'))
-                                {{ $order->estimated_delivery_at->format('M j, Y') }} – {{ $order->estimated_delivery_end_at->format('M j, Y') }}
-                            @else
-                                {{ $order->estimated_delivery_at->format('l, F j, Y') }}
-                            @endif
-                        </p>
-                    </div>
-                @endif
-
-                @if ($order->tracking_number || $order->tracking_url)
-                    <div class="details-info-list mt-3">
-                        <h6 class="mb-3">@lang('Track Order')</h6>
-                        @if ($order->tracking_number)
-                            <p class="mb-2">
-                                <strong>@lang('Tracking Number'):</strong> {{ $order->tracking_number }}
-                            </p>
-                        @endif
-                        @if ($order->tracking_url)
-                            <p class="mb-0">
-                                <a href="{{ $order->tracking_url }}" target="_blank" rel="noopener noreferrer" class="btn btn--primary btn-sm">
-                                    <i class="las la-external-link-alt"></i> @lang('Track your order')
-                                </a>
-                            </p>
-                        @endif
-                    </div>
-                @endif
+                <!-- Payment Details / Estimated Delivery / Tracking are shown above -->
             </div>
 
 
 
 
-            <div class="col-md-6">
-                @if ($order->shipping_address)
-                    @php
-                        $addr = is_object($order->shipping_address) ? $order->shipping_address : (object) ($order->shipping_address ?? []);
-                        $name = trim(($addr->firstname ?? '') . ' ' . ($addr->lastname ?? ''));
-                        if (!$name && isset($order_detail)) {
-                            $name = trim(($order_detail->firstname ?? '') . ' ' . ($order_detail->lastname ?? ''));
-                        }
-                        $name = $name ?: '—';
-
-                        $fullAddress = trim(($addr->address ?? ''));
-                        if (!empty($addr->apt ?? null)) {
-                            $fullAddress = trim($fullAddress . ', ' . $addr->apt);
-                        }
-                        $fullAddress = $fullAddress ?: '—';
-
-                        $phone = $addr->mobile ?? '—';
-                    @endphp
-                    <div class="details-info-address">
-                        <h6 class="mb-3">@lang('Shipping Details')</h6>
-                        <ul class="info-address-list">
-                            <li>
-                                <span class="title">@lang('Name') </span>
-                                <span>
-                                    <span class="devide-colon">:</span>
-                                    {{ $name }}
-                                </span>
-                            </li>
-                            <li>
-                                <span class="title">@lang('Address')</span>
-                                <span>
-                                    <span class="devide-colon">:</span>
-                                    {{ $fullAddress }}
-                                </span>
-                            </li>
-                            <li>
-                                <span class="title">@lang('State')</span>
-                                <span>
-                                    <span class="devide-colon">:</span>
-                                    {{ $addr->state ?? '—' }}
-                                </span>
-                            </li>
-                            <li>
-                                <span class="title">@lang('City')</span>
-                                <span>
-                                    <span class="devide-colon">:</span>
-                                    {{ $addr->city ?? '—' }}
-                                </span>
-                            </li>
-                            <li>
-                                <span class="title">@lang('Zip')</span>
-                                <span>
-                                    <span class="devide-colon">:</span>
-                                    {{ $addr->zip ?? '—' }}
-                                </span>
-                            </li>
-                            <li>
-                                <span class="title">@lang('Country')</span>
-                                <span>
-                                    <span class="devide-colon">:</span>
-                                    {{ $addr->country ?? '—' }}
-                                </span>
-                            </li>
-                        </ul>
-                    </div>
-                @endif
-            </div>
+            <!-- Shipping Details removed as requested -->
         </div>
 
     </div>

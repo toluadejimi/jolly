@@ -367,13 +367,8 @@ class OrderController extends Controller
             $this->updateStock($cartItem, $order->id);
         }
 
-        sendTelegramToAdmin(
-            "🛒 New order (Mobile app)\n\n"
-            . "Order: #" . $order->order_number . "\n"
-            . "Amount: " . showAmount($order->total_amount) . "\n"
-            . "Customer: " . ($request->user()->username ?? $request->user()->email) . "\n"
-            . "Items: " . $order->orderDetail->sum('quantity')
-        );
+        // Do NOT notify Telegram on order creation only.
+        // Telegram notification is sent when payment succeeds (see payment success flow).
 
         return response()->json([
             'remark' => 'order_created',

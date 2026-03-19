@@ -23,11 +23,28 @@
                 if (!empty(@$shipAddr->apt ?? null)) {
                     $shipAddress = trim($shipAddress . ', ' . @$shipAddr->apt);
                 }
+                $shipState = trim(@$shipAddr->state ?? '');
                 $shipCity = trim(@$shipAddr->city ?? '');
                 $shipZip = trim(@$shipAddr->zip ?? '');
                 $shipCountry = trim(@$shipAddr->country ?? '');
-                $shipToLine = trim($shipAddress . (empty($shipCity) ? '' : ', ' . $shipCity) . (empty($shipZip) ? '' : ', ' . $shipZip));
-                $shipToLine = $shipToLine ?: $shipAddress;
+                $shipParts = array_filter([
+                    trim((string) $shipAddress),
+                    trim((string) $shipState),
+                    trim((string) $shipCity),
+                    trim((string) $shipZip),
+                    trim((string) $shipCountry),
+                ], function ($v) {
+                    return !empty($v);
+                });
+                $shipToLine = !empty($shipParts) ? implode(', ', $shipParts) : $shipAddress;
+
+                $shipFullParts = array_filter([
+                    trim((string) $shipName),
+                    trim((string) $shipToLine),
+                ], function ($v) {
+                    return !empty($v) && $v !== '—';
+                });
+                $shipFullLine = !empty($shipFullParts) ? implode(', ', $shipFullParts) : '—';
 
                 $firstItem = @$order->orderDetail?->first();
                 $mainImage = null;
@@ -51,13 +68,17 @@
                 </div>
 
                 <div class="confirmation-order-summary-details">
-                    <p class="mb-2">
-                        <i class="las la-map-marker-alt"></i>
-                        <span class="fw-semibold">@lang('Shipping to'):</span>
-                        <span>
-                            {{ $shipName }}, {{ $shipToLine }}{{ empty($shipCountry) ? '' : ', ' . $shipCountry }}
-                        </span>
-                    </p>
+                    <div class="confirmation-shipping-to">
+                        <div class="confirmation-shipping-to-icon" aria-hidden="true">
+                            <i class="las la-map-marker-alt"></i>
+                        </div>
+                        <div class="confirmation-shipping-to-content">
+                            <div class="confirmation-shipping-to-title-row">
+                                <span class="fw-semibold">@lang('Shipping to'):</span>
+                                <span class="confirmation-shipping-to-full">{{ $shipFullLine }}</span>
+                            </div>
+                        </div>
+                    </div>
 
                     @if (!empty(@$shipAddr->mobile ?? null))
                         <p class="mb-0">
@@ -131,6 +152,85 @@
 
         .confirmation-order-summary-details p:last-child {
             margin-bottom: 0;
+        }
+
+        .confirmation-shipping-to {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 14px;
+            border-radius: 10px;
+            background: hsl(var(--black) / 0.03);
+            border: 1px solid hsl(var(--border) / 0.5);
+            margin-bottom: 10px;
+        }
+
+        .confirmation-shipping-to-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: grid;
+            place-content: center;
+            background: hsl(var(--black) / 0.05);
+            border: 1px solid hsl(var(--border) / 0.5);
+            color: hsl(var(--base));
+            flex-shrink: 0;
+        }
+
+        .confirmation-shipping-to-title {
+            margin-bottom: 2px;
+            color: hsl(var(--black) / 0.9);
+        }
+
+        .confirmation-shipping-to-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        .confirmation-shipping-to-full {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: hsl(var(--black) / 0.7);
+            font-weight: 500;
+        }
+
+        .confirmation-shipping-to-address {
+            color: hsl(var(--black) / 0.7);
+            line-height: 1.35;
+            font-weight: 500;
+        }
+
+        [data-theme="dark"] .confirmation-shipping-to {
+            background: hsl(var(--black) / 0.18);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        [data-theme="dark"] .confirmation-shipping-to-icon {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+
+        [data-theme="dark"] .confirmation-shipping-to-title {
+            color: #fff !important;
+        }
+
+        [data-theme="dark"] .confirmation-shipping-to-title-row .fw-semibold {
+            color: #fff !important;
+        }
+
+        [data-theme="dark"] .confirmation-shipping-to-full {
+            color: rgba(255, 255, 255, 0.85) !important;
+        }
+
+        [data-theme="dark"] .confirmation-shipping-to-address {
+            color: rgba(255, 255, 255, 0.85) !important;
         }
     </style>
 @endpush

@@ -3271,6 +3271,39 @@ label,
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
+/* Orders / payment tables: make background dark on dark theme */
+[data-theme="dark"] table.payment-table {
+  background: transparent !important;
+}
+
+[data-theme="dark"] table.payment-table thead tr th {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-theme="dark"] table.payment-table tbody {
+  background-color: hsl(var(--black) / 0.18) !important;
+}
+
+[data-theme="dark"] table.payment-table tbody tr td {
+  background-color: transparent !important;
+}
+
+/* Orders table action buttons (View / Contact Seller) */
+[data-theme="dark"] table.payment-table .btn-outline--light,
+[data-theme="dark"] table.payment-table .btn-outline--primary {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  background: transparent !important;
+}
+
+[data-theme="dark"] table.payment-table .btn-outline--light:hover,
+[data-theme="dark"] table.payment-table .btn-outline--primary:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
 [data-theme="dark"] .breadcrumb-item,
 [data-theme="dark"] .breadcrumb-item a {
   color: #d0d0d0 !important;
