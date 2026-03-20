@@ -31,13 +31,21 @@ class ProcessController extends Controller
         // The IPN handler later tries to extract a transaction reference to find this Deposit row.
         $ipnAlias = $deposit->gateway->alias ?? 'enkpay';
         $ipnUrl = route('ipn.' . $ipnAlias);
-        Log::warning(
-            'Enkpay/SprintPay payment initiated: ref=' . ($deposit->trx ?? 'null') .
-            ', deposit_id=' . ($deposit->id ?? 'null') .
-            ', order_number=' . ($deposit->order?->order_number ?? 'null') .
-            ', amount=' . $amount .
-            ', ipn_url=' . $ipnUrl
-        );
+        // Avoid logging sensitive gateway key in plain text.
+        $safeUrl = preg_replace('/([?&]key=)[^&]+/i', '$1[redacted]', $url);
+        Log::warning('ENKPAY_SPRINTPAY_INIT', [
+            'ref_trx' => $deposit->trx ?? null,
+            'deposit_id' => $deposit->id ?? null,
+            'order_id' => $deposit->order_id ?? null,
+            'order_number' => $deposit->order?->order_number ?? null,
+            'amount' => $amount,
+            'email' => $email,
+            'gateway_alias' => $deposit->gateway->alias ?? null,
+            'ipn_url' => $ipnUrl,
+            'payment_url' => $safeUrl,
+            'gateway_accounts' => is_array($enkpayAcc) ? $enkpayAcc : (string) $enkpayAcc,
+            'raw_gate_param' => $deposit->gatewayCurrency()->gateway_parameter ?? null,
+        ]);
 
         $alias = $deposit->gateway->alias;
         $send['view'] = 'user.payment.'.$alias;

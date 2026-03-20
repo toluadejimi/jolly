@@ -27,6 +27,19 @@ class PaymentController extends Controller {
             ->with('gateway')
             ->firstOrFail();
 
+        Log::warning('depositConfirm: deposit loaded for SprintPay/Enkpay', [
+            'track_trx' => $track,
+            'deposit_id' => $deposit->id,
+            'deposit_trx' => $deposit->trx,
+            'order_id' => $deposit->order_id,
+            'order_number' => $deposit->order?->order_number,
+            'gateway_alias' => $deposit->gateway->alias ?? null,
+            'status' => $deposit->status,
+            'amount' => $deposit->amount ?? null,
+            'final_amount' => $deposit->final_amount ?? null,
+            'customer_email' => $deposit->customer?->email ?? $deposit->user?->email ?? null,
+        ]);
+
         if ($deposit->method_code >= 1000) {
             return  to_route('deposit.manual.confirm');
         }
