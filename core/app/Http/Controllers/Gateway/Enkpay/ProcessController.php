@@ -139,8 +139,29 @@ class ProcessController extends Controller
         $status = $response->message ?? null;
         $verifiedAmount = isset($response->data->amount) ? (float) $response->data->amount : null;
         $depositAmount = (float) $deposit->final_amount;
+        $payloadAmount = isset($all['amount']) ? (float) $all['amount'] : null;
 
-        if ($status === "completed" && $verifiedAmount !== null && $depositAmount == $verifiedAmount && $deposit->status == Status::PAYMENT_INITIATE) {
+        Log::info('Enkpay/SprintPay IPN resolve', [
+            'track' => $track,
+            'deposit_id' => $deposit->id ?? null,
+            'verify_status' => $status,
+            'verify_amount' => $verifiedAmount,
+            'payload_amount' => $payloadAmount,
+            'deposit_amount' => $depositAmount,
+        ]);
+
+        $verifiedByApi = ($status === "completed" && $verifiedAmount !== null && $depositAmount == $verifiedAmount);
+        $verifiedByPayload = ($payloadAmount !== null && $depositAmount == $payloadAmount);
+
+        if (($verifiedByApi || $verifiedByPayload) && $deposit->status == Status::PAYMENT_INITIATE) {
+                if ($verifiedByPayload && !$verifiedByApi) {
+                    Log::warning('Enkpay/SprintPay IPN fallback accepted by payload amount', [
+                        'track' => $track,
+                        'deposit_id' => $deposit->id ?? null,
+                        'payload_amount' => $payloadAmount,
+                        'deposit_amount' => $depositAmount,
+                    ]);
+                }
 
 
 
