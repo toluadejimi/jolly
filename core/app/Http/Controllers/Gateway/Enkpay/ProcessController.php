@@ -209,14 +209,35 @@ class ProcessController extends Controller
 
                 PaymentController::userDataUpdate($deposit);
 
+                // Ensure order moves forward visibly after successful payment.
+                if ($order && (int) $order->status === (int) Status::ORDER_PENDING) {
+                    $order->status = Status::ORDER_PROCESSING;
+                    $order->save();
+                }
+
+                // Reload deposit to log final persisted status.
+                $deposit->refresh();
+                $order = $deposit->order;
+                Log::warning('Enkpay/SprintPay IPN payment applied', [
+                    'track' => $track,
+                    'deposit_id' => $deposit->id ?? null,
+                    'deposit_status' => $deposit->status ?? null,
+                    'order_id' => $order?->id,
+                    'order_number' => $order?->order_number,
+                    'order_payment_status' => $order?->payment_status,
+                    'order_status' => $order?->status,
+                ]);
+
                 session()->forget('shipping_info');
                 session()->forget('note_to_seller');
                 session()->forget('customer_photo_back');
                 session()->forget('customer_photo_front');
 
-                $message = 'Transaction was successful, Ref: ' . $track;
-                $notify[] = ['success', $message];
-                return redirect('/user/orders')->withNotify($notify);
+                return response()->json([
+                    'status' => 'ok',
+                    'message' => 'Transaction successful',
+                    'ref' => $track,
+                ], 200);
         }
 
         session()->forget('shipping_info');
