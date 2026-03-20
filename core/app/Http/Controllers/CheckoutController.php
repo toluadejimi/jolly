@@ -14,6 +14,7 @@ use App\Models\ShippingAddress;
 use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
@@ -271,6 +272,18 @@ class CheckoutController extends Controller
             $deposit->failed_url = url('') . "/products/" . $order_id;
             $deposit->save();
 
+            Log::warning('ENKPAY_SPRINTPAY_DEPOSIT_CREATED (CheckoutController)', [
+                'deposit_id' => $deposit->id ?? null,
+                'order_id' => $deposit->order_id ?? null,
+                'trx_ref' => $deposit->trx ?? null,
+                'method_code' => $deposit->method_code ?? null,
+                'method_currency' => $deposit->method_currency ?? null,
+                'amount' => $deposit->amount ?? null,
+                'final_amount' => $deposit->final_amount ?? null,
+                'success_url' => $deposit->success_url ?? null,
+                'failed_url' => $deposit->failed_url ?? null,
+                'user_id' => Auth::id() ?? 0,
+            ]);
 
             if ($deposit) {
 
@@ -281,6 +294,17 @@ class CheckoutController extends Controller
                 $url = "https://web.sprintpay.online/pay?amount=$amount&key=948746y7444747656f4645454556f646444&ref=$deposit->trx&email=$email";
                 $send['url'] = $url;
 
+
+                $safeUrl = preg_replace('/([?&]key=)[^&]+/i', '$1[redacted]', $url);
+                Log::warning('ENKPAY_SPRINTPAY_PAYMENT_URL (CheckoutController)', [
+                    'deposit_id' => $deposit->id ?? null,
+                    'trx_ref' => $deposit->trx ?? null,
+                    'order_id' => $deposit->order_id ?? null,
+                    'email' => $email ?? null,
+                    'amount' => $amount,
+                    'payment_url' => $safeUrl,
+                    'enkpay_gateway_parameter' => $enkpayAcc ?? null,
+                ]);
 
                 return redirect()->away($send['url']);
 
