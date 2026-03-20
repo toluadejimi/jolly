@@ -93,8 +93,21 @@ class ProcessController extends Controller
         }
 
         if (empty($track)) {
-            Log::warning('Enkpay/SprintPay IPN: missing transaction reference');
-            return redirect()->route('user.orders.all')->withNotify([['info', 'Payment notification received. If you just paid, your order will be updated shortly.']]);
+            // SprintPay sometimes sends an empty/heartbeat callback; don't redirect on webhook,
+            // just acknowledge so it won't keep retrying.
+            if (empty($all)) {
+                Log::warning('Enkpay/SprintPay IPN: empty payload, ignoring');
+                return response()->noContent(200);
+            }
+
+            Log::warning('Enkpay/SprintPay IPN: missing transaction reference', [
+                'keys_received' => array_keys($all),
+            ]);
+
+            return response()->json([
+                'status' => 'ignored',
+                'reason' => 'missing_transaction_reference',
+            ], 200);
         }
 
         $deposit = Deposit::where('trx', $track)->where('status', Status::PAYMENT_INITIATE)->orderBy('id', 'DESC')->first();
