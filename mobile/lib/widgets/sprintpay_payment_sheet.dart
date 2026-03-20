@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 import '../models/checkout_models.dart';
+import '../screens/order_success_screen.dart';
 import '../screens/track_order_screen.dart';
 import '../services/api_service.dart';
 import '../services/sprintpay_service.dart';
@@ -159,10 +160,7 @@ class _SprintPayPaymentSheetState extends State<SprintPayPaymentSheet> {
       widget.onOrderSuccess();
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context) => TrackOrderScreen(
-            orderNumber: widget.orderNumber,
-            paymentSuccessMessage: 'Payment received successfully.\nYour order has been processed.',
-          ),
+          builder: (context) => OrderSuccessScreen(orderRef: widget.orderNumber),
         ),
         (route) => route.isFirst,
       );

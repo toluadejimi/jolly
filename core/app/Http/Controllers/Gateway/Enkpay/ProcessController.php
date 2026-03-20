@@ -55,6 +55,9 @@ class ProcessController extends Controller
 
     public function ipn(request $request)
     {
+        $isBrowserRequest = $request->isMethod('get')
+            || str_contains(strtolower((string) $request->header('accept', '')), 'text/html');
+
         $all = array_merge($request->query(), $request->post(), $request->all());
         $raw = $request->getContent();
         if (!empty($raw)) {
@@ -97,6 +100,9 @@ class ProcessController extends Controller
             // just acknowledge so it won't keep retrying.
             if (empty($all)) {
                 Log::warning('Enkpay/SprintPay IPN: empty payload, ignoring');
+                if ($isBrowserRequest) {
+                    return redirect('/user/orders');
+                }
                 return response()->noContent(200);
             }
 
@@ -104,6 +110,9 @@ class ProcessController extends Controller
                 'keys_received' => array_keys($all),
             ]);
 
+            if ($isBrowserRequest) {
+                return redirect('/user/orders');
+            }
             return response()->json([
                 'status' => 'ignored',
                 'reason' => 'missing_transaction_reference',
@@ -122,7 +131,13 @@ class ProcessController extends Controller
         if (!$deposit) {
             $message = 'Unable to process';
             $notify[] = ['error', $message];
-            return redirect('checkout/payment-methods')->withNotify($notify);
+            if ($isBrowserRequest) {
+                return redirect('checkout/payment-methods')->withNotify($notify);
+            }
+            return response()->json([
+                'status' => 'error',
+                'message' => $message,
+            ], 200);
         }
 
         $query = array("ref" => $track);
@@ -233,6 +248,10 @@ class ProcessController extends Controller
                 session()->forget('customer_photo_back');
                 session()->forget('customer_photo_front');
 
+                if ($isBrowserRequest) {
+                    return redirect()->route('checkout.confirmation', $order?->order_number ?? $track)
+                        ->withNotify([['success', 'Transaction was successful, Ref: ' . $track]]);
+                }
                 return response()->json([
                     'status' => 'ok',
                     'message' => 'Transaction successful',
@@ -243,7 +262,13 @@ class ProcessController extends Controller
         session()->forget('shipping_info');
         $message = 'Unable to process';
         $notify[] = ['error', $message];
-        return redirect('/user/orders')->withNotify($notify);
+        if ($isBrowserRequest) {
+            return redirect('/user/orders')->withNotify($notify);
+        }
+        return response()->json([
+            'status' => 'error',
+            'message' => $message,
+        ], 200);
     }
 
 
