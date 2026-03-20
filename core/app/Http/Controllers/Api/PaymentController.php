@@ -133,6 +133,12 @@ class PaymentController extends Controller
             ], 500);
         }
 
+        Log::warning(
+            'API payment initiate: calling gateway process. alias=' . ($deposit->gateway->alias ?? 'unknown') .
+            ', trx=' . ($trx ?? 'null') .
+            ', processClass=' . $processClass
+        );
+
         $data = $processClass::process($deposit);
         $data = json_decode($data);
 

@@ -29,16 +29,15 @@ class ProcessController extends Controller
 
         // Helpful for debugging: confirm what "ref" we send to SprintPay.
         // The IPN handler later tries to extract a transaction reference to find this Deposit row.
-        Log::info('Enkpay/SprintPay payment initiated', [
-            'gateway' => $deposit->gateway->alias ?? 'enkpay',
-            'deposit_id' => $deposit->id ?? null,
-            'order_id' => $deposit->order_id ?? null,
-            'order_number' => $deposit->order?->order_number ?? null,
-            'ref' => $deposit->trx ?? null,
-            'amount' => $amount,
-            'email' => $email,
-            'ipn_url' => route('ipn.' . ($deposit->gateway->alias ?? 'enkpay')),
-        ]);
+        $ipnAlias = $deposit->gateway->alias ?? 'enkpay';
+        $ipnUrl = route('ipn.' . $ipnAlias);
+        Log::warning(
+            'Enkpay/SprintPay payment initiated: ref=' . ($deposit->trx ?? 'null') .
+            ', deposit_id=' . ($deposit->id ?? 'null') .
+            ', order_number=' . ($deposit->order?->order_number ?? 'null') .
+            ', amount=' . $amount .
+            ', ipn_url=' . $ipnUrl
+        );
 
         $alias = $deposit->gateway->alias;
         $send['view'] = 'user.payment.'.$alias;
