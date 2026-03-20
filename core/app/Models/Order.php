@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Constants\Status;
 use App\Models\OrderConversation;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class Order extends Model {
     protected $guarded = ['id'];
@@ -143,6 +144,22 @@ class Order extends Model {
 
         $deposit->trx                = getTrx();
         $deposit->save();
+
+        // Log payment initiation for debugging gateway reference/track matching (IPN).
+        // This runs for both web and API flows because both call Order::initiatePayment().
+        Log::warning(
+            'Payment initiated (Deposit created): order_number=' . ($this->order_number ?? 'N/A') .
+            ', order_id=' . ($this->id ?? 'N/A') .
+            ', gateway_alias=' . ($gate->alias ?? 'unknown') .
+            ', gateway_method_code=' . ($gate->method_code ?? 'N/A') .
+            ', gateway_currency=' . ($gate->currency ?? 'N/A') .
+            ', amount=' . ($amount ?? '0') .
+            ', charge=' . ($charge ?? '0') .
+            ', final_amount=' . ($finalAmount ?? '0') .
+            ', trx=' . ($deposit->trx ?? 'N/A') .
+            ', deposit_id=' . ($deposit->id ?? 'N/A') .
+            ', customer_email=' . ($this->user?->email ?? $this->guest?->email ?? 'N/A')
+        );
 
         return $deposit->trx;
     }

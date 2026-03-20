@@ -16,6 +16,11 @@ class PaymentController extends Controller {
 
         $track = session()->get('Track');
 
+        Log::warning(
+            'depositConfirm loaded: track=' . ($track ?? 'null') .
+            ', session_has_order_id=' . (session()->has('order_id') ? 'yes' : 'no')
+        );
+
         $deposit = Deposit::where('trx', $track)
             ->where('status', Status::PAYMENT_INITIATE)
             ->orderBy('id', 'DESC')
