@@ -38,7 +38,13 @@
                     @include($activeTemplate . 'partials.quick_view')
 
                     @php
-                        $description = preg_replace('/<\/?(div|br)\s*\/?>/i', '', $product->description);
+                        $rawDescription = (string) ($product->description ?? '');
+                        $decodedDescription = html_entity_decode($rawDescription, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                        $withLineBreaks = preg_replace('/<\s*\/?\s*(div|p|br|li|h[1-6]|tr)\b[^>]*>/i', "\n", $decodedDescription);
+                        $plainDescription = strip_tags($withLineBreaks);
+                        $plainDescription = preg_replace('/[ \t]+\n/', "\n", $plainDescription);
+                        $plainDescription = preg_replace('/\n{3,}/', "\n\n", $plainDescription);
+                        $description = trim($plainDescription);
                         $shippingInformation = (object) Session::get('shipping_info');
                         $checkoutContent = getContent('guest_checkout.content', true)?->data_values;
                     @endphp
@@ -47,7 +53,7 @@
                     <div class="card my-2 product-description-card">
                         <h6 class="card-header-title">Product Description</h6>
                         <div class="card-body">
-                            {{ $description }}
+                            {!! nl2br(e($description)) !!}
                         </div>
                     </div>
 
