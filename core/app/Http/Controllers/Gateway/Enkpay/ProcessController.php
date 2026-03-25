@@ -29,7 +29,7 @@ class ProcessController extends Controller
 
         // Helpful for debugging: confirm what "ref" we send to SprintPay.
         // The IPN handler later tries to extract a transaction reference to find this Deposit row.
-        $ipnAlias = $deposit->gateway->alias ?? 'enkpay';
+        $ipnAlias = strtolower((string) ($deposit->gateway->alias ?? 'enkpay'));
         $ipnUrl = route('ipn.' . $ipnAlias);
         // Avoid logging sensitive gateway key in plain text.
         $safeUrl = preg_replace('/([?&]key=)[^&]+/i', '$1[redacted]', $url);
