@@ -43,7 +43,7 @@ class ProcessController extends Controller
             'gateway_alias' => $deposit->gateway->alias ?? null,
             'ipn_url' => $ipnUrl,
             'payment_url' => $safeUrl,
-            'gateway_accounts' => is_array($enkpayAcc) ? $enkpayAcc : (string) $enkpayAcc,
+            'gateway_accounts' => $enkpayAcc ? json_decode(json_encode($enkpayAcc), true) : null,
             'raw_gate_param' => $deposit->gatewayCurrency()->gateway_parameter ?? null,
         ]);
 

@@ -441,6 +441,8 @@
                 $('#cart-sidebar-area').addClass('active');
                 $('.body-overlay').addClass('active');
                 $('body').addClass('scroll-hide-sm');
+                // Ensure lazy images inside the (previously hidden) sidebar render.
+                setTimeout(() => lazyload(), 50);
             }
             notify(response.status, response.message);
         }).fail(function() {
