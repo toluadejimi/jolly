@@ -398,23 +398,76 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
     _orderResult = orderRes.data;
     _error = null;
-    setState(() => _loading = false);
     if (!mounted) return;
-    // SprintPay direct flow: paynow?amount=&key=&ref=&email=&mode=api → bottom sheet
+    // Must call /api/payment/initiate so a Deposit exists; SprintPay ref must match deposit.trx for IPN.
     final orderData = orderRes.data!;
     final userEmail = _email.text.trim();
     if (userEmail.isEmpty) {
+      setState(() => _loading = false);
       setState(() => _error = 'Email is required for payment');
       return;
     }
-    await showSprintPayDirectFlow(
-      context,
-      amount: orderData.totalAmount,
-      ref: orderData.orderNumber,
-      email: userEmail,
+    final methodsRes = await api.getPaymentMethods();
+    if (!mounted) return;
+    if (!methodsRes.success || methodsRes.data == null || methodsRes.data!.isEmpty) {
+      setState(() {
+        _loading = false;
+        _error = methodsRes.error ?? 'Could not load payment methods';
+      });
+      return;
+    }
+    PaymentMethodItem? sprintOrEnkpay;
+    for (final m in methodsRes.data!) {
+      final n = m.name.toLowerCase();
+      if (n.contains('sprintpay') || n.contains('enkpay')) {
+        sprintOrEnkpay = m;
+        break;
+      }
+    }
+    sprintOrEnkpay ??= methodsRes.data!.first;
+    final initRes = await api.initiatePayment(
       orderId: orderData.orderId,
-      orderNumber: orderData.orderNumber,
+      gateway: sprintOrEnkpay.methodCode == 0 ? 0 : sprintOrEnkpay.id,
+      currency: sprintOrEnkpay.currency,
+    );
+    if (!mounted) return;
+    setState(() => _loading = false);
+    if (!initRes.success || initRes.data == null) {
+      setState(() => _error = initRes.error ?? 'Could not start payment');
+      return;
+    }
+    final payData = initRes.data!;
+    if (payData.paymentUrl == null || payData.paymentUrl!.isEmpty) {
+      setState(() => _error = 'No payment URL returned');
+      return;
+    }
+    final usedSheet = await showSprintPayPaymentFlow(
+      context,
+      paymentUrl: payData.paymentUrl!,
+      orderId: payData.orderId,
+      orderNumber: payData.orderNumber,
       onOrderSuccess: () => context.read<CartProvider>().clear(),
+    );
+    if (!mounted) return;
+    if (usedSheet) return;
+    final uri = Uri.tryParse(payData.paymentUrl!);
+    if (uri != null && await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+    if (!mounted) return;
+    context.read<CartProvider>().clear();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Complete payment in the browser. Order: ${payData.orderNumber}'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    Navigator.of(context).popUntil((r) => r.isFirst);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TrackOrderScreen(orderNumber: payData.orderNumber),
+      ),
     );
   }
 

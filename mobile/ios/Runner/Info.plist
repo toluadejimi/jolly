@@ -24,8 +24,47 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+		<string>http</string>
+		<string>tel</string>
+		<string>mailto</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>JollyBoxfr can use the camera to take photos of your product for customized gift orders.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>JollyBoxfr needs access to your photo library so you can upload front and back photos for customized gift products.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+					<key>UISceneConfigurationName</key>
+					<string>flutter</string>
+					<key>UISceneDelegateClassName</key>
+					<string>FlutterSceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -45,27 +84,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<!-- Privacy usage descriptions (required for App Store; explain why app needs access) -->
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>JollyBoxfr needs access to your photo library so you can upload front and back photos for customized gift products.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>JollyBoxfr can use the camera to take photos of your product for customized gift orders.</string>
-	<!-- Export compliance: app only uses standard HTTPS/TLS (no custom encryption) -->
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<!-- Allow opening web and external apps (e.g. payment, tracking links) -->
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>https</string>
-		<string>http</string>
-		<string>tel</string>
-		<string>mailto</string>
-	</array>
-	<!-- App Transport Security: use default (HTTPS only); optional explicit setting -->
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<false/>
-	</dict>
 </dict>
 </plist>

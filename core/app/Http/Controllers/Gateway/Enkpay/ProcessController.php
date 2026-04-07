@@ -128,6 +128,61 @@ class ProcessController extends Controller
             }
         }
 
+        // Mobile "direct pay" flow used order_number as SprintPay ref but never created a Deposit via /api/payment/initiate.
+        if (!$deposit && !empty($all['order_id']) && is_string($all['order_id'])) {
+            $on = trim($all['order_id']);
+            $orderOnly = Order::where('order_number', $on)->first();
+            if ($orderOnly && (int) $orderOnly->payment_status === (int) Status::PAYMENT_SUCCESS) {
+                if ($isBrowserRequest) {
+                    return redirect()->route('checkout.confirmation', $orderOnly->order_number);
+                }
+                return response()->json(['status' => 'ok', 'message' => 'already_paid'], 200);
+            }
+            if ($orderOnly && (int) $orderOnly->payment_status !== (int) Status::PAYMENT_SUCCESS) {
+                $payloadAmount = isset($all['amount']) ? (float) $all['amount'] : null;
+                $payloadEmail = isset($all['email']) ? strtolower(trim((string) $all['email'])) : '';
+                $ship = $orderOnly->shipping_address;
+                $orderEmail = strtolower(trim((string) ($orderOnly->user?->email ?? (is_object($ship) && isset($ship->email) ? $ship->email : ''))));
+                $orderAmount = (float) $orderOnly->total_amount;
+                $candidateRefs = self::collectSprintPayRefs($all, $track, $orderOnly->order_number);
+                $verifyHit = self::firstCompletedSprintPayVerify($candidateRefs, $orderAmount);
+                $amountVsOrder = $payloadAmount !== null && self::amountCloseEnough($payloadAmount, $orderAmount);
+                $emailOk = $payloadEmail !== '' && $orderEmail !== '' && $payloadEmail === $orderEmail;
+                if ($verifyHit !== null || ($amountVsOrder && $emailOk)) {
+                    $orderOnly->payment_status = Status::PAYMENT_SUCCESS;
+                    if ((int) $orderOnly->status === (int) Status::ORDER_PENDING) {
+                        $orderOnly->status = Status::ORDER_PROCESSING;
+                    }
+                    $orderOnly->save();
+                    if ($orderOnly->user_id) {
+                        cartManager()->clearUserCart('user_id', $orderOnly->user_id);
+                    }
+                    if ($orderOnly->user) {
+                        try {
+                            sendOrderPlacedNotification($orderOnly->user, $orderOnly);
+                        } catch (\Throwable $e) {
+                            Log::error('Enkpay IPN order-only notify: ' . $e->getMessage());
+                        }
+                    }
+                    Log::warning('Enkpay/SprintPay IPN: order marked paid without deposit (mobile direct-pay path)', [
+                        'order_number' => $orderOnly->order_number,
+                        'order_id' => $orderOnly->id,
+                        'payload_amount' => $payloadAmount,
+                        'verify_used_ref' => $verifyHit['ref'] ?? null,
+                    ]);
+                    if ($isBrowserRequest) {
+                        return redirect()->route('checkout.confirmation', $orderOnly->order_number)
+                            ->withNotify([['success', 'Transaction was successful']]);
+                    }
+                    return response()->json([
+                        'status' => 'ok',
+                        'message' => 'Transaction successful',
+                        'order_number' => $orderOnly->order_number,
+                    ], 200);
+                }
+            }
+        }
+
         if (!$deposit) {
             $message = 'Unable to process';
             $notify[] = ['error', $message];
@@ -140,21 +195,22 @@ class ProcessController extends Controller
             ], 200);
         }
 
-        $query = array("ref" => $track);
-        $dataString = json_encode($query);
-        $ch = curl_init('https://web.sprintpay.online/api/verify-transaction');
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-        $response = curl_exec($ch);
-        curl_close($ch);
-        $response = json_decode($response);
-        $status = $response->message ?? null;
-        $verifiedAmount = isset($response->data->amount) ? (float) $response->data->amount : null;
         $depositAmount = (float) $deposit->final_amount;
         $payloadAmount = isset($all['amount']) ? (float) $all['amount'] : null;
+        $candidateRefs = self::collectSprintPayRefs($all, $track, $deposit->trx, $deposit->order?->order_number);
+        $verifyHit = self::firstCompletedSprintPayVerify($candidateRefs, $depositAmount);
+        $response = null;
+        $status = null;
+        $verifiedAmount = null;
+        if ($verifyHit !== null) {
+            $response = $verifyHit['raw'];
+            $status = $verifyHit['status'];
+            $verifiedAmount = $verifyHit['amount'];
+        } else {
+            $response = self::sprintPayVerifyTransaction($track);
+            $status = $response ? ($response->message ?? null) : null;
+            $verifiedAmount = ($response && isset($response->data->amount)) ? (float) $response->data->amount : null;
+        }
 
         Log::info('Enkpay/SprintPay IPN resolve', [
             'track' => $track,
@@ -165,8 +221,8 @@ class ProcessController extends Controller
             'deposit_amount' => $depositAmount,
         ]);
 
-        $verifiedByApi = ($status === "completed" && $verifiedAmount !== null && $depositAmount == $verifiedAmount);
-        $verifiedByPayload = ($payloadAmount !== null && $depositAmount == $payloadAmount);
+        $verifiedByApi = ($status === 'completed' && $verifiedAmount !== null && self::amountCloseEnough($depositAmount, $verifiedAmount));
+        $verifiedByPayload = ($payloadAmount !== null && self::amountCloseEnough($depositAmount, $payloadAmount));
 
         if (($verifiedByApi || $verifiedByPayload) && $deposit->status == Status::PAYMENT_INITIATE) {
                 if ($verifiedByPayload && !$verifiedByApi) {
@@ -271,9 +327,75 @@ class ProcessController extends Controller
         ], 200);
     }
 
+    /**
+     * SprintPay amounts may be rounded (e.g. mobile paynow) or differ slightly from stored floats.
+     */
+    private static function amountCloseEnough(float $expected, float $actual): bool
+    {
+        return abs($expected - $actual) <= max(1.0, abs($expected) * 0.01);
+    }
 
+    private static function sprintPayVerifyTransaction(string $ref): ?\stdClass
+    {
+        $dataString = json_encode(['ref' => $ref]);
+        $ch = curl_init('https://web.sprintpay.online/api/verify-transaction');
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $decoded = json_decode($response ?? '');
 
+        return $decoded instanceof \stdClass ? $decoded : null;
+    }
 
+    /**
+     * @return array{ref: string, status: string, amount: float, raw: \stdClass}|null
+     */
+    private static function firstCompletedSprintPayVerify(array $refs, float $expectedAmount): ?array
+    {
+        foreach ($refs as $ref) {
+            if (!is_string($ref) || $ref === '') {
+                continue;
+            }
+            $raw = self::sprintPayVerifyTransaction($ref);
+            if (!$raw) {
+                continue;
+            }
+            $st = $raw->message ?? null;
+            $amt = isset($raw->data->amount) ? (float) $raw->data->amount : null;
+            if ($st === 'completed' && $amt !== null && self::amountCloseEnough($expectedAmount, $amt)) {
+                return ['ref' => $ref, 'status' => (string) $st, 'amount' => $amt, 'raw' => $raw];
+            }
+        }
+
+        return null;
+    }
+
+    private static function collectSprintPayRefs(array $all, string $track, ...$extra): array
+    {
+        $candidates = [
+            $all['session_id'] ?? null,
+            $all['ref'] ?? null,
+            $all['trx'] ?? null,
+            $track,
+            ...$extra,
+        ];
+        $out = [];
+        foreach ($candidates as $v) {
+            if (!is_string($v)) {
+                continue;
+            }
+            $v = trim($v);
+            if ($v !== '') {
+                $out[] = $v;
+            }
+        }
+
+        return array_values(array_unique($out));
+    }
 
 
 
