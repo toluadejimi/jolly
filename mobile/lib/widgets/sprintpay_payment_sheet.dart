@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 
 import '../models/checkout_models.dart';
 import '../screens/order_success_screen.dart';
-import '../screens/track_order_screen.dart';
 import '../services/api_service.dart';
 import '../services/sprintpay_service.dart';
 import '../utils/format_utils.dart';
@@ -95,7 +94,8 @@ Future<void> showSprintPayDirectFlow(
 }
 
 /// Payment details bottom sheet: neon orange theme, copy, I Have Paid, Close, polling.
-/// On verify URL returning {"status":"paid"}, calls API to confirm payment then runs success flow.
+/// Polls SprintPay verify URL and **GET /api/orders/{id}** so when the server marks the order
+/// paid (e.g. IPN / Telegram path) the app completes without waiting on verify_url alone.
 class SprintPayPaymentSheet extends StatefulWidget {
   const SprintPayPaymentSheet({
     super.key,
@@ -119,6 +119,18 @@ class _SprintPayPaymentSheetState extends State<SprintPayPaymentSheet> {
   String? _verifyError;
   Timer? _pollTimer;
   bool _polling = false;
+  bool _completing = false;
+  bool _checkInFlight = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _ensurePolling();
+      _checkVerify();
+    });
+  }
 
   @override
   void dispose() {
@@ -127,57 +139,92 @@ class _SprintPayPaymentSheetState extends State<SprintPayPaymentSheet> {
     super.dispose();
   }
 
-  void _startPolling() {
-    if (_polling) return;
+  void _ensurePolling() {
+    if (_pollTimer != null) return;
     _polling = true;
+    _pollTimer = Timer.periodic(const Duration(seconds: 4), (_) => _checkVerify());
+  }
+
+  void _startPolling() {
+    if (_completing) return;
+    _ensurePolling();
     setState(() {
       _verifying = true;
       _verifyError = null;
     });
-    const interval = Duration(seconds: 5);
-    _pollTimer = Timer.periodic(interval, (_) => _checkVerify());
     _checkVerify();
   }
 
+  Future<void> _finalizePaidSuccess() async {
+    if (!mounted || _completing) return;
+    _completing = true;
+    _pollTimer?.cancel();
+    _pollTimer = null;
+    _polling = false;
+    setState(() {
+      _verifying = false;
+      _verifyError = null;
+    });
+
+    final api = context.read<ApiService>();
+    final confirmRes = await api.confirmPayment(widget.orderId);
+    if (!mounted) return;
+    if (!confirmRes.success) {
+      _completing = false;
+      setState(() => _verifyError = confirmRes.error ?? 'Could not update order status.');
+      _ensurePolling();
+      return;
+    }
+    if (!mounted) return;
+    Navigator.of(context).pop();
+    widget.onOrderSuccess();
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => OrderSuccessScreen(orderRef: widget.orderNumber),
+      ),
+      (route) => route.isFirst,
+    );
+  }
+
   Future<void> _checkVerify() async {
-    if (!mounted) return;
-    final status = await SprintPayService.checkVerifyUrl(widget.data.verifyUrl);
-    if (!mounted) return;
-    // Only {"status":"paid"} is treated as payment success.
-    if (status == 'paid') {
-      _pollTimer?.cancel();
-      _pollTimer = null;
-      _polling = false;
-      setState(() => _verifying = false);
+    if (!mounted || _completing) return;
+    if (_checkInFlight) return;
+    _checkInFlight = true;
+    try {
       final api = context.read<ApiService>();
-      final confirmRes = await api.confirmPayment(widget.orderId);
-      if (!mounted) return;
-      if (!confirmRes.success) {
-        setState(() => _verifyError = confirmRes.error ?? 'Could not update order status.');
+      final orderRes = await api.getOrderDetail(widget.orderId);
+      if (!mounted || _completing) return;
+      if (orderRes.success &&
+          orderRes.data != null &&
+          orderRes.data!.paymentStatus?.toLowerCase() == 'paid') {
+        await _finalizePaidSuccess();
         return;
       }
-      Navigator.of(context).pop();
-      widget.onOrderSuccess();
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => OrderSuccessScreen(orderRef: widget.orderNumber),
-        ),
-        (route) => route.isFirst,
-      );
-      return;
-    }
-    if (status != 'pending' && status != null) {
-      _pollTimer?.cancel();
-      _pollTimer = null;
-      _polling = false;
-      setState(() {
-        _verifying = false;
-        _verifyError = 'Verification failed. Tap "I Have Paid" again.';
-      });
-      return;
-    }
-    if (status == null) {
-      setState(() => _verifyError = 'Check failed. Retrying in 5s…');
+
+      final status = await SprintPayService.checkVerifyUrl(widget.data.verifyUrl);
+      if (!mounted || _completing) return;
+
+      if (status == 'paid') {
+        await _finalizePaidSuccess();
+        return;
+      }
+
+      if (status != 'pending' && status != null) {
+        _pollTimer?.cancel();
+        _pollTimer = null;
+        _polling = false;
+        setState(() {
+          _verifying = false;
+          _verifyError = 'Verification failed. Tap "I Have Paid" again.';
+        });
+        return;
+      }
+
+      if (status == null && mounted) {
+        setState(() => _verifyError = 'Check failed. Retrying…');
+      }
+    } finally {
+      _checkInFlight = false;
     }
   }
 

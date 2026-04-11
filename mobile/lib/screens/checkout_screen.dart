@@ -222,6 +222,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         lower.contains('authenticate');
   }
 
+  /// Gateway `payment_url` includes `amount=` (deposit final amount). Use it for in-app paynow.
+  double _sprintPayAmountFromPaymentUrl(String? paymentUrl, double fallback) {
+    if (paymentUrl == null || paymentUrl.isEmpty) return fallback;
+    try {
+      final uri = Uri.parse(paymentUrl);
+      final raw = uri.queryParameters['amount'];
+      if (raw != null && raw.isNotEmpty) {
+        final v = double.tryParse(raw);
+        if (v != null) return v;
+      }
+    } catch (_) {}
+    return fallback;
+  }
+
   void _showLoginRequired() {
     showDialog(
       context: context,
@@ -399,7 +413,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _orderResult = orderRes.data;
     _error = null;
     if (!mounted) return;
-    // Must call /api/payment/initiate so a Deposit exists; SprintPay ref must match deposit.trx for IPN.
+    // Create Deposit + correct SprintPay ref (trx) via API, but keep payment UI in-app (bottom sheet).
     final orderData = orderRes.data!;
     final userEmail = _email.text.trim();
     if (userEmail.isEmpty) {
@@ -437,37 +451,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
     final payData = initRes.data!;
-    if (payData.paymentUrl == null || payData.paymentUrl!.isEmpty) {
-      setState(() => _error = 'No payment URL returned');
+    final trx = payData.trx?.trim();
+    if (trx == null || trx.isEmpty) {
+      setState(() => _error = 'Payment reference missing. Try again.');
       return;
     }
-    final usedSheet = await showSprintPayPaymentFlow(
+    final payAmount = _sprintPayAmountFromPaymentUrl(
+      payData.paymentUrl,
+      payData.totalAmount,
+    );
+    await showSprintPayDirectFlow(
       context,
-      paymentUrl: payData.paymentUrl!,
+      amount: payAmount,
+      ref: trx,
+      email: userEmail,
       orderId: payData.orderId,
       orderNumber: payData.orderNumber,
       onOrderSuccess: () => context.read<CartProvider>().clear(),
-    );
-    if (!mounted) return;
-    if (usedSheet) return;
-    final uri = Uri.tryParse(payData.paymentUrl!);
-    if (uri != null && await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-    if (!mounted) return;
-    context.read<CartProvider>().clear();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Complete payment in the browser. Order: ${payData.orderNumber}'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-    Navigator.of(context).popUntil((r) => r.isFirst);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TrackOrderScreen(orderNumber: payData.orderNumber),
-      ),
     );
   }
 

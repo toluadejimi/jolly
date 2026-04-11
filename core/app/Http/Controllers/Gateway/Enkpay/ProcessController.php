@@ -68,6 +68,19 @@ class ProcessController extends Controller
         }
         Log::info("Enkpay/SprintPay IPN ======> " . json_encode($all));
 
+        if (self::ipnIndicatesFailure($all)) {
+            Log::warning('Enkpay/SprintPay IPN: gateway reported failure — not marking paid', [
+                'keys' => array_keys($all),
+            ]);
+            if ($isBrowserRequest) {
+                return redirect('/user/orders');
+            }
+            return response()->json([
+                'status' => 'ignored',
+                'reason' => 'gateway_reported_failure',
+            ], 200);
+        }
+
         $possibleKeys = ['trans_id', 'ref', 'trx', 'reference', 'transaction_id', 'transaction_ref', 'payment_ref', 'order_ref', 'order_id', 'session_id', 'account_no', 'txn_id', 'track', 'transaction_reference', 'trans_ref', 'pay_ref'];
         $track = null;
         foreach ($possibleKeys as $key) {
@@ -146,7 +159,8 @@ class ProcessController extends Controller
                 $orderAmount = (float) $orderOnly->total_amount;
                 $candidateRefs = self::collectSprintPayRefs($all, $track, $orderOnly->order_number);
                 $verifyHit = self::firstCompletedSprintPayVerify($candidateRefs, $orderAmount);
-                $amountVsOrder = $payloadAmount !== null && self::amountCloseEnough($payloadAmount, $orderAmount);
+                // Strict amount match only (no %-slack): avoids marking paid on unrelated/failed callbacks.
+                $amountVsOrder = $payloadAmount !== null && self::amountMatchesOrderTotal($payloadAmount, $orderAmount);
                 $emailOk = $payloadEmail !== '' && $orderEmail !== '' && $payloadEmail === $orderEmail;
                 if ($verifyHit !== null || ($amountVsOrder && $emailOk)) {
                     $orderOnly->payment_status = Status::PAYMENT_SUCCESS;
@@ -199,43 +213,25 @@ class ProcessController extends Controller
         $payloadAmount = isset($all['amount']) ? (float) $all['amount'] : null;
         $candidateRefs = self::collectSprintPayRefs($all, $track, $deposit->trx, $deposit->order?->order_number);
         $verifyHit = self::firstCompletedSprintPayVerify($candidateRefs, $depositAmount);
-        $response = null;
-        $status = null;
-        $verifiedAmount = null;
-        if ($verifyHit !== null) {
-            $response = $verifyHit['raw'];
-            $status = $verifyHit['status'];
-            $verifiedAmount = $verifyHit['amount'];
-        } else {
-            $response = self::sprintPayVerifyTransaction($track);
-            $status = $response ? ($response->message ?? null) : null;
-            $verifiedAmount = ($response && isset($response->data->amount)) ? (float) $response->data->amount : null;
-        }
+        $probeForLog = $verifyHit === null ? self::sprintPayVerifyTransaction($track) : null;
 
+        $probeBody = ($probeForLog !== null && isset($probeForLog['data'])) ? $probeForLog['data'] : null;
         Log::info('Enkpay/SprintPay IPN resolve', [
             'track' => $track,
             'deposit_id' => $deposit->id ?? null,
-            'verify_status' => $status,
-            'verify_amount' => $verifiedAmount,
+            'verify_hit_ref' => $verifyHit['ref'] ?? null,
+            'verify_http_code' => $verifyHit['http_code'] ?? ($probeForLog !== null ? $probeForLog['http_code'] : null),
+            'verify_api_status' => $verifyHit ? ($verifyHit['raw']->status ?? null) : ($probeBody->status ?? null),
+            'verify_message' => $verifyHit ? ($verifyHit['raw']->message ?? null) : ($probeBody->message ?? null),
+            'verify_amount' => $verifyHit['amount'] ?? ($probeBody && isset($probeBody->data->amount) ? (float) $probeBody->data->amount : null),
             'payload_amount' => $payloadAmount,
             'deposit_amount' => $depositAmount,
         ]);
 
-        $verifiedByApi = ($status === 'completed' && $verifiedAmount !== null && self::amountCloseEnough($depositAmount, $verifiedAmount));
-        $verifiedByPayload = ($payloadAmount !== null && self::amountCloseEnough($depositAmount, $payloadAmount));
+        // SprintPay verify-transaction: HTTP 200 + status true + message "completed" + data.amount matches deposit.
+        $verifiedByApi = ($verifyHit !== null);
 
-        if (($verifiedByApi || $verifiedByPayload) && $deposit->status == Status::PAYMENT_INITIATE) {
-                if ($verifiedByPayload && !$verifiedByApi) {
-                    Log::warning('Enkpay/SprintPay IPN fallback accepted by payload amount', [
-                        'track' => $track,
-                        'deposit_id' => $deposit->id ?? null,
-                        'payload_amount' => $payloadAmount,
-                        'deposit_amount' => $depositAmount,
-                    ]);
-                }
-
-
-
+        if ($verifiedByApi && $deposit->status == Status::PAYMENT_INITIATE) {
                 if (!function_exists('send_notification')) {
 
                     function send_notification($message)
@@ -328,14 +324,53 @@ class ProcessController extends Controller
     }
 
     /**
-     * SprintPay amounts may be rounded (e.g. mobile paynow) or differ slightly from stored floats.
+     * SprintPay verify API returns a settled amount; allow only tiny float noise, not %-slack.
      */
-    private static function amountCloseEnough(float $expected, float $actual): bool
+    private static function amountMatchesVerifiedTotal(float $expected, float $actual): bool
     {
-        return abs($expected - $actual) <= max(1.0, abs($expected) * 0.01);
+        return abs($expected - $actual) <= max(0.01, abs($expected) * 1e-9);
     }
 
-    private static function sprintPayVerifyTransaction(string $ref): ?\stdClass
+    /**
+     * Compare order/deposit totals to IPN amount (integer money): max 1 minor unit drift.
+     */
+    private static function amountMatchesOrderTotal(float $payloadAmount, float $orderAmount): bool
+    {
+        return abs($payloadAmount - $orderAmount) <= 1.0;
+    }
+
+    /**
+     * If the gateway includes an explicit failure status, never treat the IPN as paid.
+     */
+    private static function ipnIndicatesFailure(array $all): bool
+    {
+        $keys = ['status', 'state', 'payment_status', 'transaction_status', 'result', 'gateway_response'];
+        foreach ($keys as $k) {
+            if (!isset($all[$k])) {
+                continue;
+            }
+            $raw = $all[$k];
+            if (!is_string($raw)) {
+                continue;
+            }
+            $v = strtolower(trim($raw));
+            if ($v === '') {
+                continue;
+            }
+            if (in_array($v, ['failure', 'failed', 'fail', 'error', 'declined', 'cancelled', 'canceled', 'void', 'voided', 'reversed', 'unsuccessful', 'unpaid', 'denied'], true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * POST https://web.sprintpay.online/api/verify-transaction — body {"ref":"..."}.
+     *
+     * @return array{http_code: int, data: \stdClass}|null
+     */
+    private static function sprintPayVerifyTransaction(string $ref): ?array
     {
         $dataString = json_encode(['ref' => $ref]);
         $ch = curl_init('https://web.sprintpay.online/api/verify-transaction');
@@ -345,14 +380,50 @@ class ProcessController extends Controller
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
         $response = curl_exec($ch);
+        $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         $decoded = json_decode($response ?? '');
+        if (!($decoded instanceof \stdClass)) {
+            return null;
+        }
 
-        return $decoded instanceof \stdClass ? $decoded : null;
+        return ['http_code' => $httpCode, 'data' => $decoded];
     }
 
     /**
-     * @return array{ref: string, status: string, amount: float, raw: \stdClass}|null
+     * SprintPay POST /api/verify-transaction success body (HTTP 200), e.g.:
+     * {"status":true,"message":"completed","data":{"amount":"5000.00","ref":"…","email":"…"}}
+     * Not completed / not found: HTTP 422, "status": false, message incomplete | Transaction not found.
+     */
+    private static function sprintPayVerifyResultIsCompleted(?array $result, float $expectedAmount): bool
+    {
+        if ($result === null) {
+            return false;
+        }
+        if ($result['http_code'] !== 200) {
+            return false;
+        }
+        $j = $result['data'];
+        if (!isset($j->status) || ($j->status !== true && $j->status !== 1)) {
+            return false;
+        }
+        $msg = isset($j->message) ? strtolower(trim((string) $j->message)) : '';
+        if ($msg !== 'completed') {
+            return false;
+        }
+        if (!isset($j->data) || !is_object($j->data)) {
+            return false;
+        }
+        $amt = isset($j->data->amount) ? (float) $j->data->amount : null;
+        if ($amt === null) {
+            return false;
+        }
+
+        return self::amountMatchesVerifiedTotal($expectedAmount, $amt);
+    }
+
+    /**
+     * @return array{ref: string, amount: float, raw: \stdClass, http_code: int}|null
      */
     private static function firstCompletedSprintPayVerify(array $refs, float $expectedAmount): ?array
     {
@@ -360,15 +431,19 @@ class ProcessController extends Controller
             if (!is_string($ref) || $ref === '') {
                 continue;
             }
-            $raw = self::sprintPayVerifyTransaction($ref);
-            if (!$raw) {
+            $result = self::sprintPayVerifyTransaction($ref);
+            if (!self::sprintPayVerifyResultIsCompleted($result, $expectedAmount)) {
                 continue;
             }
-            $st = $raw->message ?? null;
-            $amt = isset($raw->data->amount) ? (float) $raw->data->amount : null;
-            if ($st === 'completed' && $amt !== null && self::amountCloseEnough($expectedAmount, $amt)) {
-                return ['ref' => $ref, 'status' => (string) $st, 'amount' => $amt, 'raw' => $raw];
-            }
+            $j = $result['data'];
+            $amt = (float) $j->data->amount;
+
+            return [
+                'ref' => $ref,
+                'amount' => $amt,
+                'raw' => $j,
+                'http_code' => $result['http_code'],
+            ];
         }
 
         return null;
