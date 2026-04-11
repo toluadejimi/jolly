@@ -36,4 +36,9 @@ return [
         'admin_chat_id' => env('TELEGRAM_ADMIN_CHAT_ID'),
     ],
 
+    'turnstile' => [
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
 ];

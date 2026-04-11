@@ -1,10 +1,11 @@
 <?php
 
 use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\BrowserChallengeMiddleware;
 use App\Http\Middleware\CheckModuleIsEnabled;
+use App\Http\Middleware\CheckoutStepMiddleware;
 use App\Http\Middleware\CheckStatus;
 use App\Http\Middleware\Demo;
-use App\Http\Middleware\CheckoutStepMiddleware;
 use App\Http\Middleware\MaintenanceMode;
 use App\Http\Middleware\RedirectIfAdmin;
 use App\Http\Middleware\RedirectIfAuthenticated;
@@ -20,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        commands: __DIR__ . '/../routes/console.php',
+        commands: __DIR__.'/../routes/console.php',
         health: '/up',
         using: function () {
             Route::namespace('App\Http\Controllers')->middleware([VugiChugi::mdNm()])->group(function () {
@@ -77,6 +78,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'maintenance' => MaintenanceMode::class,
             'checkModule' => CheckModuleIsEnabled::class,
             'api.key' => ValidateApiKey::class,
+            'browser.challenge' => BrowserChallengeMiddleware::class,
         ]);
 
         $middleware->validateCsrfTokens(
@@ -93,10 +95,11 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($response->getStatusCode() === 401) {
                 if (request()->is('api/*')) {
                     $notify[] = 'Unauthorized request';
+
                     return response()->json([
                         'remark' => 'unauthenticated',
                         'status' => 'error',
-                        'message' => ['error' => $notify]
+                        'message' => ['error' => $notify],
                     ]);
                 }
             }

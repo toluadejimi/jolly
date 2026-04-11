@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BrowserChallengeController;
 use App\Http\Controllers\CheckoutController;
 use Illuminate\Support\Facades\Route;
 use Rap2hpoutre\LaravelLogViewer\LogViewerController;
@@ -11,13 +12,13 @@ Route::get('storage/{path}', function (string $path) {
     if ($path === '') {
         abort(404);
     }
-    $fullPath = storage_path('app/public/' . $path);
+    $fullPath = storage_path('app/public/'.$path);
     $storageRoot = realpath(storage_path('app/public'));
-    if (!$storageRoot || !is_file($fullPath)) {
+    if (! $storageRoot || ! is_file($fullPath)) {
         abort(404);
     }
     $realFile = realpath($fullPath);
-    if (!$realFile || !str_starts_with($realFile, $storageRoot)) {
+    if (! $realFile || ! str_starts_with($realFile, $storageRoot)) {
         abort(404);
     }
     $mimeType = 'application/octet-stream';
@@ -26,8 +27,13 @@ Route::get('storage/{path}', function (string $path) {
     } catch (\Throwable $e) {
         // keep default
     }
+
     return response()->file($fullPath, ['Content-Type' => $mimeType]);
 })->where('path', '.*')->name('storage.serve');
+
+Route::post('browser-challenge/verify', [BrowserChallengeController::class, 'verify'])
+    ->middleware('throttle:30,1')
+    ->name('browser.challenge.verify');
 
 Route::get('/clear', function () {
     \Illuminate\Support\Facades\Artisan::call('optimize:clear');
@@ -35,21 +41,9 @@ Route::get('/clear', function () {
 
 Route::get('logger', [LogViewerController::class, 'index'])->middleware('admin')->name('log-viewer');
 
-
-
-
-
-
 Route::get('/remove-photo/{type}', [\App\Http\Controllers\CheckoutController::class, 'removePhoto'])->name('remove_photo');
 
-
-
-
 Route::post('/product/login', [CheckoutController::class, 'LoginProduct'])->name('user.login.product');
-
-
-
-
 
 // User Support Ticket
 Route::controller('TicketController')->prefix('ticket')->name('ticket.')->group(function () {
@@ -138,6 +132,7 @@ Route::controller('User\OrderController')->group(function () {
 
 Route::get('api-documentation', function () {
     $pageTitle = 'API Documentation';
+
     return view('Template::api_documentation', compact('pageTitle'));
 })->name('api.documentation');
 
@@ -164,5 +159,5 @@ Route::controller('SiteController')->group(function () {
     Route::get('placeholder-image/{size}', 'placeholderImage')->withoutMiddleware('maintenance')->name('placeholder.image');
     Route::get('maintenance-mode', 'maintenance')->withoutMiddleware('maintenance')->name('maintenance');
 
-    Route::get('/', 'index')->name('home');
+    Route::get('/', 'index')->middleware('browser.challenge')->name('home');
 });
