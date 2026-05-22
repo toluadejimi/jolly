@@ -276,6 +276,14 @@
                                 </li>
 
                                 <li>
+                                    <span class="title">@lang('Apartment, suite, unit')</span>
+                                    <span>
+                                        <span class="devide-colon">:</span>
+                                        {{ $addrValue($addr->apt ?? null) }}
+                                    </span>
+                                </li>
+
+                                <li>
                                     <span class="title">@lang('State')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
@@ -308,7 +316,7 @@
                                 </li>
 
                                 <li>
-                                    <span class="title">@lang('Customer Phone')</span>
+                                    <span class="title">@lang('Receiver Number')</span>
                                     <span>
                                         <span class="devide-colon">:</span>
                                         {{ $addrValue($addr->mobile ?? null) }}
