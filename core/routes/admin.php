@@ -375,6 +375,7 @@ Route::middleware('admin')->group(function () {
         // Country dropdown
         Route::get('setting/countries', 'countries')->name('setting.countries');
         Route::post('setting/countries', 'countriesSubmit')->name('setting.countries.submit');
+        Route::post('setting/countries/run-migrations', 'countriesRunMigrations')->name('setting.countries.run.migrations');
 
         // Logo-Icon
         Route::get('setting/logo-icon', 'logoIcon')->name('setting.logo.icon.form');

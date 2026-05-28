@@ -8,6 +8,7 @@ use App\Lib\RequiredConfig;
 use App\Models\Frontend;
 use App\Rules\FileTypeValidate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 
 class GeneralSettingController extends Controller {
     public function systemSetting() {
@@ -115,6 +116,19 @@ class GeneralSettingController extends Controller {
         $general->save();
 
         $notify[] = ['success', 'Country dropdown settings updated successfully'];
+        return back()->withNotify($notify);
+    }
+
+    public function countriesRunMigrations() {
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+        } catch (\Throwable $exception) {
+            $notify[] = ['error', 'Migration failed: ' . $exception->getMessage()];
+            return back()->withNotify($notify);
+        }
+
+        $output = trim(Artisan::output());
+        $notify[] = ['success', $output ?: 'Migrations ran successfully'];
         return back()->withNotify($notify);
     }
 

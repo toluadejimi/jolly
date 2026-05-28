@@ -12,6 +12,9 @@
                             <p class="mb-0 text-muted">@lang('Only enabled countries will appear in customer country dropdowns.')</p>
                         </div>
                         <div class="d-flex flex-wrap gap-2">
+                            <button type="submit" class="btn btn-sm btn-outline--dark" form="runMigrationsForm" onclick="return confirm('@lang('Run database migrations now?')')">
+                                @lang('Run Migrations')
+                            </button>
                             <button type="button" class="btn btn-sm btn-outline--primary selectAllCountries">@lang('Enable All')</button>
                             <button type="button" class="btn btn-sm btn-outline--danger deselectAllCountries">@lang('Disable All')</button>
                         </div>
@@ -42,6 +45,10 @@
                         <button type="submit" class="btn btn--primary">@lang('Save Changes')</button>
                     </div>
                 </div>
+            </form>
+
+            <form id="runMigrationsForm" method="post" action="{{ route('admin.setting.countries.run.migrations') }}" class="d-none">
+                @csrf
             </form>
         </div>
     </div>
