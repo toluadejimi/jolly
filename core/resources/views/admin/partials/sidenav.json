@@ -585,6 +585,7 @@
             "admin.frontend.templates",
             "admin.frontend.manage.*",
             "admin.maintenance.mode",
+            "admin.setting.countries",
             "admin.setting.cookie",
             "admin.setting.custom.css",
             "admin.setting.sitemap",
@@ -648,6 +649,21 @@
         "icon": "las la-tools",
         "route_name": "admin.setting.system.configuration",
         "menu_active": "admin.setting.system.configuration"
+    },
+    "country_dropdown": {
+        "keyword": [
+            "country",
+            "countries",
+            "country dropdown",
+            "checkout countries",
+            "shipping countries",
+            "enable country",
+            "disable country"
+        ],
+        "title": "Country Dropdown",
+        "icon": "las la-globe",
+        "route_name": "admin.setting.countries",
+        "menu_active": "admin.setting.countries"
     },
     "notification_setting": {
         "keyword": [

@@ -753,16 +753,55 @@ function getSessionId() {
     return $sessionId;
 }
 
+function getCountryListFromJson($file, $applyEnabledFilter = true) {
+    $countries = json_decode(file_get_contents(resource_path("views/partials/$file")), true) ?? [];
+
+    if ($applyEnabledFilter) {
+        $enabledCodes = enabledCountryCodes();
+        if (is_array($enabledCodes)) {
+            $countries = array_intersect_key($countries, array_flip($enabledCodes));
+        }
+    }
+
+    return json_decode(json_encode($countries));
+}
+
+function enabledCountryCodes() {
+    $enabledCodes = gs('enabled_country_codes');
+
+    if (is_null($enabledCodes)) {
+        return null;
+    }
+
+    if (is_string($enabledCodes)) {
+        $enabledCodes = json_decode($enabledCodes, true);
+    }
+
+    if (is_object($enabledCodes)) {
+        $enabledCodes = (array) $enabledCodes;
+    }
+
+    if (!is_array($enabledCodes)) {
+        return null;
+    }
+
+    return array_values(array_filter(array_map('strtoupper', $enabledCodes)));
+}
+
 function getCountries() {
-    return json_decode(file_get_contents(resource_path('views/partials/country.json')));
+    return getCountryListFromJson('country.json');
+}
+
+function getAllCountries() {
+    return getCountryListFromJson('country.json', false);
 }
 
 function getusaCountries() {
-    return json_decode(file_get_contents(resource_path('views/partials/usaonly.json')));
+    return getCountryListFromJson('usaonly.json');
 }
 
 function getusacanadaCountries() {
-    return json_decode(file_get_contents(resource_path('views/partials/usacanada.json')));
+    return getCountryListFromJson('usacanada.json');
 }
 
 

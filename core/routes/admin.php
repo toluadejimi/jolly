@@ -372,6 +372,10 @@ Route::middleware('admin')->group(function () {
         Route::get('setting/system-configuration', 'systemConfiguration')->name('setting.system.configuration');
         Route::post('setting/system-configuration', 'systemConfigurationSubmit');
 
+        // Country dropdown
+        Route::get('setting/countries', 'countries')->name('setting.countries');
+        Route::post('setting/countries', 'countriesSubmit')->name('setting.countries.submit');
+
         // Logo-Icon
         Route::get('setting/logo-icon', 'logoIcon')->name('setting.logo.icon.form');
         Route::post('setting/logo-icon', 'logoIconUpdate')->name('setting.logo.icon');

@@ -218,6 +218,21 @@
         "icon": "las la-robot",
         "route_name": "admin.maintenance.mode"
     },
+    "country_dropdown": {
+        "keyword": [
+            "country",
+            "countries",
+            "country dropdown",
+            "checkout countries",
+            "shipping countries",
+            "enable country",
+            "disable country"
+        ],
+        "title": "Country Dropdown",
+        "subtitle": "Choose which countries customers can select in country dropdowns.",
+        "icon": "las la-globe",
+        "route_name": "admin.setting.countries"
+    },
     "gdpr_cookie": {
         "keyword": [
             "GDPR cookie",

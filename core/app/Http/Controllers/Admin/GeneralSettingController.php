@@ -89,6 +89,35 @@ class GeneralSettingController extends Controller {
         return back()->withNotify($notify);
     }
 
+    public function countries() {
+        $pageTitle = 'Country Dropdown Settings';
+        $countries = getAllCountries();
+        $enabledCountryCodes = enabledCountryCodes();
+
+        if (is_null($enabledCountryCodes)) {
+            $enabledCountryCodes = array_keys((array) $countries);
+        }
+
+        return view('admin.setting.countries', compact('pageTitle', 'countries', 'enabledCountryCodes'));
+    }
+
+    public function countriesSubmit(Request $request) {
+        $allCountries = getAllCountries();
+        $countryCodes = array_keys((array) $allCountries);
+
+        $request->validate([
+            'country_codes' => 'nullable|array',
+            'country_codes.*' => 'required|string|in:' . implode(',', $countryCodes),
+        ]);
+
+        $general = gs();
+        $general->enabled_country_codes = array_values(array_unique($request->country_codes ?? []));
+        $general->save();
+
+        $notify[] = ['success', 'Country dropdown settings updated successfully'];
+        return back()->withNotify($notify);
+    }
+
     public function logoIcon() {
         $pageTitle = 'Logo & Favicon';
         return view('admin.setting.logo_icon', compact('pageTitle'));
