@@ -136,6 +136,33 @@ Route::get('api-documentation', function () {
     return view('Template::api_documentation', compact('pageTitle'));
 })->name('api.documentation');
 
+Route::get('download/android-app', function () {
+    $candidates = [
+        dirname(base_path()).'/assets/app/jollyboxfr.apk',
+        base_path('../assets/app/jollyboxfr.apk'),
+        public_path('assets/app/jollyboxfr.apk'),
+    ];
+
+    $apkPath = null;
+    foreach ($candidates as $candidate) {
+        $real = realpath($candidate);
+        if ($real && is_file($real)) {
+            $apkPath = $real;
+            break;
+        }
+    }
+
+    if (! $apkPath) {
+        abort(404, 'Android APK is not available yet.');
+    }
+
+    return response()->download(
+        $apkPath,
+        'jollyboxfr.apk',
+        ['Content-Type' => 'application/vnd.android.package-archive']
+    );
+})->name('app.download.android');
+
 Route::controller('SiteController')->group(function () {
     Route::get('categories', 'categories')->name('categories');
     Route::get('brands', 'brands')->name('brands');
