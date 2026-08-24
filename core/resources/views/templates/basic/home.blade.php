@@ -3,6 +3,7 @@
     @include('Template::sections.banner')
 
     @if ($sections->secs != null)
+        @php $appDownloadShown = false; @endphp
         @foreach (json_decode($sections->secs) as $sec)
             @if (View::exists('Template::sections.' . $sec))
                 @include('Template::sections.' . $sec)
@@ -15,7 +16,19 @@
                     @include($sectionData['section'], ['data' => @$sectionData['data']])
                 @endif
             @endif
+
+            {{-- Place app download after featured category icons (homepage spot B) --}}
+            @if (!$appDownloadShown && in_array($sec, ['featured_categories', 'services'], true))
+                @include('Template::sections.app_download')
+                @php $appDownloadShown = true; @endphp
+            @endif
         @endforeach
+
+        @if (!$appDownloadShown)
+            @include('Template::sections.app_download')
+        @endif
+    @else
+        @include('Template::sections.app_download')
     @endif
 
 @endsection
