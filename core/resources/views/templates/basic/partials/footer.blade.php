@@ -26,6 +26,8 @@
             </a>
         </div>
 
+        @include('Template::sections.app_download')
+
         @if ($menus)
             <div class="footer-middle">
                 @foreach ($menus as $menu)
@@ -40,6 +42,7 @@
                 @endforeach
             </div>
         @endif
+
         <div class="footer-copyright">
             <div class="copyright-area d-flex flex-wrap align-items-center justify-content-between gap-4 flex-wrap-reverse">
                 @if (@$footer->copyright_text)
@@ -54,28 +57,6 @@
                 @endif
 
                 <div class="footer-social-row d-flex flex-wrap align-items-center gap-3">
-                    <div class="footer-app-badges d-flex align-items-center gap-2">
-                        <a href="{{ $androidAppUrl }}"
-                           class="footer-app-icon footer-app-icon--android"
-                           download="jollyboxfr.apk"
-                           title="@lang('Download Android APK')"
-                           aria-label="@lang('Download Android APK')">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
-                                <path d="M17.6 9.48l1.84-3.18a.5.5 0 10-.86-.5l-1.9 3.28A7.97 7.97 0 0012 8c-1.74 0-3.34.56-4.68 1.5L5.42 5.8a.5.5 0 10-.86.5L6.4 9.48C4.36 11.06 3 13.37 3 16h18c0-2.63-1.36-4.94-3.4-6.52zM8.5 13.5a1 1 0 110 2 1 1 0 010-2zm7 0a1 1 0 110 2 1 1 0 010-2zM7 18v2.5a1 1 0 001 1h1v-3.5H7zm8 0V21.5h1a1 1 0 001-1V18h-2z"/>
-                            </svg>
-                        </a>
-                        <a href="{{ $iosAppUrl }}"
-                           class="footer-app-icon footer-app-icon--ios"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           title="@lang('Download on the App Store')"
-                           aria-label="@lang('Download on the App Store')">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
-                                <path d="M16.7 12.7c0-2.1 1.7-3.1 1.8-3.2-1-1.5-2.5-1.7-3.1-1.7-1.3-.1-2.6.8-3.2.8-.7 0-1.8-.8-3-.7-1.5.1-2.9.9-3.7 2.3-1.6 2.7-.4 6.7 1.1 8.9.8 1.1 1.7 2.3 2.9 2.2 1.2-.1 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.3 1.3-2.5 1.3-2.6-.1 0-2.4-.9-2.4-3.8zM14.5 6.4c.6-.8 1.1-1.9.9-3-.9.1-2 .6-2.6 1.4-.6.7-1.1 1.8-.9 2.9 1 .1 2-.5 2.6-1.3z"/>
-                            </svg>
-                        </a>
-                    </div>
-
                     <a href="https://wa.me/2349039875741?text=Hi%20JollyBoxfr,%20I%20Got%20This%20Number%20from%20site"
                        class="footer-whatsapp"
                        target="_blank"
@@ -139,30 +120,6 @@
             fill: #fff;
             flex-shrink: 0;
         }
-        .footer-app-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            color: #fff !important;
-            text-decoration: none !important;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .footer-app-icon:hover {
-            transform: translateY(-1px);
-            color: #fff !important;
-        }
-        .footer-app-icon--android {
-            background: #3DDC84;
-            box-shadow: 0 4px 12px rgba(61, 220, 132, 0.35);
-        }
-        .footer-app-icon--ios {
-            background: #111;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-        }
-
         @media (max-width: 767.98px) {
             .footer-social-row {
                 width: 100%;

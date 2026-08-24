@@ -3,8 +3,7 @@
     $androidAppUrl = route('app.download.android');
 @endphp
 
-<div class="site-section app-download-home py-4">
-    <div class="container">
+<div class="app-download-section py-3">
         <div class="app-download-card">
             <div class="app-download-copy">
                 <span class="app-download-eyebrow">@lang('Mobile app')</span>
@@ -43,11 +42,10 @@
                 </a>
             </div>
         </div>
-    </div>
 </div>
 
 <style>
-    .app-download-home .app-download-card {
+    .app-download-section .app-download-card {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
@@ -59,7 +57,7 @@
         box-shadow: 0 12px 28px rgba(255, 95, 31, 0.28);
         color: #fff;
     }
-    .app-download-home .app-download-eyebrow {
+    .app-download-section .app-download-eyebrow {
         display: inline-block;
         font-size: 12px;
         font-weight: 700;
@@ -68,25 +66,25 @@
         opacity: 0.9;
         margin-bottom: 6px;
     }
-    .app-download-home .app-download-title {
+    .app-download-section .app-download-title {
         margin: 0 0 6px;
         color: #fff;
         font-weight: 800;
         font-size: 1.25rem;
     }
-    .app-download-home .app-download-text {
+    .app-download-section .app-download-text {
         margin: 0;
         color: rgba(255, 255, 255, 0.92);
         max-width: 420px;
         font-size: 0.95rem;
         line-height: 1.45;
     }
-    .app-download-home .app-download-badges {
+    .app-download-section .app-download-badges {
         display: flex;
         flex-wrap: wrap;
         gap: 12px;
     }
-    .app-download-home .app-store-badge {
+    .app-download-section .app-store-badge {
         display: inline-flex;
         align-items: center;
         gap: 12px;
@@ -99,32 +97,32 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
     }
-    .app-download-home .app-store-badge:hover {
+    .app-download-section .app-store-badge:hover {
         transform: translateY(-2px);
         color: #fff !important;
         box-shadow: 0 12px 22px rgba(0, 0, 0, 0.28);
     }
-    .app-download-home .app-store-badge__icon {
+    .app-download-section .app-store-badge__icon {
         display: inline-flex;
         line-height: 0;
     }
-    .app-download-home .app-store-badge__text {
+    .app-download-section .app-store-badge__text {
         display: flex;
         flex-direction: column;
         line-height: 1.15;
     }
-    .app-download-home .app-store-badge__text small {
+    .app-download-section .app-store-badge__text small {
         font-size: 11px;
         opacity: 0.85;
     }
-    .app-download-home .app-store-badge__text strong {
+    .app-download-section .app-store-badge__text strong {
         font-size: 16px;
         font-weight: 700;
     }
-    .app-download-home .app-store-badge--android { background: #1f1f1f; }
-    .app-download-home .app-store-badge--ios { background: #000; }
+    .app-download-section .app-store-badge--android { background: #1f1f1f; }
+    .app-download-section .app-store-badge--ios { background: #000; }
     @media (max-width: 767.98px) {
-        .app-download-home .app-download-card { padding: 18px; }
-        .app-download-home .app-store-badge { width: 100%; justify-content: center; }
+        .app-download-section .app-download-card { padding: 18px; }
+        .app-download-section .app-store-badge { width: 100%; justify-content: center; }
     }
 </style>
