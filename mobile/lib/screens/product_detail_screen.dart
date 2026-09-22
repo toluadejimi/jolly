@@ -1237,7 +1237,7 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
           if (p.sameDayBdayLoveLetter) ...[
             const SizedBox(height: 24),
             Text(
-              'Love Letter',
+              'Bday or Love letter',
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),

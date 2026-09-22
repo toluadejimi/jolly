@@ -304,7 +304,7 @@
                                     @if($product->same_day_bday_love_letter)
                                         <div class="card my-4">
                                             <div class="card-body">
-                                                <h5 class="mb-2">Love Letter</h5>
+                                                <h5 class="mb-2">Bday or Love letter</h5>
                                                 <p class="text-muted fst-italic mb-2">Write the birthday / love letter that will go with this gift.</p>
                                                 <textarea class="form-control form--control"
                                                           name="love_letter"

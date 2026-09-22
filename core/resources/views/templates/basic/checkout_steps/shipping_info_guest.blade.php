@@ -132,7 +132,7 @@
 
                 @if(session('same_day_bday_love_letter') == 1)
                     <hr class="my-4">
-                    <h5 class="mb-2">Love Letter</h5>
+                    <h5 class="mb-2">Bday or Love letter</h5>
                     <p class="text-muted fst-italic mb-2">Write the birthday / love letter that will go with this gift.</p>
                     <textarea class="form-control form--control" name="love_letter" id="love_letter" rows="5" maxlength="2000" required placeholder="Write your love letter here...">{{ old('love_letter', session('love_letter')) }}</textarea>
                     <small id="loveLetterCount" class="text-muted d-block mt-2">{{ strlen(session('love_letter', '')) }} / 2000 characters</small>

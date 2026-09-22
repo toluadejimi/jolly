@@ -204,13 +204,13 @@
         <div class="card my-4">
             <div class="card-body">
                 <div class="row mt-4">
-                    <h5 class="mb-1">Love Letter</h5>
+                    <h5 class="mb-1">Bday or Love letter</h5>
                     <p class="text-muted fst-italic">
                         Write the birthday / love letter that will go with this gift.
                     </p>
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label>@lang('Love Letter')</label>
+                            <label>@lang('Bday or Love letter')</label>
                             <textarea
                                 class="form-control form--control"
                                 name="love_letter"

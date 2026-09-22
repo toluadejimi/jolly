@@ -371,7 +371,7 @@
 
                                 @if($love_letter)
                                 <li>
-                                    <span class="title">@lang('Love letter') </span>
+                                    <span class="title">@lang('Bday or Love letter') </span>
                                     <span>
                                         <span class="devide-colon">:</span>
                                         {{ $love_letter }}
