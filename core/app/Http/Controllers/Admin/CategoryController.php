@@ -56,6 +56,7 @@ class CategoryController extends Controller {
         $this->setCategoryAttributes($category, $request);
         $category->position = $position;
         $category->save();
+        cache()->forget('parent_categories_nav');
 
         $message       = $id ? 'updated' : 'added';
 
@@ -144,6 +145,7 @@ class CategoryController extends Controller {
             $category->delete();
             $notify[] = ['success', 'Category deleted successfully'];
         }
+        cache()->forget('parent_categories_nav');
         return back()->withNotify($notify);
     }
 
@@ -189,6 +191,7 @@ class CategoryController extends Controller {
             Category::where('id', $id)->update(['position' => $position]);
         }
 
+        cache()->forget('parent_categories_nav');
         return successResponse('Updated');
     }
 

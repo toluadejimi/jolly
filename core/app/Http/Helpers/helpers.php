@@ -942,24 +942,23 @@ function homepageLayouts($isKeys = false) {
 }
 
 function createUniqueSlug($name, $model, $id = 0) {
-    $slug = slug($name ?? 'No title');
-
+    $slug = slug($name ?: 'No title');
     $originalSlug = $slug;
-
-    $query = $model::withTrashed()->where('slug', $slug);
-
-    if ($id) {
-        $query->where('id', '!=', $id);
-    }
-
     $i = 1;
 
-    while ($query->exists()) {
-        $slug = $originalSlug . '-' . $i++;
-        $query = $model::where('slug', $slug);
-    }
+    while (true) {
+        $query = $model::withTrashed()->where('slug', $slug);
 
-    return $slug;
+        if ($id) {
+            $query->where('id', '!=', $id);
+        }
+
+        if (!$query->exists()) {
+            return $slug;
+        }
+
+        $slug = $originalSlug . '-' . $i++;
+    }
 }
 
 

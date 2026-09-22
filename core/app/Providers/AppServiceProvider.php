@@ -54,19 +54,23 @@ class AppServiceProvider extends ServiceProvider {
         $viewShare['activeTemplateTrue'] = activeTemplate(true);
         $viewShare['emptyMessage'] = 'Data not found';
 
-        $viewShare['parentCategories'] = Category::isParent()
-            ->with([
-                'specialProducts.brand',
-                'allSubcategories' => function($q) {
-                    $q->orderBy('position');
-                },
-                'products' => function ($product) {
-                    return $product->published();
-                },
-                'products.reviews',
-                'products'
-            ])
-            ->orderBy('position')->get();
+        // Nav only needs category tree — do not load all products/reviews on every request
+        // (that exhausted MySQL connections on shared hosting).
+        try {
+            $viewShare['parentCategories'] = cache()->remember('parent_categories_nav', 600, function () {
+                return Category::isParent()
+                    ->with([
+                        'allSubcategories' => function ($q) {
+                            $q->orderBy('position');
+                        },
+                    ])
+                    ->orderBy('position')
+                    ->get();
+            });
+        } catch (\Throwable $e) {
+            $viewShare['parentCategories'] = collect();
+            report($e);
+        }
 
         view()->share($viewShare);
 
