@@ -397,6 +397,8 @@ class _ProductDetailBodyState extends State<_ProductDetailBody> {
                                   hasSameDayBdayLoveLetter:
                                       product.sameDayBdayLoveLetter,
                                   noteFee: product.noteFee,
+                                  sameDayBdayLoveLetterFee:
+                                      product.sameDayBdayLoveLetterFee,
                                 ));
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -711,10 +713,12 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
   final _state = TextEditingController();
   final _zip = TextEditingController();
   final _mobile = TextEditingController();
+  final _receiverPhone = TextEditingController();
   final _email = TextEditingController();
   final _customisedTest = TextEditingController();
   final _customisedShortTest = TextEditingController();
   final _noteToSeller = TextEditingController();
+  final _loveLetter = TextEditingController();
 
   List<CountryEntry> _countries = [];
   List<StateEntry> _states = [];
@@ -756,10 +760,12 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
     _state.dispose();
     _zip.dispose();
     _mobile.dispose();
+    _receiverPhone.dispose();
     _email.dispose();
     _customisedTest.dispose();
     _customisedShortTest.dispose();
     _noteToSeller.dispose();
+    _loveLetter.dispose();
     super.dispose();
   }
 
@@ -822,6 +828,12 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
       );
       return;
     }
+    if (widget.product.sameDayBdayLoveLetter && _loveLetter.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please write your love letter')),
+      );
+      return;
+    }
     if (_loading) return;
     setState(() => _loading = true);
     final api = context.read<ApiService>();
@@ -868,9 +880,11 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
     final noteCharge = (widget.product.note && noteText.isNotEmpty)
         ? widget.product.noteFee.round()
         : 0;
+    final loveLetterText = _loveLetter.text.trim();
     final extras = CheckoutExtras(
       noteToSeller: noteText.isEmpty ? null : noteText,
       noteCharge: noteCharge,
+      loveLetter: loveLetterText.isEmpty ? null : loveLetterText,
       customisedTest: _customisedTest.text.trim().isEmpty
           ? null
           : _customisedTest.text.trim(),
@@ -878,10 +892,11 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
           ? null
           : _customisedShortTest.text.trim(),
     );
+    final receiverPhone = _receiverPhone.text.trim();
     final address = ShippingAddressInput(
       firstname: _firstname.text.trim(),
       lastname: _lastname.text.trim(),
-      mobile: _mobile.text.trim(),
+      mobile: receiverPhone.isNotEmpty ? receiverPhone : _mobile.text.trim(),
       email: _email.text.trim().isEmpty ? null : _email.text.trim(),
       country: _selectedCountry!.name,
       city: _city.text.trim(),
@@ -908,6 +923,7 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
       hasNote: widget.product.note,
       hasSameDayBdayLoveLetter: widget.product.sameDayBdayLoveLetter,
       noteFee: widget.product.noteFee,
+      sameDayBdayLoveLetterFee: widget.product.sameDayBdayLoveLetterFee,
     );
     final orderRes = await api.createOrder(
       items: [item],
@@ -915,6 +931,7 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
       shippingMethodId: shipRes.data!.first.id,
       noteToSeller: extras.noteToSeller,
       noteCharge: extras.noteCharge,
+      loveLetter: extras.loveLetter,
       customisedTest: extras.customisedTest,
       customisedShortTest: extras.customisedShortTest,
       frontPhoto: frontPath,
@@ -1080,6 +1097,15 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
             ),
             validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
           ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _receiverPhone,
+            decoration: const InputDecoration(
+              labelText: "Receiver's phone (optional)",
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.phone,
+          ),
           if (p.customerPhoto) ...[
             const SizedBox(height: 24),
             Text(
@@ -1207,6 +1233,43 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
                 fontWeight: FontWeight.w500,
               ),
             ),
+          ],
+          if (p.sameDayBdayLoveLetter) ...[
+            const SizedBox(height: 24),
+            Text(
+              'Love Letter',
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Write the birthday / love letter that will go with this gift.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _loveLetter,
+              decoration: const InputDecoration(
+                hintText: 'Write your love letter here...',
+                border: OutlineInputBorder(),
+                alignLabelWithHint: true,
+              ),
+              maxLines: 5,
+              maxLength: 2000,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Love letter is required' : null,
+            ),
+            if (widget.product.sameDayBdayLoveLetterFee > 0) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Same Day Bday & love letter fee of ${formatNiara(widget.product.sameDayBdayLoveLetterFee)} will be added.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ],
           const SizedBox(height: 24),
           SizedBox(

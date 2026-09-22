@@ -91,6 +91,7 @@ class CheckoutExtras {
   const CheckoutExtras({
     this.noteToSeller,
     this.noteCharge = 0,
+    this.loveLetter,
     this.customisedTest,
     this.customisedShortTest,
     this.frontPhotoPath,
@@ -98,6 +99,7 @@ class CheckoutExtras {
   });
   final String? noteToSeller;
   final int noteCharge;
+  final String? loveLetter;
   final String? customisedTest;
   final String? customisedShortTest;
   final String? frontPhotoPath;

@@ -410,11 +410,12 @@ class PaymentController extends Controller {
         $front_photo = $checkoutData['front_picture'] ??  session('customer_photo_front') ?? null;
         $customised_test = $checkoutData['customized_text'] ??  session('customized_text') ?? null;
         $customised_short_test = $checkoutData['customized_short_text'] ??  session('customized_short_text') ?? null;
+        $love_letter = $checkoutData['love_letter'] ?? session('love_letter') ?? null;
         $back_photo = $checkoutData['back_picture'] ??  session('customer_photo_back')  ??  null;
 
         //dd($customised_test);
 
-        $this->saveOrderDetails($cartData, $order->id, $note, $front_photo, $back_photo, $customised_test, $customised_short_test);
+        $this->saveOrderDetails($cartData, $order->id, $note, $front_photo, $back_photo, $customised_test, $customised_short_test, $love_letter);
 
         return $order;
     }
@@ -509,7 +510,7 @@ class PaymentController extends Controller {
         return $this->normalizeShippingAddressForOrder($address);
     }
 
-    private function saveOrderDetails($cartData, $orderId, $note = null , $front_photo = null, $back_photo = null, $customised_test = null, $customised_short_test = null) {
+    private function saveOrderDetails($cartData, $orderId, $note = null , $front_photo = null, $back_photo = null, $customised_test = null, $customised_short_test = null, $love_letter = null) {
         foreach ($cartData as $cartItem) {
             $prices = $cartItem->product->prices($cartItem->productVariant);
             $orderDetail                     = new OrderDetail();
@@ -518,6 +519,7 @@ class PaymentController extends Controller {
             $orderDetail->front_photo               = $front_photo;
             $orderDetail->customised_test               = $customised_test;
             $orderDetail->customised_short_test               = $customised_short_test;
+            $orderDetail->love_letter        = $love_letter;
             $orderDetail->back_photo               = $back_photo;
             $orderDetail->product_id         = $cartItem->product_id;
             $orderDetail->product_variant_id = $cartItem->product_variant_id ?? 0;

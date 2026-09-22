@@ -559,6 +559,7 @@ class _TabHomeState extends State<TabHome> with SingleTickerProviderStateMixin {
         hasNote: product.note,
         hasSameDayBdayLoveLetter: product.sameDayBdayLoveLetter,
         noteFee: product.noteFee,
+        sameDayBdayLoveLetterFee: product.sameDayBdayLoveLetterFee,
       ));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -686,6 +687,8 @@ class _TabHomeState extends State<TabHome> with SingleTickerProviderStateMixin {
                                         hasSameDayBdayLoveLetter:
                                             product.sameDayBdayLoveLetter,
                                         noteFee: product.noteFee,
+                                        sameDayBdayLoveLetterFee:
+                                            product.sameDayBdayLoveLetterFee,
                                       ));
                                   Navigator.of(ctx).pop();
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -1168,7 +1171,7 @@ class _ProductCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: ShapeDecoration(
-          color: theme.cardTheme.color ?? Colors.white,
+          color: theme.colorScheme.surface,
           shape: SmoothRectangleBorder(
             borderRadius: SmoothBorderRadius(
               cornerRadius: 18,

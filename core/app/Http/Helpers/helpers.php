@@ -473,6 +473,20 @@ function sameDayBdayLoveLetterChargeForProducts(iterable $productIds): float
 
     return $hasFlag ? $fee : 0.0;
 }
+
+/** Whether any of the given product IDs has Same Day Bday & love letter enabled. */
+function cartHasSameDayBdayLoveLetter(iterable $productIds): bool
+{
+    $ids = collect($productIds)->filter()->unique()->values();
+    if ($ids->isEmpty()) {
+        return false;
+    }
+
+    return \App\Models\Product::whereIn('id', $ids)
+        ->where('same_day_bday_love_letter', 1)
+        ->exists();
+}
+
 function isImage($string) {
     $allowedExtensions = array('jpg', 'jpeg', 'png', 'gif');
     $fileExtension = pathinfo($string, PATHINFO_EXTENSION);

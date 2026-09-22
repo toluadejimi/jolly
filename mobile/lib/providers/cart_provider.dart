@@ -32,6 +32,7 @@ class CartProvider extends ChangeNotifier {
         hasNote: item.hasNote,
         hasSameDayBdayLoveLetter: item.hasSameDayBdayLoveLetter,
         noteFee: item.noteFee,
+        sameDayBdayLoveLetterFee: item.sameDayBdayLoveLetterFee,
       ));
     }
     notifyListeners();

@@ -300,6 +300,29 @@
                                         </div>
                                     @endif
 
+                                    {{-- Same Day Bday & love letter --}}
+                                    @if($product->same_day_bday_love_letter)
+                                        <div class="card my-4">
+                                            <div class="card-body">
+                                                <h5 class="mb-2">Love Letter</h5>
+                                                <p class="text-muted fst-italic mb-2">Write the birthday / love letter that will go with this gift.</p>
+                                                <textarea class="form-control form--control"
+                                                          name="love_letter"
+                                                          id="love_letter"
+                                                          rows="5"
+                                                          maxlength="2000"
+                                                          required
+                                                          placeholder="Write your love letter here...">{{ old('love_letter', session('love_letter')) }}</textarea>
+                                                <small id="loveLetterCount" class="text-muted d-block mt-2">0 / 2000 characters</small>
+                                                @if(sameDayBdayLoveLetterFee() > 0)
+                                                    <small class="text-info d-block mt-1">
+                                                        Same Day Bday &amp; love letter fee of {{ showAmount(sameDayBdayLoveLetterFee()) }} will be added.
+                                                    </small>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endif
+
                                     {{-- Submit --}}
                                     <div class="d-flex justify-content-end mt-4">
 
@@ -414,6 +437,14 @@
                 charCount.textContent = `${textarea.value.length} / 250 characters`;
                 textarea.addEventListener('input', function () {
                     charCount.textContent = `${this.value.length} / 250 characters`;
+                });
+            }
+            const loveLetter = document.getElementById('love_letter');
+            const loveLetterCount = document.getElementById('loveLetterCount');
+            if (loveLetter && loveLetterCount) {
+                loveLetterCount.textContent = `${loveLetter.value.length} / 2000 characters`;
+                loveLetter.addEventListener('input', function () {
+                    loveLetterCount.textContent = `${this.value.length} / 2000 characters`;
                 });
             }
         </script>

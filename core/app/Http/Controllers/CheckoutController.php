@@ -70,6 +70,10 @@ class CheckoutController extends Controller
         session()->put('customised_test', $customised_test);
         session()->put('customised_short_test', $customised_short_test);
         session()->put('customer_photo', $customer_photo);
+        session()->put(
+            'same_day_bday_love_letter',
+            cartHasSameDayBdayLoveLetter(collect($cartItems)->pluck('product_id')) ? 1 : 0
+        );
 
 
         return redirect()->route('checkout.shipping.info');
@@ -111,6 +115,14 @@ class CheckoutController extends Controller
                 collect($cartItems)->pluck('product_id')
             );
 
+            if ($sameDayCharge > 0 || cartHasSameDayBdayLoveLetter(collect($cartItems)->pluck('product_id'))) {
+                $request->validate([
+                    'love_letter' => 'required|string|max:2000',
+                ], [
+                    'love_letter.required' => 'Please write your love letter.',
+                ]);
+            }
+
             $shippingMethod = ShippingMethod::active()->first();
             $shippingMethodId = $shippingMethod ? $shippingMethod->id : 0;
 
@@ -129,6 +141,7 @@ class CheckoutController extends Controller
                 'address' => $request->address,
                 'note_to_seller' => $request->note_to_seller ?? null,
                 'note_charge' => $note_charge,
+                'love_letter' => $request->love_letter ?? null,
                 'same_day_bday_love_letter_charge' => $sameDayCharge,
                 'shipping_method_id' => $shippingMethodId,
                 'front_picture' => null,
@@ -139,6 +152,9 @@ class CheckoutController extends Controller
 
             if (!empty($request->note_to_seller)) {
                 session()->put('note_to_seller', $request->note_to_seller);
+            }
+            if (!empty($request->love_letter)) {
+                session()->put('love_letter', $request->love_letter);
             }
 
             return redirect()->route('checkout.payment.redirect');
@@ -186,6 +202,14 @@ class CheckoutController extends Controller
 
         $sameDayCharge = sameDayBdayLoveLetterChargeForProducts([$product->id]);
         $note_charge = !empty($request->note_to_seller) ? noteFee() : 0;
+
+        if ($sameDayCharge > 0 || (int) ($product->same_day_bday_love_letter ?? 0) === 1) {
+            $request->validate([
+                'love_letter' => 'required|string|max:2000',
+            ], [
+                'love_letter.required' => 'Please write your love letter.',
+            ]);
+        }
 
         $order_id = "JOLFR" . random_int(0000, 9999);
 
@@ -260,6 +284,7 @@ class CheckoutController extends Controller
             'note' => $request->note_to_seller,
             'customised_test' => $request->customised_test,
             'customised_short_test' => $request->customised_short_test,
+            'love_letter' => $request->love_letter,
             'front_photo' => $frontPath ?? null,
             'back_photo' => $backPath ?? null,
         ];
@@ -367,6 +392,10 @@ class CheckoutController extends Controller
                 session()->put('customised_test', $p->customised_test);
                 session()->put('customised_short_test', $p->customised_short_test);
             }
+            session()->put(
+                'same_day_bday_love_letter',
+                cartHasSameDayBdayLoveLetter(collect($cartItems)->pluck('product_id')) ? 1 : 0
+            );
             $view = 'Template::checkout_steps.shipping_info_guest';
         } else {
 
@@ -389,6 +418,10 @@ class CheckoutController extends Controller
                 session()->put('customised_test', $p->customised_test);
                 session()->put('customised_short_test', $p->customised_short_test);
             }
+            session()->put(
+                'same_day_bday_love_letter',
+                cartHasSameDayBdayLoveLetter(collect($cartItems)->pluck('product_id')) ? 1 : 0
+            );
 
             $view = 'Template::checkout_steps.shipping_info_guest';
 

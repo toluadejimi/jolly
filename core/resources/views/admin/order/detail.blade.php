@@ -342,6 +342,7 @@
                         $note = OrderDetail::where('order_id', $pid)->first()->note ?? null;
                         $customised_test = OrderDetail::where('order_id', $pid)->first()->customised_test ?? null;
                         $customised_short_test = OrderDetail::where('order_id', $pid)->first()->customised_short_test ?? null;
+                        $love_letter = OrderDetail::where('order_id', $pid)->first()->love_letter ?? null;
                         $front_photo = OrderDetail::where('order_id', $pid)->first()->front_photo ?? null;
 
                     @endphp
@@ -367,6 +368,16 @@
                                         {{ $note ?? " " }}
                                     </span>
                                 </li>
+
+                                @if($love_letter)
+                                <li>
+                                    <span class="title">@lang('Love letter') </span>
+                                    <span>
+                                        <span class="devide-colon">:</span>
+                                        {{ $love_letter }}
+                                    </span>
+                                </li>
+                                @endif
 
 
                             </ul>

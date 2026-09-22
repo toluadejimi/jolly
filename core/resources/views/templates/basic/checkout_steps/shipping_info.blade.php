@@ -199,6 +199,42 @@
 
     @endif
 
+    @if(session('same_day_bday_love_letter') == 1)
+
+        <div class="card my-4">
+            <div class="card-body">
+                <div class="row mt-4">
+                    <h5 class="mb-1">Love Letter</h5>
+                    <p class="text-muted fst-italic">
+                        Write the birthday / love letter that will go with this gift.
+                    </p>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>@lang('Love Letter')</label>
+                            <textarea
+                                class="form-control form--control"
+                                name="love_letter"
+                                id="love_letter_auth"
+                                rows="5"
+                                placeholder="Write your love letter here..."
+                                maxlength="2000"
+                            >{{ old('love_letter', session('love_letter')) }}</textarea>
+                            <small id="loveLetterCountAuth" class="text-muted d-block">
+                                {{ strlen(session('love_letter', '')) }} / 2000 characters
+                            </small>
+                            @if(sameDayBdayLoveLetterFee() > 0)
+                                <small class="text-info d-block mt-1">
+                                    Same Day Bday &amp; love letter fee of {{ showAmount(sameDayBdayLoveLetterFee()) }} will be added.
+                                </small>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    @endif
+
     @if(session('customised_test') === 1)
 
         <div class="card my-4">

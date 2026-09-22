@@ -130,6 +130,17 @@
                     <small class="text-info d-block mt-1">Note: Additional fee of {{ showAmount(noteFee()) }} will be added.</small>
                 @endif
 
+                @if(session('same_day_bday_love_letter') == 1)
+                    <hr class="my-4">
+                    <h5 class="mb-2">Love Letter</h5>
+                    <p class="text-muted fst-italic mb-2">Write the birthday / love letter that will go with this gift.</p>
+                    <textarea class="form-control form--control" name="love_letter" id="love_letter" rows="5" maxlength="2000" required placeholder="Write your love letter here...">{{ old('love_letter', session('love_letter')) }}</textarea>
+                    <small id="loveLetterCount" class="text-muted d-block mt-2">{{ strlen(session('love_letter', '')) }} / 2000 characters</small>
+                    @if(sameDayBdayLoveLetterFee() > 0)
+                        <small class="text-info d-block mt-1">Same Day Bday &amp; love letter fee of {{ showAmount(sameDayBdayLoveLetterFee()) }} will be added.</small>
+                    @endif
+                @endif
+
                 <div class="d-flex align-items-center justify-content-between flex-wrap mt-4">
                     <a href="{{ route('cart.page') }}" class="text--base"><i class="las la-angle-left"></i> @lang('Back to Cart')</a>
                     <button type="submit" class="btn btn--base h-45">@lang('Continue to Payment') <i class="las la-angle-right"></i></button>
@@ -181,6 +192,11 @@
             if (noteEl && countEl) {
                 countEl.textContent = noteEl.value.length + ' / 250 characters';
                 noteEl.addEventListener('input', function () { countEl.textContent = this.value.length + ' / 250 characters'; });
+            }
+            var loveEl = document.getElementById('love_letter'), loveCount = document.getElementById('loveLetterCount');
+            if (loveEl && loveCount) {
+                loveCount.textContent = loveEl.value.length + ' / 2000 characters';
+                loveEl.addEventListener('input', function () { loveCount.textContent = this.value.length + ' / 2000 characters'; });
             }
         });
     </script>

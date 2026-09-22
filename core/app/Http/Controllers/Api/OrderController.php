@@ -209,7 +209,7 @@ class OrderController extends Controller
             'shipping_address' => 'required|array',
             'shipping_address.firstname' => 'required|string|max:40',
             'shipping_address.lastname' => 'required|string|max:40',
-            'shipping_address.mobile' => 'required|string|max:40',
+            'shipping_address.mobile' => 'nullable|string|max:40',
             'shipping_address.email' => 'nullable|email',
             'shipping_address.country' => 'required|string|max:255',
             'shipping_address.city' => 'required|string|max:255',
@@ -221,6 +221,7 @@ class OrderController extends Controller
             'coupon_code' => 'nullable|string|max:40',
             'note_to_seller' => 'nullable|string|max:250',
             'note_charge' => 'nullable|numeric|min:0',
+            'love_letter' => 'nullable|string|max:2000',
             'customised_test' => 'nullable|string|max:5000',
             'customised_short_test' => 'nullable|string|max:5000',
             'front_photo' => 'nullable|string|max:500',
@@ -320,6 +321,15 @@ class OrderController extends Controller
         $sameDayCharge = sameDayBdayLoveLetterChargeForProducts(
             collect($cartLike)->pluck('product_id')
         );
+        if ($sameDayCharge > 0 || cartHasSameDayBdayLoveLetter(collect($cartLike)->pluck('product_id'))) {
+            if (empty($validated['love_letter'])) {
+                return response()->json([
+                    'remark' => 'validation_error',
+                    'status' => 'error',
+                    'message' => ['error' => ['Please write your love letter.']],
+                ], 422);
+            }
+        }
         $totalAmount = getAmount($subtotal + $shippingCharge + $noteCharge + $sameDayCharge - $couponAmount);
 
         $order = new Order();
@@ -348,6 +358,7 @@ class OrderController extends Controller
         $noteToSeller = $validated['note_to_seller'] ?? null;
         $customisedTest = $validated['customised_test'] ?? null;
         $customisedShortTest = $validated['customised_short_test'] ?? null;
+        $loveLetter = $validated['love_letter'] ?? null;
         $frontPhoto = $validated['front_photo'] ?? null;
         $backPhoto = $validated['back_photo'] ?? null;
 
@@ -365,6 +376,7 @@ class OrderController extends Controller
             $detail->note = $noteToSeller;
             $detail->customised_test = $customisedTest;
             $detail->customised_short_test = $customisedShortTest;
+            $detail->love_letter = $loveLetter;
             $detail->front_photo = $frontPhoto;
             $detail->back_photo = $backPhoto;
             $detail->save();

@@ -35,6 +35,7 @@ class OrderDetail extends Model
         'note',
         'customised_test',
         'customised_short_test',
+        'love_letter',
         'front_photo',
         'back_photo',
     ];

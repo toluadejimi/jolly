@@ -97,6 +97,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _customisedTest = TextEditingController();
   final _customisedShortTest = TextEditingController();
   final _noteToSeller = TextEditingController();
+  final _loveLetter = TextEditingController();
 
   CheckoutExtras? _extras;
   XFile? _frontPhoto;
@@ -172,9 +173,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (prefilled['customised_test'] is String) _customisedTest.text = prefilled['customised_test'] as String;
       if (prefilled['customised_short_test'] is String) _customisedShortTest.text = prefilled['customised_short_test'] as String;
       if (prefilled['note_to_seller'] is String) _noteToSeller.text = prefilled['note_to_seller'] as String;
+      if (prefilled['love_letter'] is String) _loveLetter.text = prefilled['love_letter'] as String;
     }
     final extras = args['extras'] as CheckoutExtras?;
-    if (extras != null) _extras = extras;
+    if (extras != null) {
+      _extras = extras;
+      if (extras.loveLetter != null && extras.loveLetter!.isNotEmpty) {
+        _loveLetter.text = extras.loveLetter!;
+      }
+    }
   }
 
   Future<void> _onCountryChanged(CountryEntry? c) async {
@@ -206,6 +213,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _customisedTest.dispose();
     _customisedShortTest.dispose();
     _noteToSeller.dispose();
+    _loveLetter.dispose();
     super.dispose();
   }
 
@@ -328,6 +336,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       );
       return;
     }
+    if (cart.items.any((i) => i.hasSameDayBdayLoveLetter) &&
+        (_extras?.loveLetter?.trim().isNotEmpty != true) &&
+        _loveLetter.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please write your love letter')),
+      );
+      return;
+    }
     setState(() {
       _loading = true;
       _error = null;
@@ -388,6 +404,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       noteCharge: cart.items.any((i) => i.hasNote) && _noteToSeller.text.trim().isNotEmpty
           ? (cart.items.where((i) => i.hasNote).map((i) => i.noteFee).fold<double>(5000, (a, b) => a > b ? a : b)).round()
           : 0,
+      loveLetter: _loveLetter.text.trim().isEmpty ? null : _loveLetter.text.trim(),
       customisedTest: _customisedTest.text.trim().isEmpty ? null : _customisedTest.text.trim(),
       customisedShortTest: _customisedShortTest.text.trim().isEmpty ? null : _customisedShortTest.text.trim(),
     );
@@ -397,6 +414,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       shippingMethodId: _selectedShipping!.id,
       noteToSeller: effectiveExtras.noteToSeller,
       noteCharge: effectiveExtras.noteCharge,
+      loveLetter: effectiveExtras.loveLetter ?? (_loveLetter.text.trim().isEmpty ? null : _loveLetter.text.trim()),
       customisedTest: effectiveExtras.customisedTest,
       customisedShortTest: effectiveExtras.customisedShortTest,
       frontPhoto: frontPath,
@@ -490,6 +508,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       );
       return;
     }
+    if (cart.items.any((i) => i.hasSameDayBdayLoveLetter) &&
+        (_extras?.loveLetter?.trim().isNotEmpty != true) &&
+        _loveLetter.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please write your love letter')),
+      );
+      return;
+    }
     setState(() {
       _loading = true;
       _error = null;
@@ -535,6 +561,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       noteCharge: cart.items.any((i) => i.hasNote) && _noteToSeller.text.trim().isNotEmpty
           ? (cart.items.where((i) => i.hasNote).map((i) => i.noteFee).fold<double>(5000, (a, b) => a > b ? a : b)).round()
           : 0,
+      loveLetter: _loveLetter.text.trim().isEmpty ? null : _loveLetter.text.trim(),
       customisedTest: _customisedTest.text.trim().isEmpty ? null : _customisedTest.text.trim(),
       customisedShortTest: _customisedShortTest.text.trim().isEmpty ? null : _customisedShortTest.text.trim(),
     );
@@ -544,6 +571,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       shippingMethodId: _selectedShipping!.id,
       noteToSeller: effectiveExtras.noteToSeller,
       noteCharge: effectiveExtras.noteCharge,
+      loveLetter: effectiveExtras.loveLetter ?? (_loveLetter.text.trim().isEmpty ? null : _loveLetter.text.trim()),
       customisedTest: effectiveExtras.customisedTest,
       customisedShortTest: effectiveExtras.customisedShortTest,
       frontPhoto: frontPath,
@@ -761,6 +789,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final showCustomisedTest = cart.items.any((i) => i.hasCustomisedTest);
     final showCustomisedShortTest = cart.items.any((i) => i.hasCustomisedShortTest);
     final showNote = cart.items.any((i) => i.hasNote);
+    final showLoveLetter = cart.items.any((i) => i.hasSameDayBdayLoveLetter);
     final showCustomerPhoto = cart.items.any((i) => i.hasCustomerPhoto);
     final list = <Widget>[];
     if (showCustomerPhoto) {
@@ -897,6 +926,49 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             fontWeight: FontWeight.w500,
           ),
         ),
+      ]);
+    }
+    if (showLoveLetter) {
+      final loveFee = cart.items
+          .where((i) => i.hasSameDayBdayLoveLetter)
+          .map((i) => i.sameDayBdayLoveLetterFee)
+          .fold<double>(0, (a, b) => a > b ? a : b);
+      list.addAll([
+        const SizedBox(height: 24),
+        Text(
+          'Love Letter',
+          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Write the birthday / love letter that will go with this gift.',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _loveLetter,
+          decoration: const InputDecoration(
+            hintText: 'Write your love letter here...',
+            border: OutlineInputBorder(),
+            alignLabelWithHint: true,
+          ),
+          maxLines: 5,
+          maxLength: 2000,
+          validator: (v) =>
+              (v == null || v.trim().isEmpty) ? 'Love letter is required' : null,
+        ),
+        if (loveFee > 0) ...[
+          const SizedBox(height: 4),
+          Text(
+            'Same Day Bday & love letter fee of ${formatNiara(loveFee)} will be added.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ]);
     }
     return list;

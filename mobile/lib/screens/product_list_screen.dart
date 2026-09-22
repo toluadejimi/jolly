@@ -291,6 +291,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     hasNote: p.note,
                     hasSameDayBdayLoveLetter: p.sameDayBdayLoveLetter,
                     noteFee: p.noteFee,
+                    sameDayBdayLoveLetterFee: p.sameDayBdayLoveLetterFee,
                   ));
               CheckoutScreen.showCheckoutChoice(context);
             },
@@ -598,7 +599,7 @@ class _ProductListCard extends StatelessWidget {
     final price = onSale ? product.salePrice : product.regularPrice;
 
     return Material(
-      color: Colors.white,
+      color: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onOpen,
@@ -607,7 +608,11 @@ class _ProductListCard extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFECECEF)),
+            border: Border.all(
+              color: theme.brightness == Brightness.dark
+                  ? theme.colorScheme.outlineVariant
+                  : const Color(0xFFECECEF),
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.04),
@@ -632,7 +637,7 @@ class _ProductListCard extends StatelessWidget {
                               imageUrl: imageUrl,
                               fit: BoxFit.cover,
                               placeholder: (_, __) => Container(
-                                color: const Color(0xFFF3F4F6),
+                                color: theme.colorScheme.surfaceContainerHighest,
                                 child: const Center(
                                   child: SizedBox(
                                     width: 20,
@@ -644,7 +649,7 @@ class _ProductListCard extends StatelessWidget {
                                 ),
                               ),
                               errorWidget: (_, __, ___) => Container(
-                                color: const Color(0xFFF3F4F6),
+                                color: theme.colorScheme.surfaceContainerHighest,
                                 child: Icon(
                                   Icons.card_giftcard,
                                   color: theme.colorScheme.primary,
@@ -652,7 +657,7 @@ class _ProductListCard extends StatelessWidget {
                               ),
                             )
                           : Container(
-                              color: const Color(0xFFF3F4F6),
+                              color: theme.colorScheme.surfaceContainerHighest,
                               child: Icon(
                                 Icons.card_giftcard,
                                 color: theme.colorScheme.primary,
@@ -725,8 +730,12 @@ class _ProductListCard extends StatelessWidget {
                             child: OutlinedButton(
                               onPressed: onOpen,
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: fontBlack,
-                                side: const BorderSide(color: Color(0xFFE5E7EB)),
+                                foregroundColor: theme.colorScheme.onSurface,
+                                side: BorderSide(
+                                  color: theme.brightness == Brightness.dark
+                                      ? theme.colorScheme.outline
+                                      : const Color(0xFFE5E7EB),
+                                ),
                                 padding: const EdgeInsets.symmetric(vertical: 8),
                                 minimumSize: Size.zero,
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
