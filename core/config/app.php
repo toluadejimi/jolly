@@ -66,7 +66,23 @@ return [
     |
     */
 
-    'timezone' => require __DIR__.'/timezone.php',
+    'timezone' => (static function () {
+        $path = __DIR__.'/timezone.php';
+        $returned = is_file($path) ? include $path : null;
+        $fromLegacyVar = (isset($timezone) && is_string($timezone)) ? $timezone : null;
+        $candidate = (is_string($returned) && $returned !== '') ? $returned : $fromLegacyVar;
+
+        if (!is_string($candidate) || !in_array($candidate, timezone_identifiers_list(), true)) {
+            $candidate = 'Africa/Lagos';
+        }
+
+        // Heal broken timezone.php (legacy files returned true/1 instead of the zone name)
+        if ($returned !== $candidate) {
+            @file_put_contents($path, "<?php\n\nreturn '" . str_replace("'", "\\'", $candidate) . "';\n");
+        }
+
+        return $candidate;
+    })(),
 
     /*
     |--------------------------------------------------------------------------
