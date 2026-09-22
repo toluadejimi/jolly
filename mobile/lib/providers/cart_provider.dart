@@ -30,6 +30,8 @@ class CartProvider extends ChangeNotifier {
         hasCustomisedTest: item.hasCustomisedTest,
         hasCustomisedShortTest: item.hasCustomisedShortTest,
         hasNote: item.hasNote,
+        hasSameDayBdayLoveLetter: item.hasSameDayBdayLoveLetter,
+        noteFee: item.noteFee,
       ));
     }
     notifyListeners();

@@ -76,14 +76,15 @@ class PaymentController extends Controller {
         $subtotal = $this->cartManager->subtotal();
         $shippingMethod = ShippingMethod::active()->where('id', @session('shipping_info')['shipping_method_id'])->first();
         $shippingCharge = $shippingMethod->charge ?? 0;
-        $noteCharge = (int) (session('shipping_info')['note_charge'] ?? 0);
+        $noteCharge = $this->resolveNoteCharge();
+        $sameDayCharge = $this->resolveSameDayBdayLoveLetterCharge($this->cartManager->getCart());
         $coupon = $this->appliedCoupon($cartData, $subtotal);
         $couponAmount = 0;
         if ($coupon && !isset($coupon['error'])) {
             $couponAmount = is_object($coupon) ? ($coupon->discount_amount ?? 0) : ($coupon['discount_amount'] ?? 0);
             $couponAmount = $couponAmount > $subtotal ? $subtotal : $couponAmount;
         }
-        $totalAmount = $subtotal + $shippingCharge + $noteCharge - $couponAmount;
+        $totalAmount = $subtotal + $shippingCharge + $noteCharge + $sameDayCharge - $couponAmount;
 
         $gatewayCurrency = GatewayCurrency::whereHas('method', function ($gate) {
             $gate->where('status', Status::ENABLE);
@@ -162,7 +163,8 @@ class PaymentController extends Controller {
             return to_route('checkout.shipping.info')->withNotify($notify);
         }
 
-        $noteCharge = (int) (session()->get('shipping_info')['note_charge'] ?? 0);
+        $noteCharge = $this->resolveNoteCharge();
+        $sameDayCharge = $this->resolveSameDayBdayLoveLetterCharge($cartData);
 
         // Cart checkout: use actual cart subtotal (all items) and include note charge in total
         $cartSubtotal = $this->cartManager->subtotal($cartData);
@@ -212,7 +214,7 @@ class PaymentController extends Controller {
         }
 
         if (!$order) {
-            $order = $this->saveOrder($cartSubtotal, $coupon, $gatewayCurrency, $cartData, $hasPhysicalProduct, $noteCharge);
+            $order = $this->saveOrder($cartSubtotal, $coupon, $gatewayCurrency, $cartData, $hasPhysicalProduct, $noteCharge, $sameDayCharge);
         }
 
         if ($coupon) {
@@ -378,7 +380,7 @@ class PaymentController extends Controller {
         return $shippingMethod;
     }
 
-    private function saveOrder($subtotal, $coupon, $gatewayCurrency, $cartData, $hasPhysicalProduct, $noteCharge = 0) {
+    private function saveOrder($subtotal, $coupon, $gatewayCurrency, $cartData, $hasPhysicalProduct, $noteCharge = 0, $sameDayCharge = 0) {
         $checkoutData = $this->getCheckoutData($hasPhysicalProduct);
 
         $shippingAddress = $this->getShippingAddress($hasPhysicalProduct, $checkoutData);
@@ -401,7 +403,7 @@ class PaymentController extends Controller {
         $order->is_cod             = $gatewayCurrency->id ? 0 : 1;
         $order->payment_status     = Status::PAYMENT_INITIATE;
         $order->subtotal           = $subtotal;
-        $order->total_amount       = getAmount($subtotal + $shippingCharge + (int) $noteCharge - $couponAmount);
+        $order->total_amount       = getAmount($subtotal + $shippingCharge + (float) $noteCharge + (float) $sameDayCharge - $couponAmount);
         $order->save();
 
         $note =$checkoutData['note_to_seller'] ??  session('note_to_seller') ?? null;
@@ -415,6 +417,33 @@ class PaymentController extends Controller {
         $this->saveOrderDetails($cartData, $order->id, $note, $front_photo, $back_photo, $customised_test, $customised_short_test);
 
         return $order;
+    }
+
+    private function resolveNoteCharge(): float
+    {
+        $shippingInfo = session('shipping_info') ?? [];
+        if (!empty($shippingInfo['note_charge'])) {
+            return (float) $shippingInfo['note_charge'];
+        }
+        if (!empty(session('note_to_seller')) || !empty(session('note_charge'))) {
+            return (float) (session('note_charge') ?: noteFee());
+        }
+
+        return 0.0;
+    }
+
+    private function resolveSameDayBdayLoveLetterCharge($cartData): float
+    {
+        $shippingInfo = session('shipping_info') ?? [];
+        if (isset($shippingInfo['same_day_bday_love_letter_charge'])) {
+            return (float) $shippingInfo['same_day_bday_love_letter_charge'];
+        }
+
+        $productIds = collect($cartData)->map(function ($item) {
+            return is_object($item) ? ($item->product_id ?? null) : ($item['product_id'] ?? null);
+        });
+
+        return sameDayBdayLoveLetterChargeForProducts($productIds);
     }
 
     private function getOrderNumber($digit = 5) {

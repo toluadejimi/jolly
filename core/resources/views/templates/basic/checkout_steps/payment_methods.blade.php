@@ -98,12 +98,20 @@
                             $shippingInfo = session('shipping_info') ?? [];
                             $authNote = session('note_to_seller') ?? null;
 
-                            if (!empty($authNote)) {
-                                $chargeNote = 5000;
+                            if (!empty($authNote) || !empty(session('note_charge'))) {
+                                $chargeNote = (float) (session('note_charge') ?: noteFee());
                             } elseif (!empty($shippingInfo['note_charge'])) {
-                                $chargeNote = $shippingInfo['note_charge'];
+                                $chargeNote = (float) $shippingInfo['note_charge'];
                             } else {
                                 $chargeNote = 0;
+                            }
+
+                            $sameDayCharge = (float) ($shippingInfo['same_day_bday_love_letter_charge'] ?? 0);
+                            if ($sameDayCharge <= 0) {
+                                $cartItemsForFee = app(\App\Lib\CartManager::class)->getCart();
+                                $sameDayCharge = sameDayBdayLoveLetterChargeForProducts(
+                                    collect($cartItemsForFee)->pluck('product_id')
+                                );
                             }
                         @endphp
 
@@ -114,10 +122,16 @@
                             </li>
                         @endif
 
+                        @if ($sameDayCharge > 0)
+                            <li>
+                                <span class="subtitle">@lang('Same Day Bday & Love Letter')</span>
+                                <span id="sameDayCharge">{{ showAmount($sameDayCharge) }}</span>
+                            </li>
+                        @endif
+
                         @php
                             $shippingCharge = $shippingMethod->charge ?? 0;
-                            $shippingNote = $shippingNote ?? 0;
-                            $totalAmount = $subtotal + $shippingCharge + $chargeNote - $couponAmount;
+                            $totalAmount = $subtotal + $shippingCharge + $chargeNote + $sameDayCharge - $couponAmount;
                         @endphp
 
 

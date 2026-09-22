@@ -4,6 +4,9 @@
     @if ($product->today_delivery)
         <div class="product-badge">Today Delivery</div>
     @endif
+    @if ($product->same_day_bday_love_letter)
+        <div style="font-size: 10px" class="product-badge">Same Day Bday & love letter</div>
+    @endif
     @if ($product->usa_express_delivery)
         <div style="font-size: 10px" class="product-badge">🇺🇸 US Express Shipping</div>
     @endif

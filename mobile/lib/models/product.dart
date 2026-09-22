@@ -23,6 +23,9 @@ class ProductItem {
     this.customisedTest = false,
     this.customisedShortTest = false,
     this.note = false,
+    this.sameDayBdayLoveLetter = false,
+    this.noteFee = 5000,
+    this.sameDayBdayLoveLetterFee = 0,
   });
 
   factory ProductItem.fromJson(Map<String, dynamic> json) {
@@ -57,6 +60,11 @@ class ProductItem {
       customisedTest: ProductDetail._parseBool(json['customised_test']),
       customisedShortTest: ProductDetail._parseBool(json['customised_short_test']),
       note: ProductDetail._parseBool(json['note']),
+      sameDayBdayLoveLetter:
+          ProductDetail._parseBool(json['same_day_bday_love_letter']),
+      noteFee: (json['note_fee'] as num?)?.toDouble() ?? 5000,
+      sameDayBdayLoveLetterFee:
+          (json['same_day_bday_love_letter_fee'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -84,11 +92,15 @@ class ProductItem {
   final bool customisedTest;
   final bool customisedShortTest;
   final bool note;
+  final bool sameDayBdayLoveLetter;
+  final double noteFee;
+  final double sameDayBdayLoveLetterFee;
 
   /// Delivery badges matching web product_images.blade.php (Today Delivery, US Express, US Delivery, All Countries).
   List<String> get deliveryBadges {
     final list = <String>[];
     if (todayDelivery) list.add('Today Delivery');
+    if (sameDayBdayLoveLetter) list.add('Same Day Bday & love letter');
     if (usaExpressDelivery) list.add('🇺🇸 US Express Shipping');
     if (usaDelivery) list.add('🇺🇸 US Delivery');
     if (allCountriesDelivery) list.add('🌎 All Countries Delivery');
@@ -189,6 +201,9 @@ class ProductDetail {
     this.customisedTest = false,
     this.customisedShortTest = false,
     this.note = false,
+    this.sameDayBdayLoveLetter = false,
+    this.noteFee = 5000,
+    this.sameDayBdayLoveLetterFee = 0,
   });
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
@@ -228,6 +243,10 @@ class ProductDetail {
       customisedTest: _parseBool(json['customised_test']),
       customisedShortTest: _parseBool(json['customised_short_test']),
       note: _parseBool(json['note']),
+      sameDayBdayLoveLetter: _parseBool(json['same_day_bday_love_letter']),
+      noteFee: (json['note_fee'] as num?)?.toDouble() ?? 5000,
+      sameDayBdayLoveLetterFee:
+          (json['same_day_bday_love_letter_fee'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -265,6 +284,9 @@ class ProductDetail {
   final bool customisedTest;
   final bool customisedShortTest;
   final bool note;
+  final bool sameDayBdayLoveLetter;
+  final double noteFee;
+  final double sameDayBdayLoveLetterFee;
 
   /// All image URLs to show: gallery if present, else main image.
   List<String> get displayImageUrls {
@@ -276,6 +298,7 @@ class ProductDetail {
   List<String> get deliveryBadges {
     final list = <String>[];
     if (todayDelivery) list.add('Today Delivery');
+    if (sameDayBdayLoveLetter) list.add('Same Day Bday & love letter');
     if (usaExpressDelivery) list.add('🇺🇸 US Express Shipping');
     if (usaDelivery) list.add('🇺🇸 US Delivery');
     if (allCountriesDelivery) list.add('🌎 All Countries Delivery');

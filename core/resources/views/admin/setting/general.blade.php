@@ -3,6 +3,15 @@
     <div class="row mb-none-30">
         <div class="col-lg-12 col-md-12 mb-30">
             <div class="card">
+                <div class="card-header d-flex flex-wrap gap-3 justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">@lang('General Setting')</h6>
+                        <p class="mb-0 text-muted">@lang('Update site details and order fees. Run migrations if fee fields are missing.')</p>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-outline--dark" form="runMigrationsForm" onclick="return confirm('@lang('Run database migrations now?')')">
+                        @lang('Run Migrations')
+                    </button>
+                </div>
                 <div class="card-body">
                     <form method="POST">
                         @csrf
@@ -95,12 +104,43 @@
                                 </div>
                             </div>
 
+                            <div class="col-12">
+                                <hr>
+                                <h6 class="mb-3">@lang('Order Fees')</h6>
+                            </div>
+
+                            <div class="form-group col-md-4 col-sm-6">
+                                <label>@lang('Add Note Fee')</label>
+                                <span title="@lang('Amount charged when a customer adds a note to seller. Default is 5000.')">
+                                    <i class="la la-info-circle"></i>
+                                </span>
+                                <div class="input-group">
+                                    <input class="form-control" type="number" step="0.01" min="0" name="note_fee" value="{{ gs('note_fee') ?? 5000 }}" required>
+                                    <span class="input-group-text">{{ gs('cur_text') }}</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group col-md-4 col-sm-6">
+                                <label>@lang('Same Day Bday & Love Letter Fee')</label>
+                                <span title="@lang('Amount charged when the cart includes a product with Same Day Bday & love letter enabled.')">
+                                    <i class="la la-info-circle"></i>
+                                </span>
+                                <div class="input-group">
+                                    <input class="form-control" type="number" step="0.01" min="0" name="same_day_bday_love_letter_fee" value="{{ gs('same_day_bday_love_letter_fee') ?? 0 }}" required>
+                                    <span class="input-group-text">{{ gs('cur_text') }}</span>
+                                </div>
+                            </div>
+
                         </div>
 
                         <button type="submit" class="btn btn--primary w-100 h-45">@lang('Submit')</button>
                     </form>
                 </div>
             </div>
+
+            <form id="runMigrationsForm" method="post" action="{{ route('admin.setting.general.run.migrations') }}" class="d-none">
+                @csrf
+            </form>
         </div>
     </div>
 @endsection

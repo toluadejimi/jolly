@@ -429,6 +429,50 @@ function gs($key = null) {
     if ($key) return @$general->$key;
     return $general;
 }
+
+/** Fee charged when a customer adds a note to seller. Default 5000. */
+function noteFee(): float
+{
+    $fee = gs('note_fee');
+    if ($fee === null || $fee === '') {
+        return 5000.0;
+    }
+
+    return (float) $fee;
+}
+
+/** Fee charged when cart includes a Same Day Bday & love letter product. */
+function sameDayBdayLoveLetterFee(): float
+{
+    $fee = gs('same_day_bday_love_letter_fee');
+    if ($fee === null || $fee === '') {
+        return 0.0;
+    }
+
+    return (float) $fee;
+}
+
+/**
+ * Resolve same-day bday & love letter surcharge for a set of product IDs.
+ */
+function sameDayBdayLoveLetterChargeForProducts(iterable $productIds): float
+{
+    $fee = sameDayBdayLoveLetterFee();
+    if ($fee <= 0) {
+        return 0.0;
+    }
+
+    $ids = collect($productIds)->filter()->unique()->values();
+    if ($ids->isEmpty()) {
+        return 0.0;
+    }
+
+    $hasFlag = \App\Models\Product::whereIn('id', $ids)
+        ->where('same_day_bday_love_letter', 1)
+        ->exists();
+
+    return $hasFlag ? $fee : 0.0;
+}
 function isImage($string) {
     $allowedExtensions = array('jpg', 'jpeg', 'png', 'gif');
     $fileExtension = pathinfo($string, PATHINFO_EXTENSION);

@@ -294,7 +294,7 @@
                                                 <small id="charCount" class="text-muted d-block mt-2">0 / 250 characters</small>
 
                                                 <small class="text-info d-block mt-1">
-                                                    Note: Additional fee of ₦5,000 will be added.
+                                                    Note: Additional fee of {{ showAmount(noteFee()) }} will be added.
                                                 </small>
                                             </div>
                                         </div>

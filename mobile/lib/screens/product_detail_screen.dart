@@ -394,6 +394,9 @@ class _ProductDetailBodyState extends State<_ProductDetailBody> {
                                   hasCustomisedTest: product.customisedTest,
                                   hasCustomisedShortTest: product.customisedShortTest,
                                   hasNote: product.note,
+                                  hasSameDayBdayLoveLetter:
+                                      product.sameDayBdayLoveLetter,
+                                  noteFee: product.noteFee,
                                 ));
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -862,8 +865,9 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
       return;
     }
     final noteText = _noteToSeller.text.trim();
-    final noteCharge =
-        (widget.product.note && noteText.isNotEmpty) ? 5000 : 0;
+    final noteCharge = (widget.product.note && noteText.isNotEmpty)
+        ? widget.product.noteFee.round()
+        : 0;
     final extras = CheckoutExtras(
       noteToSeller: noteText.isEmpty ? null : noteText,
       noteCharge: noteCharge,
@@ -902,6 +906,8 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
       hasCustomisedTest: widget.product.customisedTest,
       hasCustomisedShortTest: widget.product.customisedShortTest,
       hasNote: widget.product.note,
+      hasSameDayBdayLoveLetter: widget.product.sameDayBdayLoveLetter,
+      noteFee: widget.product.noteFee,
     );
     final orderRes = await api.createOrder(
       items: [item],
@@ -1195,7 +1201,7 @@ class _ReceiverFormSectionState extends State<_ReceiverFormSection> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Note: Additional fee of ₦5,000 will be added.',
+              'Note: Additional fee of ${formatNiara(widget.product.noteFee)} will be added.',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.primary,
                 fontWeight: FontWeight.w500,

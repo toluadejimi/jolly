@@ -43,10 +43,13 @@ class ProductController extends Controller
                 'usa_express_delivery' => (bool) ($product->usa_express_delivery ?? 0),
                 'usa_delivery' => (bool) ($product->usa_delivery ?? 0),
                 'all_countries_delivery' => (bool) ($product->all_countries_delivery ?? 0),
+                'same_day_bday_love_letter' => (bool) ($product->same_day_bday_love_letter ?? 0),
                 'customer_photo' => (int) ($product->customer_photo ?? 0),
                 'customised_test' => (int) ($product->customised_test ?? 0),
                 'customised_short_test' => (string) ($product->customised_short_test ?? '0'),
                 'note' => (int) ($product->note ?? 0),
+                'note_fee' => noteFee(),
+                'same_day_bday_love_letter_fee' => sameDayBdayLoveLetterFee(),
             ];
         });
 
@@ -56,6 +59,10 @@ class ProductController extends Controller
             'message' => ['success' => ['Products retrieved.']],
             'data' => [
                 'products' => $items,
+                'fees' => [
+                    'note_fee' => noteFee(),
+                    'same_day_bday_love_letter_fee' => sameDayBdayLoveLetterFee(),
+                ],
                 'pagination' => [
                     'current_page' => $products->currentPage(),
                     'last_page' => $products->lastPage(),
@@ -158,10 +165,13 @@ class ProductController extends Controller
                     'usa_express_delivery' => (bool) ($product->usa_express_delivery ?? 0),
                     'usa_delivery' => (bool) ($product->usa_delivery ?? 0),
                     'all_countries_delivery' => (bool) ($product->all_countries_delivery ?? 0),
+                    'same_day_bday_love_letter' => (bool) ($product->same_day_bday_love_letter ?? 0),
                     'customer_photo' => (int) ($product->customer_photo ?? 0),
                     'customised_test' => (int) ($product->customised_test ?? 0),
                     'customised_short_test' => (string) ($product->customised_short_test ?? '0'),
                     'note' => (int) ($product->note ?? 0),
+                    'note_fee' => noteFee(),
+                    'same_day_bday_love_letter_fee' => sameDayBdayLoveLetterFee(),
                     'country_filter' => self::countryFilterFromProduct($product),
                     'variants' => $variantsPayload,
                 ],

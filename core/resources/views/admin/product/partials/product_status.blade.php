@@ -83,6 +83,17 @@
         <div class="form-group row">
             <div class="col-xl-12">
                 <label>
+                    @lang('Same Day Bday & love letter')
+                </label>
+            </div>
+            <div class="col-xl-12">
+                <x-toggle-switch name="same_day_bday_love_letter" value="1" :checked="@$product->same_day_bday_love_letter" />
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-12">
+                <label>
                     @lang('Front and Back Photo')
                 </label>
             </div>

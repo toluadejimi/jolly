@@ -557,6 +557,8 @@ class _TabHomeState extends State<TabHome> with SingleTickerProviderStateMixin {
         hasCustomisedTest: product.customisedTest,
         hasCustomisedShortTest: product.customisedShortTest,
         hasNote: product.note,
+        hasSameDayBdayLoveLetter: product.sameDayBdayLoveLetter,
+        noteFee: product.noteFee,
       ));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -681,6 +683,9 @@ class _TabHomeState extends State<TabHome> with SingleTickerProviderStateMixin {
                                         hasCustomisedShortTest:
                                             product.customisedShortTest,
                                         hasNote: product.note,
+                                        hasSameDayBdayLoveLetter:
+                                            product.sameDayBdayLoveLetter,
+                                        noteFee: product.noteFee,
                                       ));
                                   Navigator.of(ctx).pop();
                                   ScaffoldMessenger.of(context).showSnackBar(

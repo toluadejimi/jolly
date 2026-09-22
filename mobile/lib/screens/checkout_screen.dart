@@ -385,7 +385,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
     final effectiveExtras = _extras ?? CheckoutExtras(
       noteToSeller: _noteToSeller.text.trim().isEmpty ? null : _noteToSeller.text.trim(),
-      noteCharge: cart.items.any((i) => i.hasNote) && _noteToSeller.text.trim().isNotEmpty ? 5000 : 0,
+      noteCharge: cart.items.any((i) => i.hasNote) && _noteToSeller.text.trim().isNotEmpty
+          ? (cart.items.where((i) => i.hasNote).map((i) => i.noteFee).fold<double>(5000, (a, b) => a > b ? a : b)).round()
+          : 0,
       customisedTest: _customisedTest.text.trim().isEmpty ? null : _customisedTest.text.trim(),
       customisedShortTest: _customisedShortTest.text.trim().isEmpty ? null : _customisedShortTest.text.trim(),
     );
@@ -530,7 +532,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
     final effectiveExtras = _extras ?? CheckoutExtras(
       noteToSeller: _noteToSeller.text.trim().isEmpty ? null : _noteToSeller.text.trim(),
-      noteCharge: cart.items.any((i) => i.hasNote) && _noteToSeller.text.trim().isNotEmpty ? 5000 : 0,
+      noteCharge: cart.items.any((i) => i.hasNote) && _noteToSeller.text.trim().isNotEmpty
+          ? (cart.items.where((i) => i.hasNote).map((i) => i.noteFee).fold<double>(5000, (a, b) => a > b ? a : b)).round()
+          : 0,
       customisedTest: _customisedTest.text.trim().isEmpty ? null : _customisedTest.text.trim(),
       customisedShortTest: _customisedShortTest.text.trim().isEmpty ? null : _customisedShortTest.text.trim(),
     );
@@ -887,7 +891,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Note: Additional fee of ₦5,000 will be added.',
+          'Note: Additional fee of ${formatNiara(cart.items.where((i) => i.hasNote).map((i) => i.noteFee).fold<double>(5000, (a, b) => a > b ? a : b))} will be added.',
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.primary,
             fontWeight: FontWeight.w500,

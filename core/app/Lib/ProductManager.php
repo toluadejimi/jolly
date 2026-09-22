@@ -123,6 +123,7 @@ class ProductManager
         $product->customised_test = $request->customised_test ? Status::YES : Status::NO;
         $product->customised_short_test = $request->customised_short_test ? Status::YES : Status::NO;
         $product->note = $request->note ? Status::YES : Status::NO;
+        $product->same_day_bday_love_letter = $request->same_day_bday_love_letter ? Status::YES : Status::NO;
         $product->show_in_products_page = $request->show_in_products_page ? Status::YES : Status::NO;
 
 

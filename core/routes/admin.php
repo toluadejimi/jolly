@@ -363,6 +363,7 @@ Route::middleware('admin')->group(function () {
         // General Setting
         Route::get('general-setting', 'general')->name('setting.general');
         Route::post('general-setting', 'generalUpdate');
+        Route::post('general-setting/run-migrations', 'runMigrations')->name('setting.general.run.migrations');
 
         Route::get('setting/social/credentials', 'socialiteCredentials')->name('setting.socialite.credentials');
         Route::post('setting/social/credentials/update/{key}', 'updateSocialiteCredential')->name('setting.socialite.credentials.update');
@@ -375,7 +376,7 @@ Route::middleware('admin')->group(function () {
         // Country dropdown
         Route::get('setting/countries', 'countries')->name('setting.countries');
         Route::post('setting/countries', 'countriesSubmit')->name('setting.countries.submit');
-        Route::post('setting/countries/run-migrations', 'countriesRunMigrations')->name('setting.countries.run.migrations');
+        Route::post('setting/countries/run-migrations', 'runMigrations')->name('setting.countries.run.migrations');
 
         // Logo-Icon
         Route::get('setting/logo-icon', 'logoIcon')->name('setting.logo.icon.form');

@@ -96,7 +96,8 @@ class CheckoutController extends Controller
             'country.required'   => 'Country is required.',
         ]);
 
-        $note_charge = !empty($request->note_to_seller) ? 5000 : 0;
+        $note_charge = !empty($request->note_to_seller) ? noteFee() : 0;
+        $sameDayCharge = 0;
 
         // ----- CART CHECKOUT: no product_id = checkout from cart (multiple items) -----
         if (!$request->filled('product_id')) {
@@ -105,6 +106,10 @@ class CheckoutController extends Controller
                 $notify[] = ['error', 'Your cart is empty.'];
                 return to_route('cart.page')->withNotify($notify);
             }
+
+            $sameDayCharge = sameDayBdayLoveLetterChargeForProducts(
+                collect($cartItems)->pluck('product_id')
+            );
 
             $shippingMethod = ShippingMethod::active()->first();
             $shippingMethodId = $shippingMethod ? $shippingMethod->id : 0;
@@ -124,6 +129,7 @@ class CheckoutController extends Controller
                 'address' => $request->address,
                 'note_to_seller' => $request->note_to_seller ?? null,
                 'note_charge' => $note_charge,
+                'same_day_bday_love_letter_charge' => $sameDayCharge,
                 'shipping_method_id' => $shippingMethodId,
                 'front_picture' => null,
                 'back_picture' => null,
@@ -178,6 +184,9 @@ class CheckoutController extends Controller
             $price = $product->regular_price ?? 0;
         }
 
+        $sameDayCharge = sameDayBdayLoveLetterChargeForProducts([$product->id]);
+        $note_charge = !empty($request->note_to_seller) ? noteFee() : 0;
+
         $order_id = "JOLFR" . random_int(0000, 9999);
 
         $fullShippingAddress = [
@@ -216,7 +225,7 @@ class CheckoutController extends Controller
             'user_id' => Auth::id(),
             'shipping_address' => $fullShippingAddress,
             'subtotal' => $price,
-            'total_amount' => $price + $note_charge,
+            'total_amount' => $price + $note_charge + $sameDayCharge,
         ];
 
 
@@ -264,9 +273,9 @@ class CheckoutController extends Controller
             $deposit->user_id = Auth::id() ?? 0;
             $deposit->order_id = $order->id;
             $deposit->method_code = "127";
-            $deposit->amount = $price + $note_charge;
+            $deposit->amount = $price + $note_charge + $sameDayCharge;
             $deposit->method_currency = "NGN";
-            $deposit->final_amount = $price + $note_charge;
+            $deposit->final_amount = $price + $note_charge + $sameDayCharge;
             $deposit->trx = $order_id;
             $deposit->success_url = url('') . "/order-confirmation/" . $order_id;
             $deposit->failed_url = url('') . "/products/" . $order_id;
@@ -490,7 +499,16 @@ class CheckoutController extends Controller
             'note_to_seller' => 'required|string|max:250',
         ]);
 
-        session(['note_to_seller' => $request->note_to_seller]);
+        session([
+            'note_to_seller' => $request->note_to_seller,
+            'note_charge' => noteFee(),
+        ]);
+
+        // Keep shipping_info in sync for payment totals
+        $shippingInfo = session('shipping_info', []);
+        $shippingInfo['note_to_seller'] = $request->note_to_seller;
+        $shippingInfo['note_charge'] = noteFee();
+        session(['shipping_info' => $shippingInfo]);
 
         $notify[] = ['success', 'Noted successfully added'];
         return back()->withNotify($notify);

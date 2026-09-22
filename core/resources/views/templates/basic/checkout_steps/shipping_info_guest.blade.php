@@ -127,7 +127,7 @@
                     <h5 class="mb-2">Note to Seller</h5>
                     <textarea class="form-control form--control" name="note_to_seller" id="note_to_seller" rows="4" maxlength="250" placeholder="Enter your note here...">{{ old('note_to_seller', session('note_to_seller')) }}</textarea>
                     <small id="charCount" class="text-muted d-block mt-2">0 / 250 characters</small>
-                    <small class="text-info d-block mt-1">Note: Additional fee of ₦5,000 will be added.</small>
+                    <small class="text-info d-block mt-1">Note: Additional fee of {{ showAmount(noteFee()) }} will be added.</small>
                 @endif
 
                 <div class="d-flex align-items-center justify-content-between flex-wrap mt-4">

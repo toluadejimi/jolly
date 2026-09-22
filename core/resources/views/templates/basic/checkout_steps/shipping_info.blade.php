@@ -168,7 +168,7 @@
                                 </small>
 
                                 <small class="text-info d-block mt-1">
-                                    Note: To include a note with your order, an additional fee of ₦5,000 will be added.
+                                    Note: To include a note with your order, an additional fee of {{ showAmount(noteFee()) }} will be added.
                                 </small>
                             </div>
                         </div>

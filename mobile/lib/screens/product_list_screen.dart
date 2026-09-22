@@ -289,6 +289,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     hasCustomisedTest: p.customisedTest,
                     hasCustomisedShortTest: p.customisedShortTest,
                     hasNote: p.note,
+                    hasSameDayBdayLoveLetter: p.sameDayBdayLoveLetter,
+                    noteFee: p.noteFee,
                   ));
               CheckoutScreen.showCheckoutChoice(context);
             },

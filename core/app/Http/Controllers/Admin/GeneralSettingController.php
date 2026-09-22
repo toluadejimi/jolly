@@ -36,6 +36,8 @@ class GeneralSettingController extends Controller {
             'paginate_number' => 'required|integer',
             'recently_viewed_items' => 'required|integer|gte:0',
             'recently_viewed_days' => 'required|integer|gte:0',
+            'note_fee' => 'required|numeric|gte:0',
+            'same_day_bday_love_letter_fee' => 'required|numeric|gte:0',
         ]);
 
         $timezones = timezone_identifiers_list();
@@ -51,6 +53,8 @@ class GeneralSettingController extends Controller {
         $general->currency_format = $request->currency_format;
         $general->recently_viewed_items = $request->recently_viewed_items;
         $general->recently_viewed_days = $request->recently_viewed_days;
+        $general->note_fee = $request->note_fee;
+        $general->same_day_bday_love_letter_fee = $request->same_day_bday_love_letter_fee;
         $general->save();
 
         $timezoneFile = config_path('timezone.php');
@@ -119,7 +123,7 @@ class GeneralSettingController extends Controller {
         return back()->withNotify($notify);
     }
 
-    public function countriesRunMigrations() {
+    public function runMigrations() {
         try {
             Artisan::call('migrate', ['--force' => true]);
         } catch (\Throwable $exception) {

@@ -315,8 +315,12 @@ class OrderController extends Controller
         }
 
         $shippingCharge = $shippingMethod->charge ?? 0;
-        $noteCharge = (int) ($validated['note_charge'] ?? 0);
-        $totalAmount = getAmount($subtotal + $shippingCharge + $noteCharge - $couponAmount);
+        $hasNote = !empty($validated['note_to_seller']);
+        $noteCharge = $hasNote ? noteFee() : 0;
+        $sameDayCharge = sameDayBdayLoveLetterChargeForProducts(
+            collect($cartLike)->pluck('product_id')
+        );
+        $totalAmount = getAmount($subtotal + $shippingCharge + $noteCharge + $sameDayCharge - $couponAmount);
 
         $order = new Order();
         $order->order_number = $this->getOrderNumber();

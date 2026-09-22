@@ -14,6 +14,8 @@ class CartItem {
     this.hasCustomisedTest = false,
     this.hasCustomisedShortTest = false,
     this.hasNote = false,
+    this.hasSameDayBdayLoveLetter = false,
+    this.noteFee = 5000,
   });
 
   final int productId;
@@ -29,6 +31,8 @@ class CartItem {
   final bool hasCustomisedTest;
   final bool hasCustomisedShortTest;
   final bool hasNote;
+  final bool hasSameDayBdayLoveLetter;
+  final double noteFee;
 
   String get displayPrice => '$currency ${(price * quantity).toStringAsFixed(2)}';
   String get unitPrice => '$currency ${price.toStringAsFixed(2)}';
@@ -47,6 +51,8 @@ class CartItem {
       hasCustomisedTest: hasCustomisedTest,
       hasCustomisedShortTest: hasCustomisedShortTest,
       hasNote: hasNote,
+      hasSameDayBdayLoveLetter: hasSameDayBdayLoveLetter,
+      noteFee: noteFee,
     );
   }
 }
