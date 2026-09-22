@@ -58,7 +58,7 @@ class GeneralSettingController extends Controller {
         $general->save();
 
         $timezoneFile = config_path('timezone.php');
-        $content = '<?php $timezone = "' . $timezone . '" ?>';
+        $content = "<?php\n\nreturn '" . str_replace("'", "\\'", $timezone) . "';\n";
         file_put_contents($timezoneFile, $content);
         RequiredConfig::configured('general_setting');
         $notify[] = ['success', 'General setting updated successfully'];

@@ -1,6 +1,6 @@
 <?php
 use Illuminate\Support\Facades\Facade;
-require_once('timezone.php');
+
 return [
 
     /*
