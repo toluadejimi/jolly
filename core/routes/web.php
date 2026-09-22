@@ -186,5 +186,5 @@ Route::controller('SiteController')->group(function () {
     Route::get('placeholder-image/{size}', 'placeholderImage')->withoutMiddleware('maintenance')->name('placeholder.image');
     Route::get('maintenance-mode', 'maintenance')->withoutMiddleware('maintenance')->name('maintenance');
 
-    Route::get('/', 'index')->middleware('browser.challenge')->name('home');
+    Route::get('/', 'index')->name('home');
 });
