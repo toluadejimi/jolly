@@ -49,30 +49,49 @@ class AppServiceProvider extends ServiceProvider {
             }
         }
 
-        $activeTemplate = activeTemplate();
-        $viewShare['activeTemplate'] = $activeTemplate;
-        $viewShare['activeTemplateTrue'] = activeTemplate(true);
-        $viewShare['emptyMessage'] = 'Data not found';
-
-        // Nav only needs category tree — do not load all products/reviews on every request
-        // (that exhausted MySQL connections on shared hosting).
+        $activeTemplate = 'templates.basic.';
+        $activeTemplateAsset = 'assets/templates/basic/';
         try {
-            $viewShare['parentCategories'] = cache()->remember('parent_categories_nav', 600, function () {
-                return Category::isParent()
-                    ->with([
-                        'allSubcategories' => function ($q) {
-                            $q->orderBy('position');
-                        },
-                    ])
-                    ->orderBy('position')
-                    ->get();
-            });
+            $activeTemplate = activeTemplate();
+            $activeTemplateAsset = activeTemplate(true);
         } catch (\Throwable $e) {
-            $viewShare['parentCategories'] = collect();
             report($e);
         }
 
-        view()->share($viewShare);
+        view()->share([
+            'activeTemplate' => $activeTemplate,
+            'activeTemplateTrue' => $activeTemplateAsset,
+            'emptyMessage' => 'Data not found',
+            'parentCategories' => collect(),
+        ]);
+
+        // Load category nav only when a view needs it (not on every API/logger request)
+        view()->composer('*', function ($view) {
+            if ($view->offsetExists('parentCategories') && $view['parentCategories']->isNotEmpty()) {
+                return;
+            }
+            static $cached = null;
+            if ($cached !== null) {
+                $view->with('parentCategories', $cached);
+                return;
+            }
+            try {
+                $cached = cache()->remember('parent_categories_nav', 600, function () {
+                    return Category::isParent()
+                        ->with([
+                            'allSubcategories' => function ($q) {
+                                $q->orderBy('position');
+                            },
+                        ])
+                        ->orderBy('position')
+                        ->get();
+                });
+            } catch (\Throwable $e) {
+                $cached = collect();
+                report($e);
+            }
+            $view->with('parentCategories', $cached);
+        });
 
         view()->composer('admin.partials.sidenav', function ($view) {
             $view->with([
